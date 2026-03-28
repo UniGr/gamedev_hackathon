@@ -22,7 +22,8 @@ func save_game() -> void:
 		"resources": {
 			"metal": ResourceManager.metal,
 			"max_metal": ResourceManager.max_metal,
-			"build_iterations_by_module": ResourceManager.build_iterations_by_module
+			"build_iterations_by_module": ResourceManager.build_iterations_by_module,
+			"upgrade_levels": UpgradeManager.get_upgrade_levels_snapshot()
 		},
 		"grid": grid_data
 	}
@@ -55,6 +56,9 @@ func load_game() -> void:
 				Constants.MODULE_COLLECTOR: legacy_iteration,
 			}
 		ResourceManager.set_module_build_iterations(loaded_iterations)
+
+		var loaded_upgrade_levels: Dictionary = res_data.get("upgrade_levels", {})
+		UpgradeManager.set_upgrade_levels(loaded_upgrade_levels)
 		
 		GameEvents.resource_changed.emit("metal", ResourceManager.metal)
 		print("Игра загружена (ресурсы восстановлены)!")

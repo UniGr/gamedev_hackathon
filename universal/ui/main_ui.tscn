@@ -136,6 +136,34 @@ layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
 
+[node name="UpgradesPanel" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 12
+
+[node name="UpgradesTitle" type="Label" parent="MarginContainer/VBoxContainer/UpgradesPanel"]
+layout_mode = 2
+horizontal_alignment = 1
+theme_override_font_sizes/font_size = 40
+text = "УЛУЧШЕНИЯ"
+
+[node name="UpgradesList" type="VBoxContainer" parent="MarginContainer/VBoxContainer/UpgradesPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="BtnShopExit" type="Button" parent="MarginContainer/VBoxContainer/UpgradesPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 42
+theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
+text = "Выйти из магазина"
+
 [node name="BottomPanel" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 unique_name_in_owner = true
 layout_mode = 2

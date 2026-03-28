@@ -18,6 +18,11 @@ const MODULE_STORAGE: String = "storage"
 const MODULE_DEFENSE: String = "defense"
 const MODULE_HULL: String = "hull"
 
+# ========== Типы мусора ==========
+const DEBRIS_TRASH_1: int = 0
+const DEBRIS_TRASH_2: int = 1
+const DEBRIS_TRASH_3: int = 2
+
 const MODULE_IDS = {
 	"core": MODULE_CORE,
 	"collector": MODULE_COLLECTOR,
@@ -49,6 +54,24 @@ const BASE_METAL_PER_CLICK: int = 10
 const BASE_ENERGY_PER_CLICK: int = 5
 const CORE_BASE_DEFENCE: int = 10
 const CORE_RADIUS_CELLS: int = 1
+
+# ========== Улучшения ==========
+const UPGRADE_CORE_ID: String = "core_upgrade"
+const UPGRADE_CORE_NAME: String = "Улучшение ядра"
+
+# Таблица из БАЛАНС (2).csv по уровням улучшения ядра.
+const CORE_UPGRADE_REWARD_TABLE: Array[Dictionary] = [
+	{DEBRIS_TRASH_1: 17.0, DEBRIS_TRASH_2: 13.0, DEBRIS_TRASH_3: 20.0},
+	{DEBRIS_TRASH_1: 21.25, DEBRIS_TRASH_2: 16.25, DEBRIS_TRASH_3: 25.0},
+	{DEBRIS_TRASH_1: 26.5625, DEBRIS_TRASH_2: 20.3125, DEBRIS_TRASH_3: 31.25},
+	{DEBRIS_TRASH_1: 33.203125, DEBRIS_TRASH_2: 25.390625, DEBRIS_TRASH_3: 39.0625},
+	{DEBRIS_TRASH_1: 41.50390625, DEBRIS_TRASH_2: 31.73828125, DEBRIS_TRASH_3: 48.828125},
+]
+
+# Стоимость перехода на следующий уровень (0->1, 1->2, ...).
+const CORE_UPGRADE_COSTS: Array[float] = [375.0, 468.75, 585.9375, 732.421875]
+
+const UPGRADE_IDS: Array[String] = [UPGRADE_CORE_ID]
 
 # ========== UI Слои ==========
 const UI_LAYER_HUD: int = 0
@@ -99,6 +122,30 @@ func get_resource_max_metal() -> int:
 func get_hull_metal_bonus() -> int:
 	_ensure_balance_loaded()
 	return _resource_hull_bonus
+
+
+func get_core_upgrade_max_level() -> int:
+	if CORE_UPGRADE_REWARD_TABLE.is_empty():
+		return 0
+	return CORE_UPGRADE_REWARD_TABLE.size() - 1
+
+
+func get_core_upgrade_next_cost(current_level: int) -> int:
+	if current_level < 0:
+		return int(ceil(CORE_UPGRADE_COSTS[0]))
+	if current_level >= CORE_UPGRADE_COSTS.size():
+		return -1
+	return int(ceil(CORE_UPGRADE_COSTS[current_level]))
+
+
+func get_core_upgrade_reward(debris_type: int, level: int) -> int:
+	if CORE_UPGRADE_REWARD_TABLE.is_empty():
+		return 0
+
+	var clamped_level: int = clamp(level, 0, CORE_UPGRADE_REWARD_TABLE.size() - 1)
+	var reward_row: Dictionary = CORE_UPGRADE_REWARD_TABLE[clamped_level]
+	var raw_reward: float = float(reward_row.get(debris_type, 0.0))
+	return int(round(raw_reward))
 
 
 func _load_balance_config() -> void:
