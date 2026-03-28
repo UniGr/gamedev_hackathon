@@ -10,6 +10,8 @@ extends CanvasLayer
 
 func _ready() -> void:
 	GameEvents.resource_changed.connect(_on_resource_changed)
+	# Закрываем меню, когда модуль успешно построен
+	GameEvents.module_built.connect(_on_module_built)
 	
 	btn_reactor.pressed.connect(_on_btn_reactor_pressed)
 	btn_collector.pressed.connect(_on_btn_collector_pressed)
@@ -17,10 +19,9 @@ func _ready() -> void:
 	btn_shop.pressed.connect(_on_btn_shop_pressed)
 	
 	bottom_panel.visible = false
-	# Начальное состояние кнопок (при 0 ресурсов)
 	_update_buttons(0)
 	
-	print("MainUI Initialized (No Energy Mode)")
+	print("MainUI Initialized")
 
 func _on_resource_changed(type: String, new_total: int, max_total: int) -> void:
 	if type == "metal":
@@ -43,14 +44,19 @@ func _update_buttons(current_metal: int) -> void:
 func _on_btn_shop_pressed() -> void:
 	bottom_panel.visible = !bottom_panel.visible
 
+func _on_module_built(_type: String, _pos: Vector2) -> void:
+	# Закрываем панель после постройки
+	bottom_panel.visible = false
+
 func _on_btn_hull_pressed() -> void:
 	GameEvents.build_requested.emit(Constants.MODULE_HULL, Vector2.ZERO)
-	print("Requested Hull")
+	# Можно закрыть сразу после выбора, чтобы не мешать кликать по сетке
+	bottom_panel.visible = false
 
 func _on_btn_reactor_pressed() -> void:
 	GameEvents.build_requested.emit(Constants.MODULE_REACTOR, Vector2.ZERO)
-	print("Requested Reactor")
+	bottom_panel.visible = false
 
 func _on_btn_collector_pressed() -> void:
 	GameEvents.build_requested.emit(Constants.MODULE_COLLECTOR, Vector2.ZERO)
-	print("Requested Collector")
+	bottom_panel.visible = false
