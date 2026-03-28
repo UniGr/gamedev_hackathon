@@ -39,6 +39,10 @@ $RECYCLE.BIN/
 .idea/
 .vs/
 
+# Gemini and GitHub internal
+GEMINI.md
+.github/
+
 # Build folders
 build/
 builds/
