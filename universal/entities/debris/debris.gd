@@ -14,8 +14,15 @@ signal collected(amount: int, debris_type: DebrisType, source: String)
 @export var metal_reward_trash_2: int = 13
 @export var metal_reward_trash_3: int = 20
 @export var movement_speed_px_per_sec: float = 500.0
-@export var unit_size_px: Vector2 = Vector2(90.0, 90.0)
+@export var unit_size_px: Vector2 = Vector2(140.0, 140.0)
 @export var movement_direction: Vector2 = Vector2.DOWN
+
+@export_group("Debris Pixel Burst")
+@export var burst_enabled: bool = true
+@export var burst_pixel_count: int = 18
+@export var burst_pixel_size_px: float = 5.0
+@export var burst_radius_px: float = 72.0
+@export var burst_duration_sec: float = 0.38
 @export var min_rotation_speed_deg_per_sec: float = 30.0
 @export var max_rotation_speed_deg_per_sec: float = 180.0
 
@@ -107,6 +114,8 @@ func collect(source: String = "click") -> void:
 
 	_is_collected = true
 	_collector_mark_owner_id = 0
+	if burst_enabled:
+		_spawn_pixel_burst()
 	var amount: int = _get_metal_reward()
 	GameEvents.garbage_clicked.emit(amount)
 	collected.emit(amount, debris_type, source)
@@ -175,13 +184,3 @@ func _fit_sprite_to_unit_size() -> void:
 		return
 
 	_sprite.scale = Vector2(unit_size_px.x / texture_size.x, unit_size_px.y / texture_size.y)
-
-
-func _setup_random_rotation() -> void:
-	var min_speed: float = min(min_rotation_speed_deg_per_sec, max_rotation_speed_deg_per_sec)
-	var max_speed: float = max(min_rotation_speed_deg_per_sec, max_rotation_speed_deg_per_sec)
-	var speed_deg: float = randf_range(min_speed, max_speed)
-	if randf() < 0.5:
-		speed_deg *= -1.0
-
-	_rotation_speed_rad_per_sec = deg_to_rad(speed_deg)

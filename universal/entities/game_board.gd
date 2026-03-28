@@ -9,6 +9,7 @@ const REACTOR_MODULE_SCRIPT: Script = preload("res://entities/modules/reactor_mo
 const STORAGE_MODULE_SCRIPT: Script = preload("res://entities/modules/storage_module.gd")
 const DEFENSE_MODULE_SCRIPT: Script = preload("res://entities/modules/defense_module.gd")
 const HULL_MODULE_SCRIPT: Script = preload("res://entities/modules/hull_module.gd")
+const TURRET_MODULE_SCRIPT: Script = preload("res://entities/modules/turret_module.gd")
 
 var gridTileManager: GridManager
 var _modules_root: Node2D
@@ -17,6 +18,9 @@ var _core_module: CoreModule
 var _placed_modules: Array[ModuleBase] = []
 var _module_script_by_id: Dictionary = {}
 var _ship_bounds_rect: Rect2 = Rect2()
+var _target_pressure_by_module: Dictionary = {}
+var _is_game_finished: bool = false
+var _is_collapsing_unattached: bool = false
 
 # Состояние постройки
 var _active_build_type: String = ""
@@ -41,6 +45,7 @@ func _ready() -> void:
 		Constants.MODULE_STORAGE: STORAGE_MODULE_SCRIPT,
 		Constants.MODULE_DEFENSE: DEFENSE_MODULE_SCRIPT,
 		Constants.MODULE_HULL: HULL_MODULE_SCRIPT,
+		Constants.MODULE_TURRET: TURRET_MODULE_SCRIPT,
 	}
 
 	_highlights_root = Node2D.new()
@@ -60,6 +65,8 @@ func _ready() -> void:
 	print("GameBoard Initialized at origin: ", _modules_root.position)
 
 func _unhandled_input(event: InputEvent) -> void:
+	if _is_game_finished:
+		return
 	if _active_build_type == "": return
 
 	var pointer_pos: Vector2
@@ -94,12 +101,18 @@ func _unhandled_input(event: InputEvent) -> void:
 			print("Build cancelled by clicking empty grid")
 
 func _on_build_requested(module_type: String, requested_position: Vector2) -> void:
+	if _is_game_finished:
+		return
 	if not _module_script_by_id.has(module_type): return
 	if requested_position == Vector2.ZERO:
 		_enter_build_mode(module_type)
 	else:
 		var grid_pos = _world_to_grid(requested_position)
 		_try_place_module_at(module_type, grid_pos)
+
+
+func is_build_mode_active() -> bool:
+	return _active_build_type != ""
 
 func _enter_build_mode(module_type: String) -> void:
 	_clear_highlights()
@@ -140,6 +153,7 @@ func _try_place_module_at(module_type: String, build_cell: Vector2i) -> bool:
 	var module: ModuleBase = script_ref.new() as ModuleBase
 	
 	if not gridTileManager.canBuildAt(build_cell, module_type, module.grid_size):
+		AudioManager.play_ui_error()
 		module.queue_free()
 		return false
 
@@ -147,6 +161,7 @@ func _try_place_module_at(module_type: String, build_cell: Vector2i) -> bool:
 	var final_cost: int = _get_final_build_cost(module)
 	if final_cost > 0 and not ResourceManager.spend_metal(final_cost):
 		print("Not enough metal! Need: ", final_cost)
+		AudioManager.play_ui_error()
 		module.queue_free()
 		return false
 
@@ -161,6 +176,7 @@ func _spawn_core() -> void:
 	var core: CoreModule = CORE_MODULE_SCRIPT.new() as CoreModule
 	_modules_root.add_child(core)
 	core.configure(CORE_START_CELL, CELL_SIZE)
+	core.destroy_requested.connect(_on_module_destroy_requested)
 	_core_module = core
 	_placed_modules.append(core)
 	gridTileManager.register_core(CORE_START_CELL, core.grid_size, core)
@@ -180,9 +196,11 @@ func _place_module(module: ModuleBase, build_cell: Vector2i) -> void:
 		_core_module.add_defence(module.defence_bonus)
 
 	_placed_modules.append(module)
+	module.destroy_requested.connect(_on_module_destroy_requested)
 	gridTileManager.register_module(build_cell, module.grid_size, module.module_id, module)
 	module.tree_exited.connect(_on_module_tree_exited.bind(module))
 	_refresh_ship_bounds()
+	_check_win_condition()
 
 func _get_final_build_cost(module: ModuleBase) -> int:
 	var discount: float = 1.0
@@ -236,6 +254,271 @@ func _get_ship_bounds_rect() -> Rect2:
 	return _ship_bounds_rect
 
 func _on_module_tree_exited(module: ModuleBase) -> void:
+	_target_pressure_by_module.erase(module)
 	_placed_modules.erase(module)
 	gridTileManager.unregister_module(module)
+	if module == _core_module:
+		_core_module = null
 	_refresh_ship_bounds()
+	if not _is_game_finished and not _is_collapsing_unattached:
+		call_deferred("_collapse_unattached_modules")
+
+
+func _on_module_destroy_requested(module: ModuleBase, source: String) -> void:
+	_destroy_module(module, source)
+
+
+func _destroy_module(module: ModuleBase, source: String) -> bool:
+	if _is_game_finished:
+		return false
+
+	if module == null or not is_instance_valid(module):
+		return false
+
+	if not _placed_modules.has(module):
+		return false
+
+	if module.module_id == Constants.MODULE_DEFENSE and _core_module != null and module != _core_module:
+		_core_module.remove_defence(module.defence_bonus)
+
+	var destroyed_module_id: String = module.module_id
+	var destroyed_pos: Vector2 = Vector2(module.grid_position)
+	module.queue_free()
+	GameEvents.module_destroyed.emit(destroyed_module_id, destroyed_pos)
+
+	if module == _core_module:
+		_is_game_finished = true
+		var reason: String = "core_destroyed"
+		if source == "raider":
+			reason = "core_eaten_by_raiders"
+		GameEvents.game_finished.emit("lose", reason)
+		GameEvents.game_ended.emit()
+	else:
+		if not _is_collapsing_unattached:
+			call_deferred("_collapse_unattached_modules")
+
+	return true
+
+
+func _check_win_condition() -> void:
+	if _is_game_finished:
+		return
+
+	var reactor_count: int = 0
+	for module in _placed_modules:
+		if not is_instance_valid(module):
+			continue
+		if module.module_id == Constants.MODULE_REACTOR:
+			reactor_count += 1
+
+	if reactor_count >= 4:
+		_is_game_finished = true
+		GameEvents.game_finished.emit("win", "reactors_4")
+		GameEvents.game_ended.emit()
+
+
+func get_attackable_modules() -> Array[ModuleBase]:
+	var result: Array[ModuleBase] = []
+	for module in _placed_modules:
+		if not is_instance_valid(module):
+			continue
+		if module == _core_module:
+			continue
+		result.append(module)
+
+	if result.is_empty() and _core_module != null and is_instance_valid(_core_module):
+		result.append(_core_module)
+
+	return result
+
+
+func get_module_exposure_score(module: ModuleBase) -> int:
+	if module == null or not is_instance_valid(module):
+		return 0
+
+	var occupied: Dictionary = gridTileManager.get_occupied_cells()
+	var directions: Array[Vector2i] = [
+		Vector2i.UP,
+		Vector2i.DOWN,
+		Vector2i.LEFT,
+		Vector2i.RIGHT,
+	]
+
+	var exposed_edges: int = 0
+	for cell in module.get_occupied_cells():
+		for dir in directions:
+			var neighbour: Vector2i = cell + dir
+			if neighbour.x < 0 or neighbour.y < 0 or neighbour.x >= GridManager.GRID_WIDTH or neighbour.y >= GridManager.GRID_HEIGHT:
+				exposed_edges += 1
+			elif not occupied.has(neighbour):
+				exposed_edges += 1
+
+	return exposed_edges
+
+
+func try_bite_module(module: ModuleBase, damage: int = 1) -> bool:
+	if module == null or not is_instance_valid(module):
+		return false
+
+	if not _placed_modules.has(module):
+		return false
+
+	if module.has_method("take_damage"):
+		var was_destroyed: bool = bool(module.call("take_damage", max(1, damage), "raider"))
+		return was_destroyed
+
+	return _destroy_module(module, "raider")
+
+
+func try_sapper_explosion(target_module: ModuleBase, base_damage: int, radius_cells: float = 1.3) -> bool:
+	if target_module == null or not is_instance_valid(target_module):
+		return false
+
+	if not _placed_modules.has(target_module):
+		return false
+
+	var center: Vector2 = target_module.get_world_center()
+	var radius_px: float = max(0.35, radius_cells) * CELL_SIZE
+	var affected_any: bool = false
+	var targets: Array[ModuleBase] = []
+
+	for module in _placed_modules:
+		if not is_instance_valid(module):
+			continue
+		if module == _core_module:
+			continue
+		if center.distance_to(module.get_world_center()) > radius_px:
+			continue
+		targets.append(module)
+
+	for module in targets:
+		if not is_instance_valid(module):
+			continue
+		affected_any = true
+
+		var dist: float = center.distance_to(module.get_world_center())
+		var falloff: float = clamp(1.0 - dist / max(1.0, radius_px), 0.35, 1.0)
+		var damage: int = max(1, int(round(float(base_damage) * (1.1 + falloff))))
+
+		if module.has_method("take_damage"):
+			module.call("take_damage", damage, "raider")
+		else:
+			_destroy_module(module, "raider")
+
+	return affected_any
+
+
+func try_hack_turret(module: ModuleBase, duration_sec: float) -> bool:
+	if module == null or not is_instance_valid(module):
+		return false
+
+	if not _placed_modules.has(module):
+		return false
+
+	if module.module_id != Constants.MODULE_TURRET:
+		return false
+
+	if module.has_method("apply_hack_disable"):
+		module.call("apply_hack_disable", max(0.3, duration_sec))
+		return true
+
+	return false
+
+
+func get_module_tactical_priority(module_id: String) -> int:
+	match module_id:
+		Constants.MODULE_TURRET:
+			return 100
+		Constants.MODULE_DEFENSE:
+			return 60
+		Constants.MODULE_REACTOR:
+			return 50
+		Constants.MODULE_COLLECTOR:
+			return 40
+		Constants.MODULE_STORAGE:
+			return 30
+		Constants.MODULE_HULL:
+			return 20
+		Constants.MODULE_CORE:
+			return 10
+		_:
+			return 0
+
+
+func claim_module_target(module: ModuleBase) -> void:
+	if module == null or not is_instance_valid(module):
+		return
+	_target_pressure_by_module[module] = int(_target_pressure_by_module.get(module, 0)) + 1
+
+
+func release_module_target(module: ModuleBase) -> void:
+	if module == null:
+		return
+	if not _target_pressure_by_module.has(module):
+		return
+	var next_value: int = int(_target_pressure_by_module[module]) - 1
+	if next_value <= 0:
+		_target_pressure_by_module.erase(module)
+	else:
+		_target_pressure_by_module[module] = next_value
+
+
+func get_target_pressure(module: ModuleBase) -> int:
+	if module == null:
+		return 0
+	return int(_target_pressure_by_module.get(module, 0))
+
+
+func _collapse_unattached_modules() -> void:
+	if _is_game_finished:
+		return
+	if _core_module == null or not is_instance_valid(_core_module):
+		return
+	if _is_collapsing_unattached:
+		return
+
+	_is_collapsing_unattached = true
+
+	var occupied: Dictionary = gridTileManager.get_occupied_cells()
+	if occupied.is_empty():
+		_is_collapsing_unattached = false
+		return
+
+	var visited_cells: Dictionary = {}
+	var queue: Array[Vector2i] = []
+	for core_cell in _core_module.get_occupied_cells():
+		if occupied.has(core_cell):
+			visited_cells[core_cell] = true
+			queue.append(core_cell)
+
+	var dirs: Array[Vector2i] = [Vector2i.UP, Vector2i.DOWN, Vector2i.LEFT, Vector2i.RIGHT]
+	while not queue.is_empty():
+		var cell: Vector2i = queue.pop_front()
+		for dir in dirs:
+			var n: Vector2i = cell + dir
+			if visited_cells.has(n):
+				continue
+			if occupied.has(n):
+				visited_cells[n] = true
+				queue.append(n)
+
+	var to_collapse: Array[ModuleBase] = []
+	for module in _placed_modules:
+		if not is_instance_valid(module):
+			continue
+		if module == _core_module:
+			continue
+
+		var connected: bool = false
+		for c in module.get_occupied_cells():
+			if visited_cells.has(c):
+				connected = true
+				break
+
+		if not connected:
+			to_collapse.append(module)
+
+	for module in to_collapse:
+		_destroy_module(module, "collapse")
+
+	_is_collapsing_unattached = false

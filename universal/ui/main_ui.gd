@@ -5,9 +5,16 @@ extends CanvasLayer
 @onready var btn_reactor: Button = %BtnReactor
 @onready var btn_collector: Button = %BtnCollector
 @onready var btn_hull: Button = %BtnHull
+@onready var btn_turret: Button = %BtnTurret
 @onready var btn_shop: Button = %BtnShop
 @onready var btn_shop_exit: Button = %BtnShopExit
 @onready var bottom_panel: HBoxContainer = %BottomPanel
+@onready var end_overlay: ColorRect = %EndOverlay
+@onready var end_title_label: Label = %EndTitleLabel
+@onready var end_reason_label: Label = %EndReasonLabel
+@onready var btn_restart: Button = %BtnRestart
+
+var _is_game_finished: bool = false
 @onready var upgrades_panel: VBoxContainer = %UpgradesPanel
 @onready var upgrades_list: VBoxContainer = %UpgradesList
 
@@ -21,25 +28,32 @@ func _ready() -> void:
 	GameEvents.resource_changed.connect(_on_resource_changed)
 	# Закрываем меню, когда модуль успешно построен
 	GameEvents.module_built.connect(_on_module_built)
+	if GameEvents.has_signal("game_finished"):
+		GameEvents.game_finished.connect(_on_game_finished)
 	GameEvents.build_mode_cancelled.connect(_on_build_mode_cancelled)
 	GameEvents.upgrade_purchased.connect(_on_upgrade_purchased)
 	
 	btn_reactor.pressed.connect(_on_btn_reactor_pressed)
 	btn_collector.pressed.connect(_on_btn_collector_pressed)
 	btn_hull.pressed.connect(_on_btn_hull_pressed)
+	btn_turret.pressed.connect(_on_btn_turret_pressed)
 	btn_shop.pressed.connect(_on_btn_shop_pressed)
+	btn_restart.pressed.connect(_on_btn_restart_pressed)
 	btn_shop_exit.pressed.connect(_on_btn_shop_exit_pressed)
 	_build_upgrade_buttons()
 	_apply_button_texts()
 	_sync_resource_ui(ResourceManager.metal, ResourceManager.max_metal, false)
 	
 	_set_shop_open(false, false)
+	end_overlay.visible = false
 	_update_buttons(ResourceManager.metal)
 	_refresh_upgrade_buttons(ResourceManager.metal)
 	
 	print("MainUI Initialized")
 
 func _on_resource_changed(type: String, new_total: int) -> void:
+	if _is_game_finished:
+		return
 	if type == "metal":
 		_sync_resource_ui(new_total, ResourceManager.max_metal, true)
 		_update_buttons(new_total)
@@ -60,9 +74,18 @@ func _flash_label(label: Label) -> void:
 	tween.tween_property(label, "modulate", Color.WHITE, 0.3)
 
 func _update_buttons(current_metal: int) -> void:
+	if _is_game_finished:
+		btn_hull.disabled = true
+		btn_reactor.disabled = true
+		btn_collector.disabled = true
+		btn_turret.disabled = true
+		btn_shop.disabled = true
+		return
+
 	btn_hull.disabled = current_metal < ResourceManager.get_current_module_cost(Constants.MODULE_HULL)
 	btn_reactor.disabled = current_metal < ResourceManager.get_current_module_cost(Constants.MODULE_REACTOR)
 	btn_collector.disabled = current_metal < ResourceManager.get_current_module_cost(Constants.MODULE_COLLECTOR)
+	btn_turret.disabled = current_metal < Constants.get_module_cost(Constants.MODULE_TURRET)
 
 
 func _build_upgrade_buttons() -> void:
@@ -88,11 +111,17 @@ func _apply_button_texts() -> void:
 	btn_hull.text = " Корпус \n(%d Металла) " % ResourceManager.get_current_module_cost(Constants.MODULE_HULL)
 	btn_reactor.text = " Реактор \n(%d Металла) " % ResourceManager.get_current_module_cost(Constants.MODULE_REACTOR)
 	btn_collector.text = " Сборщик \n(%d Металла) " % ResourceManager.get_current_module_cost(Constants.MODULE_COLLECTOR)
+	btn_turret.text = " Турель \n(%d Металла) " % Constants.get_module_cost(Constants.MODULE_TURRET)
 
 func _on_btn_shop_pressed() -> void:
+	if _is_game_finished:
+		return
+	AudioManager.play_ui_open()
 	_set_shop_open(not _shop_open, true)
 
 func _on_module_built(_type: String, _pos: Vector2) -> void:
+	if _is_game_finished:
+		return
 	# Закрываем магазин после успешной постройки и снимаем паузу.
 	_set_shop_open(false, true)
 	_apply_button_texts()
@@ -153,14 +182,23 @@ func _on_btn_shop_exit_pressed() -> void:
 	_set_shop_open(false, true)
 
 func _on_btn_hull_pressed() -> void:
+	if _is_game_finished:
+		return
+	AudioManager.play_ui_click()
 	GameEvents.build_requested.emit(Constants.MODULE_HULL, Vector2.ZERO)
 	_hide_shop_for_build_mode()
 
 func _on_btn_reactor_pressed() -> void:
+	if _is_game_finished:
+		return
+	AudioManager.play_ui_click()
 	GameEvents.build_requested.emit(Constants.MODULE_REACTOR, Vector2.ZERO)
 	_hide_shop_for_build_mode()
 
 func _on_btn_collector_pressed() -> void:
+	if _is_game_finished:
+		return
+	AudioManager.play_ui_click()
 	GameEvents.build_requested.emit(Constants.MODULE_COLLECTOR, Vector2.ZERO)
 	_hide_shop_for_build_mode()
 
@@ -168,6 +206,41 @@ func _on_btn_collector_pressed() -> void:
 func _hide_shop_for_build_mode() -> void:
 	_shop_open = false
 	bottom_panel.visible = false
+
+
+func _on_btn_turret_pressed() -> void:
+	if _is_game_finished:
+		return
+	AudioManager.play_ui_click()
+	GameEvents.build_requested.emit(Constants.MODULE_TURRET, Vector2.ZERO)
+	bottom_panel.visible = false
+
+
+func _on_game_finished(outcome: String, reason: String) -> void:
+	if _is_game_finished:
+		return
+
+	_is_game_finished = true
+	bottom_panel.visible = false
+	_update_buttons(ResourceManager.metal)
+
+	end_overlay.visible = true
+	if outcome == "win":
+		end_title_label.text = "ПОБЕДА"
+		end_reason_label.text = "Ты построил 4 реактора и вывел станцию на максимальную мощность."
+	else:
+		end_title_label.text = "GAME OVER"
+		if reason == "core_eaten_by_raiders":
+			end_reason_label.text = "Налётчики съели ядро. Корабль потерян."
+		else:
+			end_reason_label.text = "Ядро разрушено. Миссия провалена."
+
+
+func _on_btn_restart_pressed() -> void:
+	AudioManager.play_ui_open()
+	var tree := get_tree()
+	if tree != null:
+		tree.reload_current_scene()
 	upgrades_panel.visible = false
 	btn_shop_exit.visible = false
 	# Пауза остается активной, пока не будет постройки/отмены.
