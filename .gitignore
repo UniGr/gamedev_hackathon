@@ -1,59 +1,26 @@
-# =========================
-# Godot Engine
-# =========================
-
-# Кеш и импортированные ресурсы Godot 4+ (самое важное)
+# Godot 4+ specific ignores
 .godot/
 
-# Кеш Godot 3 (на всякий случай, если проект старый)
+# Godot-specific ignores
 .import/
+export.cfg
+export_presets.cfg
 
-# Файл пресетов экспорта. 
-# ВНИМАНИЕ: Если ты вписываешь туда пароли от ключей Android/iOS, раскомментируй строку ниже, чтобы не слить их в Git.
-# export_presets.cfg
+# Imported translations (if not stored directly as .translation)
+*.translation
 
-# =========================
-# VS Code (Редактор)
-# =========================
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-*.code-workspace
-
-# Локальная история (плагин Local History)
-.history/
-
-# =========================
-# C# / Mono (Если вдруг начнешь использовать C#)
-# =========================
+# Mono-specific ignores
 .mono/
 data_*/
 mono_crash.*.json
-*.csproj.user
 
-# =========================
-# Папки с билдами (Добавь свои, если называешь иначе)
-# =========================
-build/
-builds/
-export/
-exports/
-bin/
-
-# =========================
-# Системный мусор ОС
-# =========================
-# macOS
+# System/OS specific ignores
 .DS_Store
 .DS_Store?
 ._*
 .AppleDouble
 .LSOverride
 .Trashes
-
-# Windows
 Thumbs.db
 Thumbs.db:encryptable
 ehthumbs.db
@@ -62,4 +29,19 @@ ehthumbs_vista.db
 Desktop.ini
 $RECYCLE.BIN/
 
-.github
+# Editor ignores (VSCode/Rider etc)
+.vscode/
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+.idea/
+.vs/
+
+# Build folders
+build/
+builds/
+export/
+exports/
+bin/
