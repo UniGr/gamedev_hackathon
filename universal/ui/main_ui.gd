@@ -10,7 +10,6 @@ extends CanvasLayer
 
 func _ready() -> void:
 	GameEvents.resource_changed.connect(_on_resource_changed)
-	# Закрываем меню, когда модуль успешно построен
 	GameEvents.module_built.connect(_on_module_built)
 	
 	btn_reactor.pressed.connect(_on_btn_reactor_pressed)
@@ -42,21 +41,23 @@ func _update_buttons(current_metal: int) -> void:
 	btn_collector.disabled = current_metal < Constants.MODULE_COST_METAL[Constants.MODULE_COLLECTOR]
 
 func _on_btn_shop_pressed() -> void:
+	if SoundManager: SoundManager.play_button_click()
 	bottom_panel.visible = !bottom_panel.visible
 
 func _on_module_built(_type: String, _pos: Vector2) -> void:
-	# Закрываем панель после постройки
 	bottom_panel.visible = false
 
 func _on_btn_hull_pressed() -> void:
+	if SoundManager: SoundManager.play_button_click()
 	GameEvents.build_requested.emit(Constants.MODULE_HULL, Vector2.ZERO)
-	# Можно закрыть сразу после выбора, чтобы не мешать кликать по сетке
 	bottom_panel.visible = false
 
 func _on_btn_reactor_pressed() -> void:
+	if SoundManager: SoundManager.play_button_click()
 	GameEvents.build_requested.emit(Constants.MODULE_REACTOR, Vector2.ZERO)
 	bottom_panel.visible = false
 
 func _on_btn_collector_pressed() -> void:
+	if SoundManager: SoundManager.play_button_click()
 	GameEvents.build_requested.emit(Constants.MODULE_COLLECTOR, Vector2.ZERO)
 	bottom_panel.visible = false
