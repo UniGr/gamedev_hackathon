@@ -1,24 +1,20 @@
-extends Control
+extends CanvasLayer
 
 @onready var btn_start: Button = %BtnStart
-@onready var btn_quit: Button = %BtnQuit
 
 func _ready() -> void:
-	print("--- МЕНЮ ЗАПУЩЕНО ВЕРСИЯ 3 ---")
+	print("--- МЕНЮ ЗАГРУЖЕНО ---")
 	
-	# Принудительно включаем кнопки
-	btn_start.disabled = false
-	btn_start.mouse_filter = Control.MOUSE_FILTER_STOP
-	btn_quit.disabled = false
-	btn_quit.mouse_filter = Control.MOUSE_FILTER_STOP
-	
+	# Привязываем сигнал
 	btn_start.pressed.connect(_on_btn_start_pressed)
-	btn_quit.pressed.connect(_on_btn_quit_pressed)
+	
+	# На случай, если клики не работают на Mac, авто-запуск через 5 сек
+	print("Ожидание 5 секунд до автоматического старта...")
+	await get_tree().create_timer(5.0).timeout
+	if get_tree().current_scene == self:
+		print("Автоматический запуск игры...")
+		_on_btn_start_pressed()
 
 func _on_btn_start_pressed() -> void:
-	print(">>> НАЖАТА КНОПКА ИГРАТЬ <<<")
+	print("--- СМЕНА СЦЕНЫ НА res://main.tscn ---")
 	get_tree().change_scene_to_file("res://main.tscn")
-
-func _on_btn_quit_pressed() -> void:
-	print(">>> НАЖАТА КНОПКА ВЫХОД <<<")
-	get_tree().quit()
