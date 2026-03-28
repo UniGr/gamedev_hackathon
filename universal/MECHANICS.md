@@ -110,15 +110,15 @@ enum ModuleType {
 
 ```text
 UI нажимает кнопку "Построить"
-        ↓
+		↓
 build_requested.emit(module_type, position)
-        ↓
+		↓
 ShipGrid проверяет место и ресурсы
-        ↓
+		↓
 module_built.emit(type, position) или build_failed
-        ↓
+		↓
 ResourceManager тратит ресурсы
-        ↓
+		↓
 UI обновляется
 ```
 
@@ -126,13 +126,13 @@ UI обновляется
 
 ```text
 UI нажимает кнопку "Разобрать"
-        ↓
+		↓
 destroy_requested.emit(module_type, position)
-        ↓
+		↓
 module_destroyed.emit(type, position)
-        ↓
+		↓
 ResourceManager возвращает часть ресурсов
-        ↓
+		↓
 UI обновляется
 ```
 
@@ -164,23 +164,23 @@ UI обновляется
 ```gdscript
 # 1. В debris_sprite.gd
 func _on_clicked() -> void:
-    GameEvents.garbage_clicked.emit(BASE_AMOUNT)
+	GameEvents.garbage_clicked.emit(BASE_AMOUNT)
 
 # 2. В resource_manager.gd
 func _ready() -> void:
-    GameEvents.garbage_clicked.connect(_on_garbage_clicked)
+	GameEvents.garbage_clicked.connect(_on_garbage_clicked)
 
 func _on_garbage_clicked(amount: int) -> void:
-    add_metal(amount)
-    GameEvents.resource_changed.emit("metal", metal)
+	add_metal(amount)
+	GameEvents.resource_changed.emit("metal", metal)
 
 # 3. В ui_hud.gd
 func _ready() -> void:
-    GameEvents.resource_changed.connect(_on_resource_changed)
+	GameEvents.resource_changed.connect(_on_resource_changed)
 
 func _on_resource_changed(type: String, new_total: int) -> void:
-    if type == "metal":
-        metal_label.text = str(new_total)
+	if type == "metal":
+		metal_label.text = str(new_total)
 ```
 
 ---
@@ -303,4 +303,3 @@ var price = 50
 ---
 
 Каждая связь через сигналы вместо прямых зависимостей делает проект устойчивее к росту и изменениям.
-
