@@ -18,9 +18,24 @@ var _placed_modules: Array[ModuleBase] = []
 var _module_script_by_id: Dictionary = {}
 var _ship_bounds_rect: Rect2 = Rect2()
 
+# Эффект дрейфа
+var _drift_timer: float = 0.0
+@export var drift_amplitude: float = 15.0
+@export var drift_speed: float = 0.5
+
 # Состояние постройки
 var _active_build_type: String = ""
 var _active_build_size: Vector2i = Vector2i.ONE
+
+func _process(delta: float) -> void:
+	_update_drift(delta)
+
+func _update_drift(delta: float) -> void:
+	_drift_timer += delta * drift_speed
+	var offset_x = sin(_drift_timer) * drift_amplitude
+	var base_origin = _get_grid_origin()
+	_modules_root.position.x = base_origin.x + offset_x
+	_highlights_root.position.x = _modules_root.position.x
 
 func _ready() -> void:
 	gridTileManager = GridManager.new()
