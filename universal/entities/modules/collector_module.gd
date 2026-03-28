@@ -3,6 +3,7 @@ class_name CollectorModule
 
 @export var collect_cooldown_sec: float = 5.0
 @export var collect_radius_from_ship_edge_cells: float = 5.0
+@export var mark_radius_from_ship_edge_cells: float = 7.0
 @export var laser_color: Color = Color(0.30, 0.95, 1.0, 1.0)
 
 var _collect_timer: Timer
@@ -10,6 +11,8 @@ var _laser_hide_timer: Timer
 var _laser: Line2D
 var _ship_bounds_provider: Callable
 var _is_on_cooldown: bool = false
+var _collector_id: int = 0
+var _marked_target: WeakRef
 
 
 func _init() -> void:
@@ -20,6 +23,8 @@ func _init() -> void:
 
 
 func _ready() -> void:
+	_collector_id = get_instance_id()
+
 	_collect_timer = Timer.new()
 	_collect_timer.one_shot = true
 	_collect_timer.wait_time = collect_cooldown_sec
@@ -43,26 +48,73 @@ func _process(_delta: float) -> void:
 	if _is_on_cooldown:
 		return
 
-	_try_collect()
+	_validate_or_release_mark()
+
+	if _marked_target == null:
+		_try_mark_target()
+		return
+
+	_try_collect_marked_target()
+
+
+func _exit_tree() -> void:
+	_release_marked_target()
 
 
 func set_ship_bounds_provider(provider: Callable) -> void:
 	_ship_bounds_provider = provider
 
 
-func _try_collect() -> void:
-	var target: Node2D = _find_best_debris_target()
+func _try_mark_target() -> void:
+	var target: Node2D = _find_best_debris_target(mark_radius_from_ship_edge_cells, true)
 	if target == null:
+		return
+
+	if target.has_method("mark_by_collector") and target.mark_by_collector(_collector_id):
+		_marked_target = weakref(target)
+
+
+func _try_collect_marked_target() -> void:
+	if _marked_target == null:
+		return
+
+	var target_variant: Variant = _marked_target.get_ref()
+	if not (target_variant is Node2D):
+		_release_marked_target()
+		return
+
+	var target: Node2D = target_variant as Node2D
+	if not is_instance_valid(target):
+		_release_marked_target()
+		return
+
+	var ship_rect: Rect2 = _get_ship_bounds_rect()
+	if ship_rect.size == Vector2.ZERO:
+		_release_marked_target()
+		return
+
+	var distance_to_ship_edge: float = _distance_to_rect(target.global_position, ship_rect)
+	var mark_radius_px: float = mark_radius_from_ship_edge_cells * cell_size_px
+	if distance_to_ship_edge > mark_radius_px:
+		_release_marked_target()
+		return
+
+	var collect_radius_px: float = collect_radius_from_ship_edge_cells * cell_size_px
+	if distance_to_ship_edge > collect_radius_px:
 		return
 
 	_show_laser_to(target.global_position)
 
-	if target.has_method("auto_collect"):
-		target.auto_collect()
+	var collected: bool = false
+	if target.has_method("collect_by_collector"):
+		collected = target.collect_by_collector(_collector_id)
 	elif target.has_method("collect"):
 		target.collect("collector")
+		collected = true
 
-	_start_cooldown()
+	if collected:
+		_marked_target = null
+		_start_cooldown()
 
 
 func _start_cooldown() -> void:
@@ -74,13 +126,13 @@ func _on_cooldown_finished() -> void:
 	_is_on_cooldown = false
 
 
-func _find_best_debris_target() -> Node2D:
+func _find_best_debris_target(radius_cells: float, require_markable: bool) -> Node2D:
 	var ship_rect: Rect2 = _get_ship_bounds_rect()
 	if ship_rect.size == Vector2.ZERO:
 		return null
 
 	var debris_nodes: Array = get_tree().get_nodes_in_group("debris")
-	var radius_px: float = collect_radius_from_ship_edge_cells * cell_size_px
+	var radius_px: float = radius_cells * cell_size_px
 
 	var best_target: Node2D = null
 	var best_distance_to_ship_edge: float = INF
@@ -100,6 +152,12 @@ func _find_best_debris_target() -> Node2D:
 		var distance_to_ship_edge: float = _distance_to_rect(point, ship_rect)
 		if distance_to_ship_edge > radius_px:
 			continue
+
+		if require_markable:
+			if not debris_node.has_method("can_be_marked_by"):
+				continue
+			if not debris_node.can_be_marked_by(_collector_id):
+				continue
 
 		if distance_to_ship_edge < best_distance_to_ship_edge:
 			best_distance_to_ship_edge = distance_to_ship_edge
@@ -144,3 +202,34 @@ func _show_laser_to(target_world: Vector2) -> void:
 
 func _hide_laser() -> void:
 	_laser.visible = false
+
+
+func _validate_or_release_mark() -> void:
+	if _marked_target == null:
+		return
+
+	var target_variant: Variant = _marked_target.get_ref()
+	if not (target_variant is Node2D):
+		_marked_target = null
+		return
+
+	var target: Node2D = target_variant as Node2D
+	if not is_instance_valid(target):
+		_marked_target = null
+		return
+
+	if target.has_method("is_marked_by_collector") and not target.is_marked_by_collector(_collector_id):
+		_marked_target = null
+
+
+func _release_marked_target() -> void:
+	if _marked_target == null:
+		return
+
+	var target_variant: Variant = _marked_target.get_ref()
+	if target_variant is Node2D:
+		var target: Node2D = target_variant as Node2D
+		if is_instance_valid(target) and target.has_method("unmark_by_collector"):
+			target.unmark_by_collector(_collector_id)
+
+	_marked_target = null
