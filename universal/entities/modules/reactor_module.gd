@@ -8,3 +8,4 @@ func _init() -> void:
 	metal_cost = Constants.get_module_cost(module_id)
 	energy_radius_cells = 1
 	sprite_color = Color(0.95, 0.74, 0.20, 1.0)
+	module_texture = preload("res://assets/sprites/reactor.png")

@@ -8,6 +8,7 @@ class_name ModuleBase
 @export var energy_radius_cells: int = 0
 @export var facing_direction: Vector2 = Vector2.UP
 @export var sprite_color: Color = Color(0.55, 0.55, 0.55, 1.0)
+@export var module_texture: Texture2D
 
 var grid_position: Vector2i = Vector2i.ZERO
 var cell_size_px: float = 90.0
@@ -41,5 +42,9 @@ func _draw() -> void:
 	var size_px: Vector2 = Vector2(grid_size.x * cell_size_px, grid_size.y * cell_size_px)
 	var fill_rect: Rect2 = Rect2(Vector2.ZERO, size_px)
 
-	draw_rect(fill_rect, sprite_color, true)
+	if module_texture != null:
+		draw_texture_rect(module_texture, fill_rect, false)
+	else:
+		draw_rect(fill_rect, sprite_color, true)
+
 	draw_rect(fill_rect, Color(0.08, 0.08, 0.08, 1.0), false, 2.0)

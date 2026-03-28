@@ -23,10 +23,17 @@ var _active_build_type: String = ""
 var _active_build_size: Vector2i = Vector2i.ONE
 
 func _ready() -> void:
+	# Позволяет ставить модули из магазина во время паузы.
+	process_mode = Node.PROCESS_MODE_ALWAYS
+
 	gridTileManager = GridManager.new()
 	gridTileManager.name = "GridManager" # Чтобы SaveManager его нашел
 	add_child(gridTileManager)
 	gridTileManager.reset_grid()
+
+	var debris_spawner: Node = get_node_or_null("DebrisSpawner")
+	if debris_spawner != null:
+		debris_spawner.process_mode = Node.PROCESS_MODE_PAUSABLE
 
 	_module_script_by_id = {
 		Constants.MODULE_COLLECTOR: COLLECTOR_MODULE_SCRIPT,
@@ -43,6 +50,7 @@ func _ready() -> void:
 	_modules_root = Node2D.new()
 	_modules_root.name = "ModulesRoot"
 	_modules_root.position = _get_grid_origin()
+	_modules_root.process_mode = Node.PROCESS_MODE_PAUSABLE
 	_highlights_root.position = _modules_root.position
 	add_child(_modules_root)
 
@@ -80,7 +88,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		# Если кликнули ВНУТРИ сетки, но мимо подсветки — отменяем режим
 		if grid_pos.x >= 0 and grid_pos.x < GridManager.GRID_WIDTH and \
 		   grid_pos.y >= 0 and grid_pos.y < GridManager.GRID_HEIGHT:
+			var cancelled_type: String = _active_build_type
 			_clear_highlights()
+			GameEvents.build_mode_cancelled.emit(cancelled_type)
 			print("Build cancelled by clicking empty grid")
 
 func _on_build_requested(module_type: String, requested_position: Vector2) -> void:

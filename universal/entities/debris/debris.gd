@@ -16,6 +16,8 @@ signal collected(amount: int, debris_type: DebrisType, source: String)
 @export var movement_speed_px_per_sec: float = 500.0
 @export var unit_size_px: Vector2 = Vector2(90.0, 90.0)
 @export var movement_direction: Vector2 = Vector2.DOWN
+@export var min_rotation_speed_deg_per_sec: float = 30.0
+@export var max_rotation_speed_deg_per_sec: float = 180.0
 
 @export_group("Debris Visual")
 @export var debris_type: DebrisType = DebrisType.TRASH_1:
@@ -33,18 +35,21 @@ signal collected(amount: int, debris_type: DebrisType, source: String)
 
 var _is_collected: bool = false
 var _collector_mark_owner_id: int = 0
+var _rotation_speed_rad_per_sec: float = 0.0
 
 
 func _ready() -> void:
 	add_to_group("debris")
 	_apply_visual()
 	_apply_unit_size()
+	_setup_random_rotation()
 	if _clickable.has_signal("clicked"):
 		_clickable.connect("clicked", _on_clicked)
 
 
 func _process(delta: float) -> void:
 	position += _get_movement_vector() * movement_speed_px_per_sec * delta
+	rotation += _rotation_speed_rad_per_sec * delta
 
 
 func auto_collect() -> void:
@@ -113,6 +118,9 @@ func _on_clicked() -> void:
 
 
 func _get_metal_reward() -> int:
+	if UpgradeManager != null:
+		return UpgradeManager.get_metal_reward_for_debris(int(debris_type))
+
 	match debris_type:
 		DebrisType.TRASH_1:
 			return metal_reward_trash_1
@@ -167,3 +175,13 @@ func _fit_sprite_to_unit_size() -> void:
 		return
 
 	_sprite.scale = Vector2(unit_size_px.x / texture_size.x, unit_size_px.y / texture_size.y)
+
+
+func _setup_random_rotation() -> void:
+	var min_speed: float = min(min_rotation_speed_deg_per_sec, max_rotation_speed_deg_per_sec)
+	var max_speed: float = max(min_rotation_speed_deg_per_sec, max_rotation_speed_deg_per_sec)
+	var speed_deg: float = randf_range(min_speed, max_speed)
+	if randf() < 0.5:
+		speed_deg *= -1.0
+
+	_rotation_speed_rad_per_sec = deg_to_rad(speed_deg)
