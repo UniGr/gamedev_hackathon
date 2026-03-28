@@ -9,19 +9,26 @@
 
 [node name="Main" type="Node2D"]
 
-[node name="BackgroundLayer" type="CanvasLayer" parent="."]
-layer = -1
+[node name="ParallaxBackground" type="ParallaxBackground" parent="."]
 
-[node name="Background" type="TextureRect" parent="BackgroundLayer"]
+[node name="ParallaxLayer" type="ParallaxLayer" parent="ParallaxBackground"]
+motion_mirroring = Vector2(0, 2400)
+
+[node name="Background" type="TextureRect" parent="ParallaxBackground/ParallaxLayer"]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_right = 1080.0
+offset_bottom = 2400.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 texture = ExtResource("3_bg")
 expand_mode = 1
 stretch_mode = 6
+
+[node name="BackgroundController" type="Node" parent="ParallaxBackground"]
+script = SubResource("GDScript_bg")
 
 [node name="GameBoard" parent="." instance=ExtResource("1_gb")]
 
@@ -34,3 +41,10 @@ autoplay = true
 [node name="RaiderSpawner" type="Node2D" parent="."]
 script = ExtResource("5_spawner")
 raider_scene = ExtResource("6_raider")
+
+[script block="GDScript_bg"]
+extends Node
+@export var scroll_speed = 100.0
+func _process(delta):
+	get_parent().scroll_offset.y += scroll_speed * delta
+[/script]
