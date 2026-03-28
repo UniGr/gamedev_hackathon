@@ -32,6 +32,7 @@ signal collected(amount: int, debris_type: DebrisType, source: String)
 @onready var _collision_shape: CollisionShape2D = $ClickableComponent/CollisionShape2D
 
 var _is_collected: bool = false
+var _collector_mark_owner_id: int = 0
 
 
 func _ready() -> void:
@@ -50,6 +51,40 @@ func auto_collect() -> void:
 	collect("collector")
 
 
+func can_be_marked_by(collector_id: int) -> bool:
+	if _is_collected:
+		return false
+	return _collector_mark_owner_id == 0 or _collector_mark_owner_id == collector_id
+
+
+func mark_by_collector(collector_id: int) -> bool:
+	if not can_be_marked_by(collector_id):
+		return false
+
+	_collector_mark_owner_id = collector_id
+	return true
+
+
+func unmark_by_collector(collector_id: int) -> void:
+	if _collector_mark_owner_id == collector_id:
+		_collector_mark_owner_id = 0
+
+
+func is_marked_by_collector(collector_id: int) -> bool:
+	return _collector_mark_owner_id == collector_id
+
+
+func collect_by_collector(collector_id: int) -> bool:
+	if _is_collected:
+		return false
+
+	if _collector_mark_owner_id != 0 and _collector_mark_owner_id != collector_id:
+		return false
+
+	collect("collector")
+	return true
+
+
 func collect_if_in_radius(origin: Vector2, radius_px: float) -> bool:
 	if _is_collected:
 		return false
@@ -66,6 +101,7 @@ func collect(source: String = "click") -> void:
 		return
 
 	_is_collected = true
+	_collector_mark_owner_id = 0
 	var amount: int = _get_metal_reward()
 	GameEvents.garbage_clicked.emit(amount)
 	collected.emit(amount, debris_type, source)
