@@ -25,7 +25,6 @@ Constants="*res://core/constants.gd"
 window/size/viewport_width=1080
 window/size/viewport_height=2400
 window/stretch/mode="canvas_items"
-window/stretch/aspect="keep"
 window/handheld/orientation=1
 
 [physics]
