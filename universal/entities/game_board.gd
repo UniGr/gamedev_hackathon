@@ -24,6 +24,7 @@ var _active_build_size: Vector2i = Vector2i.ONE
 
 func _ready() -> void:
 	gridTileManager = GridManager.new()
+	gridTileManager.name = "GridManager" # Чтобы SaveManager его нашел
 	add_child(gridTileManager)
 	gridTileManager.reset_grid()
 
@@ -48,16 +49,26 @@ func _ready() -> void:
 	GameEvents.build_requested.connect(_on_build_requested)
 	_spawn_core()
 
-	print("GameBoard Initialized")
+	print("GameBoard Initialized at origin: ", _modules_root.position)
 
-func _unhandled_input(event: InputEvent) -> void:
-	if _active_build_type != "" and event is InputEventMouseButton:
-		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
-			var grid_pos = _world_to_grid(get_global_mouse_position())
-			# Если кликнули по валидной клетке - строим, иначе - отменяем
-			if not _try_place_module_at(_active_build_type, grid_pos):
+func _input(event: InputEvent) -> void:
+	if _active_build_type == "": return
+	
+	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		# Проверка, не кликнули ли мы по кнопкам UI (которые на слое выше)
+		# Но так как у нас CanvasLayer, _input поймает всё.
+		# Поэтому мы полагаемся на то, что если кликнули по сетке, мы строим.
+		var grid_pos = _world_to_grid(get_global_mouse_position())
+		
+		# Пытаемся построить. Если успешно — режим сбросится сам внутри _try_place_module_at
+		if _try_place_module_at(_active_build_type, grid_pos):
+			print("Build Successful at ", grid_pos)
+		else:
+			# Если кликнули ВНУТРИ сетки, но мимо подсветки — отменяем режим
+			if grid_pos.x >= 0 and grid_pos.x < GridManager.GRID_WIDTH and \
+			   grid_pos.y >= 0 and grid_pos.y < GridManager.GRID_HEIGHT:
 				_clear_highlights()
-				print("Build Mode cancelled")
+				print("Build cancelled by clicking empty grid")
 
 func _on_build_requested(module_type: String, requested_position: Vector2) -> void:
 	if not _module_script_by_id.has(module_type): return
@@ -82,11 +93,14 @@ func _clear_highlights() -> void:
 	_active_build_type = ""
 
 func _show_valid_placements(type: String, size: Vector2i) -> void:
+	var count = 0
 	for y in range(GridManager.GRID_HEIGHT):
 		for x in range(GridManager.GRID_WIDTH):
 			var pos = Vector2i(x, y)
 			if gridTileManager.canBuildAt(pos, type, size):
 				_create_highlight(pos, size)
+				count += 1
+	print("Found ", count, " valid placements for ", type)
 
 func _create_highlight(pos: Vector2i, size: Vector2i) -> void:
 	var rect = ColorRect.new()
@@ -96,22 +110,25 @@ func _create_highlight(pos: Vector2i, size: Vector2i) -> void:
 	_highlights_root.add_child(rect)
 
 func _try_place_module_at(module_type: String, build_cell: Vector2i) -> bool:
+	if module_type == "": return false
+	
 	var script_ref: Script = _module_script_by_id[module_type]
 	var module: ModuleBase = script_ref.new() as ModuleBase
 	
 	if not gridTileManager.canBuildAt(build_cell, module_type, module.grid_size):
 		module.queue_free()
-		return false # Не удалось построить
+		return false
 
 	var final_cost: int = _get_final_build_cost(module)
 	if final_cost > 0 and not ResourceManager.spend_metal(final_cost):
+		print("Not enough metal! Need: ", final_cost)
 		module.queue_free()
 		return false
 
 	_place_module(module, build_cell)
 	GameEvents.module_built.emit(module_type, Vector2(build_cell))
 	_clear_highlights()
-	return true # Построено!
+	return true
 
 func _spawn_core() -> void:
 	var core: CoreModule = CORE_MODULE_SCRIPT.new() as CoreModule
@@ -126,14 +143,13 @@ func _place_module(module: ModuleBase, build_cell: Vector2i) -> void:
 	_modules_root.add_child(module)
 	module.configure(build_cell, CELL_SIZE)
 	
-	var CollectorModuleScript = load("res://entities/modules/collector_module.gd")
-	if module.get_script() == CollectorModuleScript:
+	# Безопасная проверка типа модуля (чтобы не было ошибок каста)
+	if module.module_id == Constants.MODULE_COLLECTOR and module.has_method("set_ship_bounds_provider"):
 		module.set_ship_bounds_provider(_get_ship_bounds_rect)
 
 	_update_module_facing(module)
 
-	var DefenseModuleScript = load("res://entities/modules/defense_module.gd")
-	if module.get_script() == DefenseModuleScript and _core_module != null:
+	if module.module_id == Constants.MODULE_DEFENSE and _core_module != null:
 		_core_module.add_defence(module.defence_bonus)
 
 	_placed_modules.append(module)
@@ -145,10 +161,7 @@ func _get_final_build_cost(module: ModuleBase) -> int:
 	var discount: float = 1.0
 	if _core_module != null:
 		discount = _core_module.get_build_discount_multiplier()
-	var final_cost: int = int(ceil(float(module.metal_cost) * discount))
-	if discount < 1.0 and _core_module != null:
-		_core_module.consume_build_discount()
-	return final_cost
+	return int(ceil(float(module.metal_cost) * discount))
 
 func _world_to_grid(world_position: Vector2) -> Vector2i:
 	var local_position: Vector2 = world_position - _modules_root.global_position
