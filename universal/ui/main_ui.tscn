@@ -69,6 +69,20 @@ corner_radius_top_right = 8
 corner_radius_bottom_right = 8
 corner_radius_bottom_left = 8
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_EndPanel"]
+bg_color = Color(0.08, 0.1, 0.16, 0.96)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.35, 0.7, 1, 1)
+corner_radius_top_left = 26
+corner_radius_top_right = 26
+corner_radius_bottom_right = 26
+corner_radius_bottom_left = 26
+shadow_color = Color(0, 0, 0, 0.35)
+shadow_size = 14
+
 [node name="MainUI" type="CanvasLayer"]
 script = ExtResource("1_a2b3c")
 
@@ -222,7 +236,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-mouse_filter = 1
+mouse_filter = 0
 color = Color(0, 0, 0, 0.82)
 
 [node name="Center" type="CenterContainer" parent="EndOverlay"]
@@ -236,19 +250,27 @@ grow_vertical = 2
 [node name="Panel" type="PanelContainer" parent="EndOverlay/Center"]
 custom_minimum_size = Vector2(900, 520)
 layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_EndPanel")
 
-[node name="VBox" type="VBoxContainer" parent="EndOverlay/Center/Panel"]
+[node name="InnerMargin" type="MarginContainer" parent="EndOverlay/Center/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 36
+theme_override_constants/margin_bottom = 30
+
+[node name="VBox" type="VBoxContainer" parent="EndOverlay/Center/Panel/InnerMargin"]
 layout_mode = 2
 theme_override_constants/separation = 24
 
-[node name="EndTitleLabel" type="Label" parent="EndOverlay/Center/Panel/VBox"]
+[node name="EndTitleLabel" type="Label" parent="EndOverlay/Center/Panel/InnerMargin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 84
 horizontal_alignment = 1
 text = "GAME OVER"
 
-[node name="EndReasonLabel" type="Label" parent="EndOverlay/Center/Panel/VBox"]
+[node name="EndReasonLabel" type="Label" parent="EndOverlay/Center/Panel/InnerMargin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 36
@@ -256,7 +278,7 @@ horizontal_alignment = 1
 autowrap_mode = 2
 text = "Причина завершения"
 
-[node name="BtnRestart" type="Button" parent="EndOverlay/Center/Panel/VBox"]
+[node name="BtnRestart" type="Button" parent="EndOverlay/Center/Panel/InnerMargin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")

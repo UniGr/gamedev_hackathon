@@ -4,12 +4,16 @@ extends Node
 const save_time_seconds = 60.0
 const SAVE_PATH = "user://universal_save.json"
 
+var tutorial_flags: Dictionary = {}
+
 func _ready() -> void:
 	var autosave_timer = Timer.new()
 	autosave_timer.wait_time = save_time_seconds
 	autosave_timer.autostart = true
 	autosave_timer.timeout.connect(save_game) 
 	add_child(autosave_timer)
+	# Загружаем флаги туториалов при старте (они сохронены из предыдущих запусков)
+	load_game()
 
 func save_game() -> void:
 	# Пытаемся найти GridManager в сцене, так как он теперь не Autoload
@@ -25,6 +29,7 @@ func save_game() -> void:
 			"build_iterations_by_module": ResourceManager.build_iterations_by_module,
 			"upgrade_levels": UpgradeManager.get_upgrade_levels_snapshot()
 		},
+		"tutorial": tutorial_flags.duplicate(true),
 		"grid": grid_data
 	}
 	var json_string = JSON.stringify(save_dict)
@@ -43,6 +48,9 @@ func load_game() -> void:
 	var save_dict = JSON.parse_string(json_string)
 	
 	if save_dict:
+		var loaded_tutorial_flags: Dictionary = save_dict.get("tutorial", {})
+		tutorial_flags = loaded_tutorial_flags.duplicate(true)
+
 		var res_data = save_dict.get("resources", {})
 		ResourceManager.metal = res_data.get("metal", 0)
 		ResourceManager.max_metal = res_data.get("max_metal", 50)
@@ -63,6 +71,14 @@ func load_game() -> void:
 		
 		GameEvents.resource_changed.emit("metal", ResourceManager.metal)
 		print("Игра загружена (ресурсы восстановлены)!")
+
+
+func is_tutorial_shown(tutorial_id: String) -> bool:
+	return bool(tutorial_flags.get(tutorial_id, false))
+
+
+func mark_tutorial_shown(tutorial_id: String) -> void:
+	tutorial_flags[tutorial_id] = true
 
 func _serialize_grid(grid: Dictionary) -> Dictionary:
 	var string_grid = {}

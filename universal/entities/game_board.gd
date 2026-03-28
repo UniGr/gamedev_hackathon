@@ -6,8 +6,6 @@ const CORE_START_CELL: Vector2i = Vector2i(5, 17)
 const CORE_MODULE_SCRIPT: Script = preload("res://entities/modules/core_module.gd")
 const COLLECTOR_MODULE_SCRIPT: Script = preload("res://entities/modules/collector_module.gd")
 const REACTOR_MODULE_SCRIPT: Script = preload("res://entities/modules/reactor_module.gd")
-const STORAGE_MODULE_SCRIPT: Script = preload("res://entities/modules/storage_module.gd")
-const DEFENSE_MODULE_SCRIPT: Script = preload("res://entities/modules/defense_module.gd")
 const HULL_MODULE_SCRIPT: Script = preload("res://entities/modules/hull_module.gd")
 const TURRET_MODULE_SCRIPT: Script = preload("res://entities/modules/turret_module.gd")
 
@@ -42,8 +40,6 @@ func _ready() -> void:
 	_module_script_by_id = {
 		Constants.MODULE_COLLECTOR: COLLECTOR_MODULE_SCRIPT,
 		Constants.MODULE_REACTOR: REACTOR_MODULE_SCRIPT,
-		Constants.MODULE_STORAGE: STORAGE_MODULE_SCRIPT,
-		Constants.MODULE_DEFENSE: DEFENSE_MODULE_SCRIPT,
 		Constants.MODULE_HULL: HULL_MODULE_SCRIPT,
 		Constants.MODULE_TURRET: TURRET_MODULE_SCRIPT,
 	}
@@ -192,8 +188,7 @@ func _place_module(module: ModuleBase, build_cell: Vector2i) -> void:
 
 	_update_module_facing(module)
 
-	if module.module_id == Constants.MODULE_DEFENSE and _core_module != null:
-		_core_module.add_defence(module.defence_bonus)
+
 
 	_placed_modules.append(module)
 	module.destroy_requested.connect(_on_module_destroy_requested)
@@ -278,8 +273,7 @@ func _destroy_module(module: ModuleBase, source: String) -> bool:
 	if not _placed_modules.has(module):
 		return false
 
-	if module.module_id == Constants.MODULE_DEFENSE and _core_module != null and module != _core_module:
-		_core_module.remove_defence(module.defence_bonus)
+
 
 	var destroyed_module_id: String = module.module_id
 	var destroyed_pos: Vector2 = Vector2(module.grid_position)
@@ -429,14 +423,10 @@ func get_module_tactical_priority(module_id: String) -> int:
 	match module_id:
 		Constants.MODULE_TURRET:
 			return 100
-		Constants.MODULE_DEFENSE:
-			return 60
 		Constants.MODULE_REACTOR:
 			return 50
 		Constants.MODULE_COLLECTOR:
 			return 40
-		Constants.MODULE_STORAGE:
-			return 30
 		Constants.MODULE_HULL:
 			return 20
 		Constants.MODULE_CORE:

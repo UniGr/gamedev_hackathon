@@ -8,6 +8,8 @@
 
 config_version=5
 
+"ï»¿config_version"=5
+
 [application]
 
 config/name="universal"
@@ -21,6 +23,7 @@ ResourceManager="*res://core/resource_manager.gd"
 Constants="*res://core/constants.gd"
 AudioManager="*res://core/audio_manager.gd"
 UpgradeManager="*res://core/upgrade_manager.gd"
+SaveManager="*res://core/save_manager.gd"
 
 [display]
 

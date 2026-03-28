@@ -5,6 +5,9 @@ extends CanvasLayer
 @onready var name_label: Label = $Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/NameLabel
 @onready var avatar: TextureRect = $Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/Avatar
 
+const TUTORIAL_ID_INTRO: String = "nadya_intro"
+const TUTORIAL_ID_RAIDER: String = "nadya_raider_warning"
+
 var intro_steps: Array[String] = [
 	"Капитан, вы меня слышите? Это Надя, ваш бортовой ИИ.",
 	"Наш корабль серьезно пострадал. Мы застряли в секторе космического мусора.",
@@ -32,11 +35,15 @@ func _ready() -> void:
 	# Диалог должен оставаться интерактивным даже когда игра на паузе.
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	hide() 
+	_raider_warning_shown = SaveManager.is_tutorial_shown(TUTORIAL_ID_RAIDER)
 	GameEvents.game_started.connect(start_tutorial)
 	GameEvents.raider_spawned.connect(_on_raider_spawned)
 	# Мы удалили старую подписку на gui_input, теперь все работает через _input()
 
 func start_tutorial() -> void:
+	if SaveManager.is_tutorial_shown(TUTORIAL_ID_INTRO):
+		return
+	SaveManager.mark_tutorial_shown(TUTORIAL_ID_INTRO)
 	_start_dialog(intro_steps)
 
 
@@ -45,8 +52,12 @@ func _start_dialog(steps: Array[String]) -> void:
 		return
 
 	if not _pause_applied:
-		_pause_state_before_tutorial = get_tree().paused
-		get_tree().paused = true
+		var tree := get_tree()
+		if tree != null:
+			_pause_state_before_tutorial = tree.paused
+			tree.paused = true
+		else:
+			_pause_state_before_tutorial = false
 		_pause_applied = true
 
 	tutorial_steps = steps
@@ -59,8 +70,12 @@ func _start_dialog(steps: Array[String]) -> void:
 func _on_raider_spawned(_position: Vector2) -> void:
 	if _raider_warning_shown:
 		return
+	if SaveManager.is_tutorial_shown(TUTORIAL_ID_RAIDER):
+		_raider_warning_shown = true
+		return
 
 	_raider_warning_shown = true
+	SaveManager.mark_tutorial_shown(TUTORIAL_ID_RAIDER)
 	if visible:
 		_pending_raider_warning = true
 		return
@@ -93,7 +108,9 @@ func _show_current_step() -> void:
 func _end_tutorial() -> void:
 	hide()
 	if _pause_applied:
-		get_tree().paused = _pause_state_before_tutorial
+		var tree := get_tree()
+		if tree != null:
+			tree.paused = _pause_state_before_tutorial
 		_pause_applied = false
 	print("Обучение завершено!")
 	if _pending_raider_warning:

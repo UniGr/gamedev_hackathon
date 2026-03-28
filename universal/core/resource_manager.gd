@@ -19,9 +19,18 @@ func _ready() -> void:
 	GameEvents.garbage_clicked.connect(_on_garbage_clicked)
 	# Мы слушаем ПОСТРОЕННЫЕ модули, чтобы обновлять лимиты
 	GameEvents.module_built.connect(_on_module_built)
+	GameEvents.module_destroyed.connect(_on_module_destroyed)
 	call_deferred("_initialize_ui")
 
 func _initialize_ui() -> void:
+	GameEvents.resource_changed.emit("metal", metal)
+
+
+func reset_run_state() -> void:
+	metal = Constants.get_resource_initial_metal()
+	max_metal = Constants.get_resource_max_metal()
+	for module_id in build_iterations_by_module.keys():
+		build_iterations_by_module[module_id] = 0
 	GameEvents.resource_changed.emit("metal", metal)
 
 func add_metal(amount: int) -> void:
@@ -61,3 +70,14 @@ func _on_module_built(module_type: String, _pos: Vector2) -> void:
 		max_metal += Constants.get_hull_metal_bonus()
 		GameEvents.resource_changed.emit("metal", metal)
 		print("Resource Manager: Hull built! New max metal: ", max_metal)
+
+
+func _on_module_destroyed(module_type: String, _pos: Vector2) -> void:
+	if module_type != Constants.MODULE_HULL:
+		return
+
+	# При разрушении корпуса возвращаем лимит металла и подрезаем текущий запас по новому потолку.
+	max_metal = max(Constants.get_resource_max_metal(), max_metal - Constants.get_hull_metal_bonus())
+	metal = min(metal, max_metal)
+	GameEvents.resource_changed.emit("metal", metal)
+	print("Resource Manager: Hull destroyed! New max metal: ", max_metal)
