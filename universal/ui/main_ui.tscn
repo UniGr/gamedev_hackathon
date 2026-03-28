@@ -1,7 +1,6 @@
-[gd_scene load_steps=7 format=3 uid="uid://b1c2d3e4f5g6"]
+[gd_scene load_steps=9 format=3 uid="uid://b1c2d3e4f5g6"]
 
 [ext_resource type="Script" path="res://ui/main_ui.gd" id="1_a2b3c"]
-[ext_resource type="Texture2D" path="res://assets/background.png" id="2_bg"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Btn"]
 bg_color = Color(0.1, 0.1, 0.15, 0.8)
@@ -51,6 +50,32 @@ expand_margin_top = 5.0
 expand_margin_right = 10.0
 expand_margin_bottom = 5.0
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BarBG"]
+bg_color = Color(0.05, 0.05, 0.1, 0.5)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.2, 0.2, 0.3, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_right = 10
+corner_radius_bottom_left = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BarMetal"]
+bg_color = Color(0.4, 0.6, 1, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BarEnergy"]
+bg_color = Color(1, 0.8, 0, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
 [node name="MainUI" type="CanvasLayer"]
 script = ExtResource("1_a2b3c")
 
@@ -67,30 +92,55 @@ theme_override_constants/margin_bottom = 60
 
 [node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
 layout_mode = 2
+theme_override_constants/separation = 20
 
 [node name="TopPanel" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2
 theme_override_constants/separation = 20
 
-[node name="MetalLabel" type="Label" parent="MarginContainer/VBoxContainer/TopPanel"]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
-theme_override_constants/outline_size = 8
-theme_override_font_sizes/font_size = 64
-text = "Металл: 0"
-
-[node name="Control" type="Control" parent="MarginContainer/VBoxContainer/TopPanel"]
+[node name="ResourceVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TopPanel"]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="EnergyLabel" type="Label" parent="MarginContainer/VBoxContainer/TopPanel"]
+[node name="MetalLabel" type="Label" parent="MarginContainer/VBoxContainer/TopPanel/ResourceVBox"]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
 theme_override_constants/outline_size = 8
-theme_override_font_sizes/font_size = 64
-text = "⚡ 0 / 0"
+theme_override_font_sizes/font_size = 48
+text = "Металл: 0 / 100"
+
+[node name="MetalBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/TopPanel/ResourceVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_BarBG")
+theme_override_styles/fill = SubResource("StyleBoxFlat_BarMetal")
+value = 50.0
+show_percentage = false
+
+[node name="EnergyVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TopPanel"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="EnergyLabel" type="Label" parent="MarginContainer/VBoxContainer/TopPanel/EnergyVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_outline_color = Color(0, 0, 0, 1)
+theme_override_constants/outline_size = 8
+theme_override_font_sizes/font_size = 48
+text = "⚡ 0 / 500"
+horizontal_alignment = 2
+
+[node name="EnergyBar" type="ProgressBar" parent="MarginContainer/VBoxContainer/TopPanel/EnergyVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+theme_override_styles/background = SubResource("StyleBoxFlat_BarBG")
+theme_override_styles/fill = SubResource("StyleBoxFlat_BarEnergy")
+value = 50.0
+fill_mode = 1
+show_percentage = false
 
 [node name="ShopRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer"]
 layout_mode = 2

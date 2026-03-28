@@ -1,7 +1,9 @@
 extends CanvasLayer
 
 @onready var metal_label: Label = %MetalLabel
+@onready var metal_bar: ProgressBar = %MetalBar
 @onready var energy_label: Label = %EnergyLabel
+@onready var energy_bar: ProgressBar = %EnergyBar
 @onready var btn_storage: Button = %BtnStorage
 @onready var btn_collector: Button = %BtnCollector
 @onready var btn_shop: Button = %BtnShop
@@ -30,10 +32,14 @@ func _ready() -> void:
 func _on_resource_changed(type: String, new_total: int, max_total: int) -> void:
 	if type == "metal":
 		metal_label.text = "Металл: %d / %d" % [new_total, max_total]
+		metal_bar.max_value = max_total
+		metal_bar.value = new_total
 		_update_buttons(new_total)
 		_flash_label(metal_label)
 	elif type == "energy":
 		energy_label.text = "⚡ %d / %d" % [new_total, max_total]
+		energy_bar.max_value = max_total
+		energy_bar.value = new_total
 		_flash_label(energy_label)
 
 func _flash_label(label: Label) -> void:

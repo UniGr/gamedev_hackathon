@@ -5,7 +5,7 @@ var metal: int = 0
 var energy: int = 0
 
 # Максимум ресурсов
-var max_metal: int = 10
+var max_metal: int = 100
 var max_energy: int = 500
 
 
