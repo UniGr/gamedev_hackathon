@@ -6,6 +6,8 @@ const START_Y = 2400 - (CELL_SIZE * 5)
 
 func _ready() -> void:
 	print("GameBoard Initialized")
+	# Ждем кадр, чтобы автолоады точно инициализировались
+	await get_tree().process_frame
 	_draw_base_ship()
 	GameEvents.build_requested.connect(_on_build_requested)
 
@@ -27,8 +29,10 @@ func _add_hull_tile(grid_pos: Vector2i) -> void:
 	rect.position = Vector2(START_X + grid_pos.x * CELL_SIZE, START_Y + grid_pos.y * CELL_SIZE)
 	add_child(rect)
 	
-	# Добавляем в менеджер сетки
-	if GridTileManager:
+	# Добавляем в менеджер сетки (используем имя из Autoload)
+	if "GridTileManager" in get_tree().root:
+		get_tree().root.get_node("GridTileManager").set_cell(grid_pos, rect)
+	elif GridTileManager:
 		GridTileManager.set_cell(grid_pos, rect)
 	
 	# Визуальный номер для отладки
@@ -41,25 +45,33 @@ func _add_hull_tile(grid_pos: Vector2i) -> void:
 
 func _on_build_requested(type: String, _pos: Vector2) -> void:
 	if type == "hull":
-		# Находим свободное место рядом с существующими клетками
+		# Проверяем, есть ли ресурсы (теперь это в ResourceManager, но тут визуализация)
+		# В идеале ResourceManager должен присылать подтверждение, но пока сделаем так
 		var new_pos = _find_free_adjacent_pos()
 		if new_pos != Vector2i(-99,-99):
 			_add_hull_tile(new_pos)
-			print("Built Hull at ", new_pos)
+			print("Built Hull visually at ", new_pos)
 	elif type == "generator":
-		print("Generator visually built (Logic: max metal increased)")
+		print("Generator visually built")
 	elif type == "collector":
 		print("Collector visually built")
 
 func _find_free_adjacent_pos() -> Vector2i:
-	if not GridTileManager: return Vector2i(-99,-99)
+	# Безопасный доступ к GridTileManager
+	var manager = null
+	if GridTileManager:
+		manager = GridTileManager
+	
+	if not manager: 
+		print("GridTileManager not found!")
+		return Vector2i(-99,-99)
 	
 	var directions = [Vector2i(0, -1), Vector2i(0, 1), Vector2i(-1, 0), Vector2i(1, 0)]
-	var occupied = GridTileManager.grid.keys()
+	var occupied = manager.grid.keys()
 	
 	for pos in occupied:
 		for dir in directions:
 			var candidate = pos + dir
-			if not GridTileManager.grid.has(candidate):
+			if not manager.grid.has(candidate):
 				return candidate
 	return Vector2i(-99,-99)

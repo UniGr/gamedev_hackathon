@@ -15,11 +15,6 @@ func _on_game_started() -> void:
 	pass
 
 func has_adjacent_module(grid_pos: Vector2i) -> bool:
-	# Исключение: если корабль абсолютно пустой (самое начало игры), 
-	# разрешаем поставить первый модуль (ядро) куда угодно
-	#if occupied_cells.is_empty():
-		#return true
-		
 	# Массив направлений (Верх, Низ, Лево, Право)
 	var directions = [
 		Vector2i(0, -1), 
@@ -34,14 +29,14 @@ func has_adjacent_module(grid_pos: Vector2i) -> bool:
 			return true 
 	return false
 
-func is_cell_empty(pos: Vector2) -> bool:
+func is_cell_empty(pos: Vector2i) -> bool:
 	return not grid.has(pos)
 
 func can_build_at(grid_pos: Vector2i) -> bool:
 	return is_cell_empty(grid_pos) and has_adjacent_module(grid_pos)
 	
-func set_cell(pos: Vector2, entity: Node) -> void:
+func set_cell(pos: Vector2i, entity: Node) -> void:
 	grid[pos] = entity
 
-func get_cell(pos: Vector2) -> Node:
+func get_cell(pos: Vector2i) -> Node:
 	return grid.get(pos)

@@ -36,8 +36,8 @@ func _on_build_requested(type: String, _pos: Vector2) -> void:
 			print("Generator built! New max metal: ", max_metal)
 	elif type == "hull":
 		if spend_metal(5):
-			print("Hull built request sent")
-			# Логика спавна клетки должна быть в GameBoard
+			print("Hull built request approved")
+			# Логика спавна клетки в GameBoard
 	elif type == "collector":
 		if spend_metal(25):
-			print("Collector built request sent")
+			print("Collector built request approved")
