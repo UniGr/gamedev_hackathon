@@ -3,6 +3,7 @@ extends CanvasLayer
 @onready var overlay: ColorRect = $Overlay
 @onready var dialog_text: RichTextLabel = $Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/DialogText
 @onready var name_label: Label = $Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/NameLabel
+@onready var avatar: TextureRect = $Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/Avatar
 
 var intro_steps: Array[String] = [
 	"Капитан, вы меня слышите? Это Надя, ваш бортовой ИИ.",
@@ -21,6 +22,7 @@ var tutorial_steps: Array[String] = []
 var current_step: int = 0
 var is_typing: bool = false
 var typing_tween: Tween
+var avatar_tween: Tween
 var _pause_state_before_tutorial: bool = false
 var _pause_applied: bool = false
 var _raider_warning_shown: bool = false
@@ -49,6 +51,7 @@ func _start_dialog(steps: Array[String]) -> void:
 
 	tutorial_steps = steps
 	show()
+	_play_avatar_intro()
 	current_step = 0
 	_show_current_step()
 
@@ -97,6 +100,17 @@ func _end_tutorial() -> void:
 		_pending_raider_warning = false
 		_start_dialog(raider_warning_steps)
 	# Здесь можно запустить спавн мусора/врагов
+
+
+func _play_avatar_intro() -> void:
+	if avatar_tween:
+		avatar_tween.kill()
+
+	avatar.modulate = Color(1.0, 1.0, 1.0, 0.0)
+	avatar.scale = Vector2(0.92, 0.92)
+	avatar_tween = create_tween().set_parallel(true)
+	avatar_tween.tween_property(avatar, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.24)
+	avatar_tween.tween_property(avatar, "scale", Vector2.ONE, 0.24)
 
 # ==========================================
 # ГЛОБАЛЬНЫЙ ПЕРЕХВАТ КЛИКОВ

@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://c6qmbc0uftdvu"]
 
-[ext_resource type="Texture2D" uid="uid://c6aud1m5r0cpg" path="res://assets/icon.png" id="2_icon"]
+[ext_resource type="Texture2D" path="res://assets/sprites/nadya.png" id="2_nadya"]
 [ext_resource type="Script" uid="uid://bk340xvps1kf" path="res://ui/tutorial_window.gd" id="2_uupdj"]
 
 [node name="TutorialWindow" type="CanvasLayer" unique_id=2102290992]
@@ -43,9 +43,9 @@ layout_mode = 2
 theme_override_constants/separation = 30
 
 [node name="Avatar" type="TextureRect" parent="Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer" unique_id=49138822]
-custom_minimum_size = Vector2(200, 200)
+custom_minimum_size = Vector2(224, 224)
 layout_mode = 2
-texture = ExtResource("2_icon")
+texture = ExtResource("2_nadya")
 expand_mode = 1
 stretch_mode = 5
 
