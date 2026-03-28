@@ -148,7 +148,9 @@ func _on_upgrade_purchased(_upgrade_id: String, _new_level: int) -> void:
 
 func _on_build_mode_cancelled(_module_type: String) -> void:
 	# Режим постройки отменен: снимаем паузу, магазин уже скрыт.
-	get_tree().paused = false
+	var tree := get_tree()
+	if tree != null:
+		tree.paused = false
 
 
 func _on_upgrade_button_pressed(upgrade_id: String) -> void:
@@ -187,7 +189,9 @@ func _set_shop_open(value: bool, sync_pause: bool) -> void:
 	btn_shop_exit.visible = value
 
 	if sync_pause:
-		get_tree().paused = value
+		var tree := get_tree()
+		if tree != null:
+			tree.paused = value
 
 
 func _on_btn_shop_exit_pressed() -> void:
@@ -235,8 +239,14 @@ func _on_game_finished(outcome: String, reason: String) -> void:
 		return
 
 	_is_game_finished = true
+	_set_shop_open(false, false)
+	upgrades_panel.visible = false
+	btn_shop_exit.visible = false
 	bottom_panel.visible = false
 	_update_buttons(ResourceManager.metal)
+	var tree := get_tree()
+	if tree != null:
+		tree.paused = true
 
 	end_overlay.visible = true
 	if outcome == "win":
@@ -254,8 +264,9 @@ func _on_btn_restart_pressed() -> void:
 	AudioManager.play_ui_open()
 	var tree := get_tree()
 	if tree != null:
+		tree.paused = false
+
+	if tree != null:
 		tree.reload_current_scene()
 	upgrades_panel.visible = false
 	btn_shop_exit.visible = false
-	# Пауза остается активной, пока не будет постройки/отмены.
-	get_tree().paused = true

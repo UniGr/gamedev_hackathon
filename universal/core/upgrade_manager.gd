@@ -67,3 +67,8 @@ func set_upgrade_levels(raw_levels: Dictionary) -> void:
 
 func get_upgrade_levels_snapshot() -> Dictionary:
 	return _upgrade_levels.duplicate(true)
+
+
+func reset_run_state() -> void:
+	for upgrade_id in Constants.UPGRADE_IDS:
+		_upgrade_levels[upgrade_id] = 0

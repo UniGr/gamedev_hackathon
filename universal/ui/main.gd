@@ -2,7 +2,12 @@ extends Node2D
 
 @onready var tutorial_window: Node = null
 
+func _enter_tree() -> void:
+	_reset_game_state_at_scene_start()
+
+
 func _ready() -> void:
+
 	print("Main._ready() running. children: ", get_child_count())
 	for c in get_children():
 		print(" - child: ", c.name, " type=", c.get_class())
@@ -26,3 +31,15 @@ func _ready() -> void:
 			print("tutorial_window exists but has no method start_tutorial")
 	else:
 		print("tutorial_window is null")
+
+
+func _reset_game_state_at_scene_start() -> void:
+	# Единая точка сброса ранa: при каждом входе в игровую сцену.
+	ResourceManager.reset_run_state()
+	UpgradeManager.reset_run_state()
+	# Флаги туториалов НЕ очищаются! Они нужны для того, чтобы Надя
+	# не запускалась повторно при перезагрузке приложения.
+	
+	var tree := get_tree()
+	if tree != null:
+		tree.paused = false

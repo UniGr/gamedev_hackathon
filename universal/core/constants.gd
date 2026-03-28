@@ -15,8 +15,6 @@ enum ModuleType {
 const MODULE_CORE: String = "core"
 const MODULE_COLLECTOR: String = "collector"
 const MODULE_REACTOR: String = "reactor"
-const MODULE_STORAGE: String = "storage"
-const MODULE_DEFENSE: String = "defense"
 const MODULE_HULL: String = "hull"
 const MODULE_TURRET: String = "turret"
 const MODULE_TURRET_DEFAULT_COST: int = 240
@@ -30,8 +28,6 @@ const MODULE_IDS = {
 	"core": MODULE_CORE,
 	"collector": MODULE_COLLECTOR,
 	"reactor": MODULE_REACTOR,
-	"storage": MODULE_STORAGE,
-	"defense": MODULE_DEFENSE,
 	"hull": MODULE_HULL,
 	"turret": MODULE_TURRET,
 }
@@ -48,10 +44,10 @@ var _is_balance_loaded: bool = false
 
 # Стоимости из БАЛАНС.csv по номеру итерации (0..9), дальше используется последний индекс.
 const ITERATION_MODULE_COSTS: Dictionary = {
-	MODULE_REACTOR: [350.0, 525.0, 787.5, 1181.25, 1771.875, 2657.8125, 3986.71875, 5980.078125, 8970.117188, 13455.17578],
-	MODULE_HULL: [75.0, 97.5, 126.75, 164.775, 214.2075, 278.46975, 362.010675, 470.6138775, 611.7980408, 795.337453],
-	MODULE_COLLECTOR: [100.0, 130.0, 169.0, 219.7, 285.61, 371.293, 482.6809, 627.48517, 815.730721, 1060.449937],
-	MODULE_TURRET: [240.0, 312.0, 405.6, 527.28, 685.464, 891.1032, 1158.43416, 1505.964408, 1957.75373, 2545.07985],
+	MODULE_REACTOR: [350, 525, 788, 1182, 1772, 2658, 3987, 5981, 8971, 13456],
+	MODULE_HULL: [75, 98, 127, 165, 215, 279, 363, 471, 612, 796],
+	MODULE_COLLECTOR: [100, 130, 169, 220, 286, 372, 483, 628, 816, 1061],
+	MODULE_TURRET: [240, 312, 406, 528, 686, 892, 1159, 1506, 1958, 2546],
 }
 
 # ========== Параметры ядра ==========
@@ -66,15 +62,16 @@ const UPGRADE_CORE_NAME: String = "Улучшение ядра"
 
 # Таблица из БАЛАНС (2).csv по уровням улучшения ядра.
 const CORE_UPGRADE_REWARD_TABLE: Array[Dictionary] = [
-	{DEBRIS_TRASH_1: 17.0, DEBRIS_TRASH_2: 13.0, DEBRIS_TRASH_3: 20.0},
-	{DEBRIS_TRASH_1: 21.25, DEBRIS_TRASH_2: 16.25, DEBRIS_TRASH_3: 25.0},
-	{DEBRIS_TRASH_1: 26.5625, DEBRIS_TRASH_2: 20.3125, DEBRIS_TRASH_3: 31.25},
-	{DEBRIS_TRASH_1: 33.203125, DEBRIS_TRASH_2: 25.390625, DEBRIS_TRASH_3: 39.0625},
-	{DEBRIS_TRASH_1: 41.50390625, DEBRIS_TRASH_2: 31.73828125, DEBRIS_TRASH_3: 48.828125},
+	{DEBRIS_TRASH_1: 17, DEBRIS_TRASH_2: 13, DEBRIS_TRASH_3: 20},
+	{DEBRIS_TRASH_1: 21, DEBRIS_TRASH_2: 16, DEBRIS_TRASH_3: 25},
+	{DEBRIS_TRASH_1: 27, DEBRIS_TRASH_2: 20, DEBRIS_TRASH_3: 31},
+	{DEBRIS_TRASH_1: 33, DEBRIS_TRASH_2: 25, DEBRIS_TRASH_3: 39},
+	{DEBRIS_TRASH_1: 42, DEBRIS_TRASH_2: 32, DEBRIS_TRASH_3: 49},
+	{DEBRIS_TRASH_1: 52, DEBRIS_TRASH_2: 61, DEBRIS_TRASH_3: 40},
 ]
 
 # Стоимость перехода на следующий уровень (0->1, 1->2, ...).
-const CORE_UPGRADE_COSTS: Array[float] = [375.0, 468.75, 585.9375, 732.421875]
+const CORE_UPGRADE_COSTS: Array[int] = [375, 469, 586, 733, 916]
 
 const UPGRADE_IDS: Array[String] = [UPGRADE_CORE_ID]
 
@@ -108,7 +105,7 @@ func get_module_cost_for_iteration(module_id: String, iteration: int) -> int:
 		if iteration_costs.is_empty():
 			return get_module_cost(module_id)
 		var index: int = clamp(iteration, 0, iteration_costs.size() - 1)
-		return int(ceil(float(iteration_costs[index])))
+		return int(iteration_costs[index])
 	return get_module_cost(module_id)
 
 
@@ -139,10 +136,10 @@ func get_core_upgrade_max_level() -> int:
 
 func get_core_upgrade_next_cost(current_level: int) -> int:
 	if current_level < 0:
-		return int(ceil(CORE_UPGRADE_COSTS[0]))
+		return CORE_UPGRADE_COSTS[0]
 	if current_level >= CORE_UPGRADE_COSTS.size():
 		return -1
-	return int(ceil(CORE_UPGRADE_COSTS[current_level]))
+	return CORE_UPGRADE_COSTS[current_level]
 
 
 func get_core_upgrade_reward(debris_type: int, level: int) -> int:
@@ -151,8 +148,7 @@ func get_core_upgrade_reward(debris_type: int, level: int) -> int:
 
 	var clamped_level: int = clamp(level, 0, CORE_UPGRADE_REWARD_TABLE.size() - 1)
 	var reward_row: Dictionary = CORE_UPGRADE_REWARD_TABLE[clamped_level]
-	var raw_reward: float = float(reward_row.get(debris_type, 0.0))
-	return int(round(raw_reward))
+	return int(reward_row.get(debris_type, 0))
 
 
 func _load_balance_config() -> void:
@@ -162,8 +158,7 @@ func _load_balance_config() -> void:
 		MODULE_COST_METAL = {
 			MODULE_COLLECTOR: max(0, config.collector_cost_metal),
 			MODULE_REACTOR: max(0, config.reactor_cost_metal),
-			MODULE_STORAGE: max(0, config.storage_cost_metal),
-			MODULE_DEFENSE: max(0, config.defense_cost_metal),
+
 			MODULE_HULL: max(0, config.hull_cost_metal),
 			MODULE_TURRET: MODULE_TURRET_DEFAULT_COST,
 		}

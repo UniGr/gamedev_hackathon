@@ -18,6 +18,7 @@ signal hp_changed(module: ModuleBase, current_hp: int, max_hp: int, source: Stri
 @export_group("Durability")
 @export var max_hp: int = 140
 @export var tap_damage: int = 28
+@export var allow_player_tap_damage: bool = false
 
 var grid_position: Vector2i = Vector2i.ZERO
 var cell_size_px: float = 90.0
@@ -116,6 +117,8 @@ func _update_click_shape_size() -> void:
 
 func _on_tapped() -> void:
 	if _is_build_mode_active():
+		return
+	if not allow_player_tap_damage:
 		return
 	take_damage(tap_damage, "tap")
 

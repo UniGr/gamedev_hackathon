@@ -389,8 +389,6 @@ func _get_role_target_bias(candidate: ModuleBase) -> float:
 				return -exposure * 42.0
 			return 0.0
 		RaiderRole.SAPPER:
-			if candidate.module_id == Constants.MODULE_DEFENSE:
-				return -70.0
 			if candidate.module_id == Constants.MODULE_TURRET:
 				return -95.0
 			return 0.0
@@ -405,13 +403,13 @@ func _get_role_target_bias(candidate: ModuleBase) -> float:
 func _get_role_priority_bonus(module_id: String) -> int:
 	match _role:
 		RaiderRole.SPRINTER:
-			if module_id == Constants.MODULE_HULL or module_id == Constants.MODULE_COLLECTOR or module_id == Constants.MODULE_STORAGE:
+			if module_id == Constants.MODULE_HULL or module_id == Constants.MODULE_COLLECTOR:
 				return 40
 			if module_id == Constants.MODULE_TURRET:
 				return -70
 			return 0
 		RaiderRole.SAPPER:
-			if module_id == Constants.MODULE_TURRET or module_id == Constants.MODULE_DEFENSE:
+			if module_id == Constants.MODULE_TURRET:
 				return 20
 			return 0
 		RaiderRole.HACKER:

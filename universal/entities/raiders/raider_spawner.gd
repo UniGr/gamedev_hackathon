@@ -8,12 +8,17 @@ extends Node2D
 @export var spawn_offset_y_px: float = 110.0
 @export var spawn_margin_x_px: float = 64.0
 
+@export_group("Spawn Gate")
+@export var modules_required_to_start: int = 2
+
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _spawn_timer: Timer
 var _active_raiders: Array[Node2D] = []
 var _elapsed_sec: float = 0.0
 var _raiders_killed_by_tap: int = 0
 var _is_game_finished: bool = false
+var _built_modules_count: int = 0
+var _is_spawn_unlocked: bool = false
 
 
 func _ready() -> void:
@@ -25,14 +30,19 @@ func _ready() -> void:
 		GameEvents.raider_destroyed.connect(_on_raider_destroyed)
 	if GameEvents.has_signal("game_ended"):
 		GameEvents.game_ended.connect(_on_game_ended)
+	if GameEvents.has_signal("module_built"):
+		GameEvents.module_built.connect(_on_module_built)
 
 	_spawn_timer = Timer.new()
 	_spawn_timer.one_shot = false
-	_spawn_timer.autostart = true
+	_spawn_timer.autostart = false
 	_spawn_timer.timeout.connect(_on_spawn_timer_timeout)
 	add_child(_spawn_timer)
 
 	_spawn_timer.wait_time = _compute_spawn_interval()
+
+	if modules_required_to_start <= 0:
+		_unlock_spawning()
 
 
 func _process(delta: float) -> void:
@@ -50,6 +60,9 @@ func _on_spawn_timer_timeout() -> void:
 	if _is_game_finished:
 		return
 
+	if not _is_spawn_unlocked:
+		return
+
 	if _active_raiders.size() >= _compute_max_raiders():
 		return
 
@@ -57,6 +70,21 @@ func _on_spawn_timer_timeout() -> void:
 		return
 
 	_spawn_raider()
+
+
+func _on_module_built(_module_type: String, _position: Vector2) -> void:
+	if _is_spawn_unlocked:
+		return
+
+	_built_modules_count += 1
+	if _built_modules_count >= max(0, modules_required_to_start):
+		_unlock_spawning()
+
+
+func _unlock_spawning() -> void:
+	_is_spawn_unlocked = true
+	if _spawn_timer != null and _spawn_timer.is_stopped():
+		_spawn_timer.start()
 
 
 func _spawn_raider() -> void:
