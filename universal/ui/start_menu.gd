@@ -6,30 +6,30 @@ extends Control
 @onready var buttons_container: VBoxContainer = %ButtonsContainer
 
 func _ready() -> void:
-	print("Меню загружено. Ищем кнопки...")
+	print("--- МЕНЮ ЗАПУЩЕНО ---")
 	
-	# Начальное состояние для анимации
-	title.modulate.a = 0
-	buttons_container.modulate.a = 0
+	# Сбросим прозрачность для надежности, если анимация глючит
+	title.modulate.a = 1.0
+	buttons_container.modulate.a = 1.0
 	
+	# Проверка нажатий
 	btn_start.pressed.connect(_on_btn_start_pressed)
 	btn_quit.pressed.connect(_on_btn_quit_pressed)
 	
-	_animate_appearance()
-
-func _animate_appearance() -> void:
-	var tween = create_tween().set_parallel(true)
-	tween.tween_property(title, "modulate:a", 1.0, 1.0).set_trans(Tween.TRANS_SINE)
-	tween.tween_property(buttons_container, "modulate:a", 1.0, 1.0).set_delay(0.5).set_trans(Tween.TRANS_SINE)
-	print("Анимация появления запущена")
+	# Добавим визуальный отклик на наведение
+	btn_start.mouse_entered.connect(func(): print("Мышь на кнопке ИГРАТЬ"))
+	btn_quit.mouse_entered.connect(func(): print("Мышь на кнопке ВЫХОД"))
 
 func _on_btn_start_pressed() -> void:
-	print("Нажата кнопка ИГРАТЬ")
-	# Прямой переход без долгого ожидания для надежности
-	var error = get_tree().change_scene_to_file("res://main.tscn")
-	if error != OK:
-		print("ОШИБКА ЗАГРУЗКИ СЦЕНЫ: ", error)
+	print("--- НАЖАТА КНОПКА ИГРАТЬ ---")
+	var path = "res://main.tscn"
+	if ResourceLoader.exists(path):
+		var error = get_tree().change_scene_to_file(path)
+		if error != OK:
+			print("ОШИБКА: Код ошибки при смене сцены: ", error)
+	else:
+		print("ОШИБКА: Файл main.tscn не найден по пути ", path)
 
 func _on_btn_quit_pressed() -> void:
-	print("Нажата кнопка ВЫХОД")
+	print("--- НАЖАТА КНОПКА ВЫХОД ---")
 	get_tree().quit()
