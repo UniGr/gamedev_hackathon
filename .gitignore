@@ -1,3 +1,31 @@
 # Godot 4+ specific ignores
 .godot/
 /android/
+*.import
+*.translation
+*.mono/
+*.csproj
+*.sln
+*.gen.cpp
+*.gen.h
+*.pck
+
+# OS-specific
+.DS_Store
+Thumbs.db
+
+# Large Binary Files (already excluded from push but good to have here)
+*.a
+*.xcframework/
+*.zip
+
+# Backup files
+*.tmp
+*.bak
+*.swp
+
+# Editor/Tools
+.vscode/
+.idea/
+.gemini/
+*.uid
