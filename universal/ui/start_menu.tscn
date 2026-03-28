@@ -1,7 +1,7 @@
 [gd_scene load_steps=3 format=3 uid="uid://c5s6t7u8v9w0"]
 
-[ext_resource type="Script" path="res://ui/start_menu.gd" id="1_sm"]
 [ext_resource type="Texture2D" path="res://assets/background.png" id="2_bg"]
+[ext_resource type="Script" path="res://ui/btn_start.gd" id="3_btn"]
 
 [node name="StartMenu" type="Control"]
 layout_mode = 3
@@ -10,7 +10,6 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_sm")
 
 [node name="Background" type="TextureRect" parent="."]
 layout_mode = 1
@@ -39,3 +38,4 @@ custom_minimum_size = Vector2(800, 400)
 layout_mode = 2
 theme_override_font_sizes/font_size = 120
 text = "ИГРАТЬ"
+script = ExtResource("3_btn")

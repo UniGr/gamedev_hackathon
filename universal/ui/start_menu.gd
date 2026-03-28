@@ -1,21 +1,24 @@
 extends Control
 
 @onready var btn_start: Button = %BtnStart
+@onready var btn_quit: Button = %BtnQuit
 
 func _ready() -> void:
-	print("--- МЕНЮ ЗАПУЩЕНО ---")
-	# Убедимся, что кнопки видны и активны
+	print("--- МЕНЮ ЗАПУЩЕНО ВЕРСИЯ 3 ---")
+	
+	# Принудительно включаем кнопки
 	btn_start.disabled = false
 	btn_start.mouse_filter = Control.MOUSE_FILTER_STOP
+	btn_quit.disabled = false
+	btn_quit.mouse_filter = Control.MOUSE_FILTER_STOP
 	
-	# Прямая привязка сигнала
 	btn_start.pressed.connect(_on_btn_start_pressed)
-
-func _process(_delta: float) -> void:
-	# Если клик прошел мимо кнопки, но в окно - мы это увидим
-	if Input.is_mouse_button_pressed(MOUSE_BUTTON_LEFT):
-		print("Обнаружен зажатый клик (Mouse Left) в кадре")
+	btn_quit.pressed.connect(_on_btn_quit_pressed)
 
 func _on_btn_start_pressed() -> void:
-	print("!!! КНОПКА ИГРАТЬ СРАБОТАЛА !!!")
+	print(">>> НАЖАТА КНОПКА ИГРАТЬ <<<")
 	get_tree().change_scene_to_file("res://main.tscn")
+
+func _on_btn_quit_pressed() -> void:
+	print(">>> НАЖАТА КНОПКА ВЫХОД <<<")
+	get_tree().quit()
