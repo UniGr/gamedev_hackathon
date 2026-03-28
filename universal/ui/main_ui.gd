@@ -13,9 +13,21 @@ func _ready() -> void:
 	
 	print("MainUI Initialized")
 
-func _on_resource_changed(type: String, new_total: int) -> void:
+func _on_resource_changed(type: String, new_total: int, max_total: int) -> void:
 	if type == "metal":
-		metal_label.text = "Metal: %d" % new_total
+		metal_label.text = "Metal: %d / %d" % [new_total, max_total]
+		
+		# Visual feedback: flash label color
+		var tween = create_tween()
+		metal_label.modulate = Color(0.5, 1.5, 0.5) # Bright green flash
+		tween.tween_property(metal_label, "modulate", Color.WHITE, 0.3)
+
+# Temporary test: tap anywhere to simulate gathering metal
+func _unhandled_input(event: InputEvent) -> void:
+	if event is InputEventScreenTouch and event.pressed:
+		GameEvents.garbage_clicked.emit(1)
+	elif event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
+		GameEvents.garbage_clicked.emit(1)
 
 func _on_btn_storage_pressed() -> void:
 	GameEvents.build_requested.emit("storage", Vector2.ZERO) # Placeholder pos
