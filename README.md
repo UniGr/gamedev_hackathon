@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="universal/assets/icon-iOS-Default-1024x1024@1x.png" width="256" alt="Universal Icon">
+  <img src="universal/assets/icon.png" width="256" alt="Universal Icon">
   
   # 🚀 Project: Universal (Idle Clicker)
   ### *«В бескрайней пустоте космоса мусор одного — это билет домой для другого.»*
