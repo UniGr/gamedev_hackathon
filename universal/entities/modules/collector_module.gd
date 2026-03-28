@@ -15,7 +15,7 @@ func _init() -> void:
 	module_id = Constants.MODULE_COLLECTOR
 	grid_size = Vector2i.ONE
 	metal_cost = Constants.MODULE_COST_METAL[module_id]
-	sprite_color = Color(0.19, 0.66, 0.92, 1.0)
+	sprite_color = Color(1.0, 0.9, 0.2, 1.0) # Желтый
 
 
 func _ready() -> void:

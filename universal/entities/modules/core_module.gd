@@ -11,7 +11,7 @@ var discounted_builds_left: int = 0
 
 func _init() -> void:
 	module_id = Constants.MODULE_CORE
-	grid_size = Vector2i(2, 1)
+	grid_size = Vector2i(1, 2)
 	metal_cost = 0
 	sprite_color = Color(0.86, 0.26, 0.26, 1.0)
 
