@@ -13,6 +13,8 @@ func _init() -> void:
 	module_id = Constants.MODULE_CORE
 	grid_size = Vector2i(1, 2)
 	metal_cost = 0
+	max_hp = 480
+	tap_damage = 22
 	sprite_color = Color(0.86, 0.26, 0.26, 1.0)
 
 
@@ -25,6 +27,12 @@ func _ready() -> void:
 
 func add_defence(amount: int) -> void:
 	defence += max(0, amount)
+	defence_value_changed.emit(defence)
+	GameEvents.defence_changed.emit(defence)
+
+
+func remove_defence(amount: int) -> void:
+	defence = max(0, defence - max(0, amount))
 	defence_value_changed.emit(defence)
 	GameEvents.defence_changed.emit(defence)
 

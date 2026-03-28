@@ -19,6 +19,8 @@ func _init() -> void:
 	module_id = Constants.MODULE_COLLECTOR
 	grid_size = Vector2i.ONE
 	metal_cost = Constants.get_module_cost(module_id)
+	max_hp = 165
+	tap_damage = 28
 	sprite_color = Color(1.0, 0.9, 0.2, 1.0) # Желтый
 
 
