@@ -1,3 +1,10 @@
-[gd_scene format=3 uid="uid://lwgnb48yqndc"]
+[gd_scene load_steps=3 format=3 uid="uid://lwgnb48yqndc"]
 
-[node name="Main" type="Node2D" unique_id=1631152508]
+[ext_resource type="PackedScene" uid="uid://dq5p6y7x8w9v" path="res://entities/game_board.tscn" id="1_gb"]
+[ext_resource type="PackedScene" uid="uid://b1c2d3e4f5g6" path="res://ui/main_ui.tscn" id="2_ui"]
+
+[node name="Main" type="Node2D"]
+
+[node name="GameBoard" parent="." instance=ExtResource("1_gb")]
+
+[node name="MainUI" parent="." instance=ExtResource("2_ui")]
