@@ -1,0 +1,24 @@
+[remap]
+
+importer="wav"
+type="AudioStreamWAV"
+uid="uid://mn81pldjfrge"
+path="res://.godot/imported/sfx_alarm_loop8.wav-473d6c7353c5242655bae7799b32df9f.sample"
+
+[deps]
+
+source_file="res://assets/audio/sfx_pack_needs_rm/The Essential Retro Video Game Sound Effects Collection [512 sounds] By Juhani Junkala/General Sounds/Alarms/Alarms/sfx_alarm_loop8.wav"
+dest_files=["res://.godot/imported/sfx_alarm_loop8.wav-473d6c7353c5242655bae7799b32df9f.sample"]
+
+[params]
+
+force/8_bit=false
+force/mono=false
+force/max_rate=false
+force/max_rate_hz=44100
+edit/trim=false
+edit/normalize=false
+edit/loop_mode=0
+edit/loop_begin=0
+edit/loop_end=-1
+compress/mode=2

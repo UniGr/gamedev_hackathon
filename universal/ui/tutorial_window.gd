@@ -5,11 +5,16 @@ extends CanvasLayer
 @onready var name_label: Label = $Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/NameLabel
 
 var intro_steps: Array[String] = [
-	"Капитан, вы меня слышите? Это Надя, ваш бортовой ИИ.",
+	"Капитан, вы меня слышите? Это Н.А.Д.Я., ваш бортовой ИИ.",
 	"Наш корабль серьезно пострадал. Мы застряли в секторе космического мусора.",
-	"Чтобы выжить, нам нужно собирать обломки. Тапайте по пролетающему мусору, чтобы добыть Металл!",
-	"Используйте Металл для постройки модулей. Постройте Сборщик, и он начнет собирать мусор автоматически."
+	"Чтобы выжить, нам нужно собирать обломки. Нажимайте по пролетающему мусору, чтобы добыть МЕТАЛЛ!",
+	"Используйте МЕТАЛЛ для постройки модулей. Постройте Сборщик, и он начнет собирать мусор автоматически.",
+	"Отлично! Теперь нажмите на кнопку МАГАЗИН, чтобы открыть меню покупок.",
+	"В магазине вы можете купить модули: Корпус, Реактор, Сборщик, Турель. Начните с Корпуса за 5 МЕТАЛЛ.",
+	"Удачи, Капитан! Собирайте ресурсы, стройте и обороняйтесь. Н.А.Д.Я. всегда рядом."
 ]
+
+
 var raider_warning_steps: Array[String] = [
 	"Капитан, тревога! Это вражеский налётчик. Он хочет забрать наши ресурсы.",
 	"Чтобы отбиться, кликайте прямо по врагу, как по мусору.",
@@ -25,6 +30,7 @@ var _pause_state_before_tutorial: bool = false
 var _pause_applied: bool = false
 var _raider_warning_shown: bool = false
 var _pending_raider_warning: bool = false
+var shop_opened: bool = false
 
 func _ready() -> void:
 	# Диалог должен оставаться интерактивным даже когда игра на паузе.
@@ -32,6 +38,9 @@ func _ready() -> void:
 	hide() 
 	GameEvents.game_started.connect(start_tutorial)
 	GameEvents.raider_spawned.connect(_on_raider_spawned)
+	GameEvents.resource_changed.connect(_on_resource_changed)
+	GameEvents.shop_opened.connect(_on_shop_opened)
+	GameEvents.shop_closed.connect(_on_shop_closed)
 	# Мы удалили старую подписку на gui_input, теперь все работает через _input()
 
 func start_tutorial() -> void:
@@ -70,13 +79,29 @@ func _on_raider_spawned(_position: Vector2) -> void:
 
 	_start_dialog(raider_warning_steps)
 
+func _on_resource_changed(type: String, new_amount: int) -> void:
+	# Логика для интерактивных шагов, если нужно
+	pass
+
+func _on_shop_opened() -> void:
+	shop_opened = true
+	# Если ждем открытия магазина, перейти к следующему шагу
+	if visible and current_step == 4:  # После шага о нажатии на магазин
+		current_step += 1
+		_show_current_step()
+
+func _on_shop_closed() -> void:
+	shop_opened = false
+
 func _show_current_step() -> void:
 	if current_step >= tutorial_steps.size():
 		_end_tutorial()
 		return
 
 	is_typing = true
-	dialog_text.text = tutorial_steps[current_step]
+	var text = tutorial_steps[current_step]
+	text = _add_highlight_animation(text)
+	dialog_text.text = text
 	dialog_text.visible_ratio = 0.0 # Сбрасываем видимость текста в ноль
 	
 	if typing_tween:
@@ -85,7 +110,29 @@ func _show_current_step() -> void:
 	typing_tween = create_tween()
 	var duration = tutorial_steps[current_step].length() * 0.03
 	typing_tween.tween_property(dialog_text, "visible_ratio", 1.0, duration)
-	typing_tween.finished.connect(func(): is_typing = false)
+	typing_tween.finished.connect(func(): 
+		is_typing = false
+		_start_highlight_animation()
+	)
+
+func _add_highlight_animation(text: String) -> String:
+	# Выделяем слова капсом и цветом
+	text = text.replace("Н.А.Д.Я.", "[color=yellow][b]Н.А.Д.Я.[/b][/color]")
+	text = text.replace("МЕТАЛЛ", "[color=orange][b]МЕТАЛЛ[/b][/color]")
+	text = text.replace("ВРАГИ", "[color=red][b]ВРАГИ[/b][/color]")
+	text = text.replace("ВРАГАМ", "[color=red][b]ВРАГАМ[/b][/color]")
+	return text
+
+func _start_highlight_animation() -> void:
+	# Простая пульсация для выделенных слов (анимация цвета)
+	var tween = create_tween()
+	tween.set_loops()
+	tween.set_ease(Tween.EASE_IN_OUT)
+	tween.set_trans(Tween.TRANS_SINE)
+	
+	# Анимируем modulate для всего текста (простая пульсация)
+	tween.tween_property(dialog_text, "modulate", Color(1.2, 1.2, 1.2), 1.0)
+	tween.tween_property(dialog_text, "modulate", Color(1.0, 1.0, 1.0), 1.0)
 
 func _end_tutorial() -> void:
 	hide()
