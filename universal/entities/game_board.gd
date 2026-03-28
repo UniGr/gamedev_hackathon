@@ -51,36 +51,30 @@ func _ready() -> void:
 	print("GameBoard Initialized")
 
 func _unhandled_input(event: InputEvent) -> void:
-	# Если мы в режиме постройки и кликнули мышкой
 	if _active_build_type != "" and event is InputEventMouseButton:
 		if event.button_index == MOUSE_BUTTON_LEFT and event.pressed:
 			var grid_pos = _world_to_grid(get_global_mouse_position())
-			_try_place_module_at(_active_build_type, grid_pos)
+			# Если кликнули по валидной клетке - строим, иначе - отменяем
+			if not _try_place_module_at(_active_build_type, grid_pos):
+				_clear_highlights()
+				print("Build Mode cancelled")
 
 func _on_build_requested(module_type: String, requested_position: Vector2) -> void:
-	if not _module_script_by_id.has(module_type):
-		return
-	
-	# Если позиция ZERO — входим в режим выбора клетки
+	if not _module_script_by_id.has(module_type): return
 	if requested_position == Vector2.ZERO:
 		_enter_build_mode(module_type)
 	else:
-		# Прямая постройка (например, если по сети пришло или для теста)
 		var grid_pos = _world_to_grid(requested_position)
 		_try_place_module_at(module_type, grid_pos)
 
 func _enter_build_mode(module_type: String) -> void:
 	_clear_highlights()
 	_active_build_type = module_type
-	
-	# Создаем временный экземпляр, чтобы узнать размер модуля
 	var script_ref: Script = _module_script_by_id[module_type]
 	var temp_module: ModuleBase = script_ref.new() as ModuleBase
 	_active_build_size = temp_module.grid_size
 	temp_module.queue_free()
-	
 	_show_valid_placements(module_type, _active_build_size)
-	print("Entered Build Mode for: ", module_type)
 
 func _clear_highlights() -> void:
 	for child in _highlights_root.get_children():
@@ -88,7 +82,6 @@ func _clear_highlights() -> void:
 	_active_build_type = ""
 
 func _show_valid_placements(type: String, size: Vector2i) -> void:
-	# Проходим по всей сетке и ищем доступные места
 	for y in range(GridManager.GRID_HEIGHT):
 		for x in range(GridManager.GRID_WIDTH):
 			var pos = Vector2i(x, y)
@@ -97,32 +90,28 @@ func _show_valid_placements(type: String, size: Vector2i) -> void:
 
 func _create_highlight(pos: Vector2i, size: Vector2i) -> void:
 	var rect = ColorRect.new()
-	rect.color = Color(0.5, 0.5, 0.5, 0.4) # Полупрозрачный серый
+	rect.color = Color(0.5, 0.5, 0.5, 0.4)
 	rect.size = Vector2(size.x * CELL_SIZE - 4, size.y * CELL_SIZE - 4)
 	rect.position = Vector2(pos.x * CELL_SIZE + 2, pos.y * CELL_SIZE + 2)
 	_highlights_root.add_child(rect)
 
-func _try_place_module_at(module_type: String, build_cell: Vector2i) -> void:
+func _try_place_module_at(module_type: String, build_cell: Vector2i) -> bool:
 	var script_ref: Script = _module_script_by_id[module_type]
 	var module: ModuleBase = script_ref.new() as ModuleBase
 	
 	if not gridTileManager.canBuildAt(build_cell, module_type, module.grid_size):
-		print("Invalid placement at ", build_cell)
 		module.queue_free()
-		return
+		return false # Не удалось построить
 
-	# Проверка денег
 	var final_cost: int = _get_final_build_cost(module)
 	if final_cost > 0 and not ResourceManager.spend_metal(final_cost):
-		print("Not enough metal!")
 		module.queue_free()
-		return
+		return false
 
 	_place_module(module, build_cell)
 	GameEvents.module_built.emit(module_type, Vector2(build_cell))
-	
-	# Выходим из режима постройки после успешной установки
 	_clear_highlights()
+	return true # Построено!
 
 func _spawn_core() -> void:
 	var core: CoreModule = CORE_MODULE_SCRIPT.new() as CoreModule
@@ -136,7 +125,7 @@ func _spawn_core() -> void:
 func _place_module(module: ModuleBase, build_cell: Vector2i) -> void:
 	_modules_root.add_child(module)
 	module.configure(build_cell, CELL_SIZE)
-
+	
 	var CollectorModuleScript = load("res://entities/modules/collector_module.gd")
 	if module.get_script() == CollectorModuleScript:
 		module.set_ship_bounds_provider(_get_ship_bounds_rect)
