@@ -1,6 +1,10 @@
-[gd_scene format=3 uid="uid://cal40ma30npno"]
+[gd_scene load_steps=3 format=3 uid="uid://cal40ma30npno"]
 
 [ext_resource type="Script" uid="uid://by0fngppkfsh4" path="res://entities/game_board.gd" id="1_q2w3e"]
+[ext_resource type="Script" path="res://entities/debris/debris_spawner.gd" id="2_spawner"]
 
 [node name="GameBoard" type="Node2D" unique_id=938220171]
 script = ExtResource("1_q2w3e")
+
+[node name="DebrisSpawner" type="Node2D" parent="."]
+script = ExtResource("2_spawner")
