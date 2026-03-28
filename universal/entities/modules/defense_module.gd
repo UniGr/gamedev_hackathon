@@ -7,4 +7,6 @@ func _init() -> void:
 	grid_size = Vector2i.ONE
 	metal_cost = Constants.get_module_cost(module_id)
 	defence_bonus = 1
+	max_hp = 190
+	tap_damage = 30
 	sprite_color = Color(0.82, 0.37, 0.78, 1.0)
