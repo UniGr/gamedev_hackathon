@@ -2,6 +2,7 @@
 
 [ext_resource type="Texture2D" path="res://assets/sprites/nadya.png" id="2_nadya"]
 [ext_resource type="Script" uid="uid://bk340xvps1kf" path="res://ui/tutorial_window.gd" id="2_uupdj"]
+[ext_resource type="FontFile" path="res://assets/fonts/Exo2-VariableFont_wght.ttf" id="3_8w6qn"]
 
 [node name="TutorialWindow" type="CanvasLayer" unique_id=2102290992]
 layer = 2

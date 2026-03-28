@@ -3,6 +3,9 @@ extends CanvasLayer
 @onready var btn_start: Button = %BtnStart
 @onready var btn_exit: Button = %BtnExit
 
+const MAIN_SCENE_PRIMARY: String = "res://main.tscn"
+const MAIN_SCENE_FALLBACK: String = "res://universal/main.tscn"
+
 func _ready() -> void:
 	print("--- МЕНЮ ЗАГРУЖЕНО ---")
 	btn_start.add_theme_font_size_override("font_size", 100)
@@ -30,9 +33,10 @@ func _start_pulse_animation() -> void:
 	tween.tween_property(btn_start, "modulate:a", 1.0, 1.5)
 
 func _on_btn_start_pressed() -> void:
-	print("--- СМЕНА СЦЕНЫ НА res://main.tscn ---")
+	var target_scene: String = MAIN_SCENE_PRIMARY if ResourceLoader.exists(MAIN_SCENE_PRIMARY) else MAIN_SCENE_FALLBACK
+	print("--- СМЕНА СЦЕНЫ НА %s ---" % target_scene)
 	AudioManager.play_ui_open()
-	get_tree().change_scene_to_file("res://main.tscn")
+	get_tree().change_scene_to_file(target_scene)
 
 func _on_btn_exit_pressed() -> void:
 	print("--- ВЫХОД ИЗ ИГРЫ ---")
