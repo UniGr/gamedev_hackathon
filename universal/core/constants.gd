@@ -16,6 +16,7 @@ const MODULE_COLLECTOR: String = "collector"
 const MODULE_REACTOR: String = "reactor"
 const MODULE_STORAGE: String = "storage"
 const MODULE_DEFENSE: String = "defense"
+const MODULE_HULL: String = "hull"
 
 const MODULE_IDS = {
 	"core": MODULE_CORE,
@@ -23,13 +24,15 @@ const MODULE_IDS = {
 	"reactor": MODULE_REACTOR,
 	"storage": MODULE_STORAGE,
 	"defense": MODULE_DEFENSE,
+	"hull": MODULE_HULL,
 }
 
 const MODULE_COST_METAL = {
-	MODULE_COLLECTOR: 100,
-	MODULE_REACTOR: 400,
+	MODULE_COLLECTOR: 25,
+	MODULE_REACTOR: 15,
 	MODULE_STORAGE: 60,
 	MODULE_DEFENSE: 120,
+	MODULE_HULL: 5,
 }
 
 # ========== Параметры ядра ==========

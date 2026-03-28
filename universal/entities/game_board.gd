@@ -8,6 +8,7 @@ const COLLECTOR_MODULE_SCRIPT: Script = preload("res://entities/modules/collecto
 const REACTOR_MODULE_SCRIPT: Script = preload("res://entities/modules/reactor_module.gd")
 const STORAGE_MODULE_SCRIPT: Script = preload("res://entities/modules/storage_module.gd")
 const DEFENSE_MODULE_SCRIPT: Script = preload("res://entities/modules/defense_module.gd")
+const HULL_MODULE_SCRIPT: Script = preload("res://entities/modules/hull_module.gd")
 
 var gridTileManager: GridManager
 var _modules_root: Node2D
@@ -27,6 +28,7 @@ func _ready() -> void:
 		Constants.MODULE_REACTOR: REACTOR_MODULE_SCRIPT,
 		Constants.MODULE_STORAGE: STORAGE_MODULE_SCRIPT,
 		Constants.MODULE_DEFENSE: DEFENSE_MODULE_SCRIPT,
+		Constants.MODULE_HULL: HULL_MODULE_SCRIPT,
 	}
 
 	_modules_root = Node2D.new()
@@ -51,13 +53,16 @@ func _on_build_requested(module_type: String, requested_position: Vector2) -> vo
 
 	var build_cell: Vector2i = _resolve_build_cell(module_type, module.grid_size, requested_position)
 	if build_cell == Vector2i(-1, -1):
+		print("GameBoard: No valid cell found for ", module_type)
 		return
 
 	if not gridTileManager.canBuildAt(build_cell, module_type, module.grid_size):
+		print("GameBoard: Cannot build at ", build_cell, " (maybe no power?)")
 		return
 
 	var final_cost: int = _get_final_build_cost(module)
 	if final_cost > 0 and not ResourceManager.spend_metal(final_cost):
+		print("GameBoard: Not enough metal for ", module_type)
 		return
 
 	_place_module(module, build_cell)
@@ -82,12 +87,15 @@ func _place_module(module: ModuleBase, build_cell: Vector2i) -> void:
 	_modules_root.add_child(module)
 	module.configure(build_cell, CELL_SIZE)
 
-	if module is CollectorModule:
-		(module as CollectorModule).set_ship_bounds_provider(_get_ship_bounds_rect)
+	# Импорт класса для каста, если нужно
+	var CollectorModuleScript = load("res://entities/modules/collector_module.gd")
+	if module.get_script() == CollectorModuleScript:
+		module.set_ship_bounds_provider(_get_ship_bounds_rect)
 
 	_update_module_facing(module)
 
-	if module is DefenseModule and _core_module != null:
+	var DefenseModuleScript = load("res://entities/modules/defense_module.gd")
+	if module.get_script() == DefenseModuleScript and _core_module != null:
 		_core_module.add_defence(module.defence_bonus)
 
 	_placed_modules.append(module)
@@ -102,6 +110,7 @@ func _resolve_build_cell(module_type: String, module_size: Vector2i, requested_p
 		if gridTileManager.canBuildAt(requested_cell, module_type, module_size):
 			return requested_cell
 
+	# Ищем свободное место рядом с существующими (по сути автоматический выбор ячейки)
 	for y in range(GridManager.GRID_HEIGHT):
 		for x in range(GridManager.GRID_WIDTH):
 			var candidate: Vector2i = Vector2i(x, y)

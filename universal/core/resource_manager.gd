@@ -6,8 +6,8 @@ var max_metal: int = 50
 
 func _ready() -> void:
 	GameEvents.garbage_clicked.connect(_on_garbage_clicked)
-	# Мы будем слушать события постройки, чтобы увеличивать лимиты
-	GameEvents.build_requested.connect(_on_build_requested)
+	# Мы слушаем ПОСТРОЕННЫЕ модули, чтобы обновлять лимиты
+	GameEvents.module_built.connect(_on_module_built)
 	call_deferred("_initialize_ui")
 
 func _initialize_ui() -> void:
@@ -27,17 +27,9 @@ func spend_metal(amount: int) -> bool:
 func _on_garbage_clicked(amount: int) -> void:
 	add_metal(amount)
 
-func _on_build_requested(type: String, _pos: Vector2) -> void:
-	if type == "generator":
-		# Генератор увеличивает лимит металла (например, на 50)
-		if spend_metal(15): # Цена генератора
-			max_metal += 50
-			GameEvents.resource_changed.emit("metal", metal, max_metal)
-			print("Generator built! New max metal: ", max_metal)
-	elif type == "hull":
-		if spend_metal(5):
-			print("Hull built request approved")
-			# Логика спавна клетки в GameBoard
-	elif type == "collector":
-		if spend_metal(25):
-			print("Collector built request approved")
+func _on_module_built(type: String, _pos: Vector2) -> void:
+	if type == Constants.MODULE_REACTOR:
+		# Реактор увеличивает лимит металла (например, на 50)
+		max_metal += 50
+		GameEvents.resource_changed.emit("metal", metal, max_metal)
+		print("Resource Manager: Reactor built! New max metal: ", max_metal)
