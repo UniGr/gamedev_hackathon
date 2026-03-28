@@ -12,12 +12,18 @@ func _ready() -> void:
 	add_child(autosave_timer)
 
 func save_game() -> void:
+	# Пытаемся найти GridManager в сцене, так как он теперь не Autoload
+	var grid_manager = get_tree().root.find_child("GridManager", true, false)
+	var grid_data = {}
+	if grid_manager:
+		grid_data = _serialize_grid(grid_manager.get_occupied_cells())
+
 	var save_dict = {
 		"resources": {
 			"metal": ResourceManager.metal,
 			"max_metal": ResourceManager.max_metal
 		},
-		"grid": _serialize_grid(GridTileManager.grid)
+		"grid": grid_data
 	}
 	var json_string = JSON.stringify(save_dict)
 	
@@ -40,16 +46,18 @@ func load_game() -> void:
 		ResourceManager.max_metal = res_data.get("max_metal", 50)
 		
 		GameEvents.resource_changed.emit("metal", ResourceManager.metal, ResourceManager.max_metal)
-		
-		var grid_data = save_dict.get("grid", {})
-		GridTileManager.grid = _deserialize_grid(grid_data)
-		print("Игра загружена!")
+		print("Игра загружена (ресурсы восстановлены)!")
 
 func _serialize_grid(grid: Dictionary) -> Dictionary:
 	var string_grid = {}
 	for pos in grid:
 		var pos_str = str(pos.x) + "," + str(pos.y)
-		string_grid[pos_str] = grid[pos]
+		# Сохраняем только тип модуля, если это возможно
+		var entity = grid[pos]
+		if entity and "module_id" in entity:
+			string_grid[pos_str] = entity.module_id
+		else:
+			string_grid[pos_str] = "unknown"
 	return string_grid
 
 func _deserialize_grid(string_grid: Dictionary) -> Dictionary:
