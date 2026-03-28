@@ -5,4 +5,6 @@ func _init() -> void:
 	module_id = Constants.MODULE_HULL
 	grid_size = Vector2i(1, 1)
 	metal_cost = Constants.get_module_cost(Constants.MODULE_HULL)
+	max_hp = 260
+	tap_damage = 32
 	sprite_color = Color(0.3, 0.8, 0.3, 1.0) # Зеленый цвет корпуса

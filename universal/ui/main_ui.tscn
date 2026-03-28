@@ -175,3 +175,65 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
 text = " Сборщик 
 (100 Металла) "
+
+[node name="BtnTurret" type="Button" parent="MarginContainer/VBoxContainer/BottomPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 48
+theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
+text = " Турель 
+(240 Металла) "
+
+[node name="EndOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 1
+color = Color(0, 0, 0, 0.82)
+
+[node name="Center" type="CenterContainer" parent="EndOverlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="EndOverlay/Center"]
+custom_minimum_size = Vector2(900, 520)
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="EndOverlay/Center/Panel"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="EndTitleLabel" type="Label" parent="EndOverlay/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 84
+horizontal_alignment = 1
+text = "GAME OVER"
+
+[node name="EndReasonLabel" type="Label" parent="EndOverlay/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+horizontal_alignment = 1
+autowrap_mode = 2
+text = "Причина завершения"
+
+[node name="BtnRestart" type="Button" parent="EndOverlay/Center/Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 46
+theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
+theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
+text = "ПЕРЕЗАПУСК"

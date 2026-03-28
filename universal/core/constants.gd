@@ -8,6 +8,7 @@ enum ModuleType {
 	REACTOR = 2,
 	STORAGE = 3,
 	DEFENSE = 4,
+	TURRET = 5,
 }
 
 # Строковые ID модулей для более удобного использования
@@ -17,6 +18,8 @@ const MODULE_REACTOR: String = "reactor"
 const MODULE_STORAGE: String = "storage"
 const MODULE_DEFENSE: String = "defense"
 const MODULE_HULL: String = "hull"
+const MODULE_TURRET: String = "turret"
+const MODULE_TURRET_DEFAULT_COST: int = 240
 
 const MODULE_IDS = {
 	"core": MODULE_CORE,
@@ -25,6 +28,7 @@ const MODULE_IDS = {
 	"storage": MODULE_STORAGE,
 	"defense": MODULE_DEFENSE,
 	"hull": MODULE_HULL,
+	"turret": MODULE_TURRET,
 }
 
 # ========== Путь к единому конфигу баланса ==========
@@ -61,6 +65,8 @@ func _ensure_balance_loaded() -> void:
 
 func get_module_cost(module_id: String) -> int:
 	_ensure_balance_loaded()
+	if module_id == MODULE_TURRET:
+		return int(MODULE_COST_METAL.get(MODULE_TURRET, MODULE_TURRET_DEFAULT_COST))
 	return int(MODULE_COST_METAL.get(module_id, 0))
 
 
@@ -89,6 +95,7 @@ func _load_balance_config() -> void:
 			MODULE_STORAGE: max(0, config.storage_cost_metal),
 			MODULE_DEFENSE: max(0, config.defense_cost_metal),
 			MODULE_HULL: max(0, config.hull_cost_metal),
+			MODULE_TURRET: MODULE_TURRET_DEFAULT_COST,
 		}
 		_resource_initial_metal = max(0, config.initial_metal)
 		_resource_max_metal = max(1, config.max_metal)
