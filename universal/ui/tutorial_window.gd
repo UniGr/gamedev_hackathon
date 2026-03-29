@@ -6,39 +6,48 @@ extends CanvasLayer
 
 # ========== ТЕКСТЫ ДИАЛОГОВ ==========
 var intro_steps: Array[String] = [
-	"Капитан, вы меня слышите? Это [color=yellow][b]Н.А.Д.Я.[/b][/color], ваша Наблюдательная Автономная Диспетчерская Ячейка.",
+	"Капитан, вы меня слышите? Это [color=yellow]Н.А.Д.Я.[/color], ваша Наблюдательная Автономная Диспетчерская Ячейка.",
 	"Наш корабль серьезно пострадал. Мы застряли в секторе космического мусора.",
 ]
 
 var gathering_steps: Array[String] = [
-	"Чтобы выжить, нам нужно собирать обломки. Нажимайте по пролетающему [color=brown][b]МУСОРУ[/b][/color], чтобы добыть [color=orange][b]МЕТАЛЛ[/b][/color]!",
+	"Чтобы выжить, нам нужно собирать обломки. Нажимайте по пролетающему [color=brown]МУСОРУ[/color], чтобы добыть [color=orange]МЕТАЛЛ[/color]!",
 ]
 
 var raider_warning_steps: Array[String] = [
-	"Капитан, тревога! Это [color=red][b]ВРАГ[/b][/color]. Он хочет забрать наши ресурсы.",
-    "Чтобы уничтожть врага, нажимайте по нему так быстро как только сможете"
+	"Капитан, тревога! Это [color=red]ВРАГ[/color]. Он хочет забрать наши ресурсы.",
+    "Чтобы уничтожить врага, нажимайте по нему так быстро как только сможете"
 ]
 
 var raider_defense_steps: Array[String] = [
 	"Отличная работа, Капитан!",
-    "Напоминаю, для автоматизации защиты от [color=red][b]ВРАГОВ[/b][/color] постройте турели: их можно купить в магазине."
+    "Напоминаю, для автоматизации защиты от [color=red]ВРАГОВ[/color] постройте ТУРЕЛИ: их можно купить в магазине."
 ]
 
 var shop_invite_steps: Array[String] = [
-    "Капитан, у вас достаточно [color=orange][b]МЕТАЛЛА[/b][/color]! Зайдите в [color=green][b]МАГАЗИН[/b][/color], чтобы купить модули для корабля."
+    "Капитан, у вас достаточно [color=orange]МЕТАЛЛА[/color]! Зайдите в [color=green]МАГАЗИН[/color], чтобы купить модули для корабля."
 ]
 
 var shop_guide_steps: Array[String] = [
-	"Магазин открыт! Я расскажу об основных модулях, за каждый отвечает свой эффект:",
-	"[color=cyan]КОРПУС[/color] — базовая защита, которая смягчает урон.",
-	"[color=cyan]РЕАКТОР[/color] — источник энергии, расширяет возможности строительства.",
-	"[color=cyan]СБОРЩИК[/color] — увеличивает скорость добычи металла.",
+	"Магазин открыт! Я расскажу об основных модулях, каждый  из них уникален и необходим нашему кораблю:",
+	"[color=cyan]КОРПУС[/color] — увеличивает максимальное количество ресурсов.",
+	"[color=cyan]РЕАКТОР[/color] — источник энергии, питает соседние блоки, позволяя строить на них другие модули",
+	"Обратите внимание, что [color=cyan]РЕАКТОРЫ[/color] не должны питать [color=cyan]ЯДРО[/color] и наоборот",
+	"[color=cyan]СБОРЩИК[/color] — автоматически добывает ближайший к к вашему кораблю мусор",
 	"[color=cyan]ТУРЕЛЬ[/color] — оборонительный модуль, атакует врагов автоматически.",
-    "[color=cyan]СПЕЦИАЛЬНЫЙ МОДУЛЬ[/color] — уникальный эффект: усиление урона/щит/экон. Используй по ситуации."
+	"[color=cyan]ЯДРО[/color] — увеличивает количество металла, получаемого с каждого обломка.",
+	"Не переживайте, я буду указывать на разрешенные места для строительства модулей",
+	"Сейчас у нас хватает [color=orange]МЕТАЛЛА[/color] на [color=cyan]КОРПУС[/color]. Самое время его приобрести",
 ]
 var reactor_guide_steps: Array[String] = [
-	"Капитан, вы накопили [color=orange][b]375 МЕТАЛЛА[/b][/color]! Этого хватит для постройки [color=cyan]РЕАКТОРА[/color].",
-    "Каждому новому отсеку нужна энергия. Постройте [color=cyan]РЕАКТОР[/color], чтобы увеличить энергоемкость корабля и продолжить расширение базы!"
+	"Капитан, вы накопили [color=orange]375 МЕТАЛЛА[/color]! Этого хватит для постройки [color=cyan]РЕАКТОРА[/color].",
+	"Каждому новому отсеку нужна энергия. Постройте [color=cyan]РЕАКТОР[/color], чтобы увеличить энергоемкость корабля и продолжить расширение базы!",
+    "Если вам удастся построить [color=cyan]4 РЕАКТОРА[/color],нам хватит энергии для [color=cyan]ГИПЕРПРЫЖКA[/color]"
+]
+
+var max_resources_steps: Array[String] = [
+	"Капитан! Мы накопили максимальное количество [color=orange]МЕТАЛЛА[/color]!",
+	"Нам нужно потратить ресурсы на постройку модулей или апгрейдов. Направляйтесь в [color=cyan]МАГАЗИН[/color] и используйте металл!",
 ]
 
 # ========== СИСТЕМНЫЕ ПЕРЕМЕННЫЕ ==========
@@ -57,6 +66,7 @@ var _raider_defense_shown: bool = false
 var _shop_invite_shown: bool = false
 var _shop_guide_shown: bool = false
 var _reactor_guide_shown: bool = false
+var _max_resources_shown: bool = false
 
 # Флаг для защиты от закликивания (анти-скип)
 var _is_input_blocked: bool = false
@@ -69,6 +79,7 @@ func _ready() -> void:
 	GameEvents.raider_spawned.connect(_on_raider_spawned)
 	GameEvents.raider_destroyed.connect(_on_raider_destroyed)
 	GameEvents.resource_changed.connect(_on_resource_changed)
+	GameEvents.max_resources_reached.connect(_on_max_resources_reached)
 	GameEvents.shop_opened.connect(_on_shop_opened)
 	GameEvents.game_finished.connect(_on_game_finished)
 	
@@ -170,6 +181,11 @@ func _on_shop_opened() -> void:
 		_shop_guide_shown = true
 		_queue_dialog(shop_guide_steps)
 
+func _on_max_resources_reached(resource_type: String, _max_amount: int) -> void:
+	if resource_type == "metal" and not _max_resources_shown:
+		_max_resources_shown = true
+		_queue_dialog(max_resources_steps)
+
 func _on_raider_destroyed(_position: Vector2, _evolution_level: int, _source: String) -> void:
 	if _raider_warning_shown and not _raider_defense_shown:
 		_raider_defense_shown = true
@@ -178,8 +194,7 @@ func _on_raider_destroyed(_position: Vector2, _evolution_level: int, _source: St
 func _on_game_finished(outcome: String, _reason: String) -> void:
 	if outcome == "lose":
 		var defeat_steps: Array[String] = [
-			"КАПИТАН, МЫ ПОТЕРПЕЛИ ПОРАЖЕНИЕ. КОРАБЛЬ РАЗРУШЕН.",
-            "НЕ РАССТРАИВАЙТЕСЬ, ПОПРОБУЙТЕ СНОВА!"
+			"КАПИТАН, МЫ ПОТЕРПЕЛИ ПОРАЖЕНИЕ! АКТИВИРУЮ РЕЖИМ ПОСЛЕДНЕЙ НАДЕЖДЫ...",
 		]
 		dialog_queue.clear()
 		_queue_dialog(defeat_steps)

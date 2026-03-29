@@ -4,6 +4,7 @@ extends Node
 
 var metal: int = 0
 var max_metal: int = 0
+var _max_metal_reached_notified: bool = false
 var build_iterations_by_module: Dictionary = {
 	Constants.MODULE_REACTOR: 0,
 	Constants.MODULE_HULL: 0,
@@ -29,12 +30,17 @@ func _initialize_ui() -> void:
 func reset_run_state() -> void:
 	metal = Constants.get_resource_initial_metal()
 	max_metal = Constants.get_resource_max_metal()
+	_max_metal_reached_notified = false
 	for module_id in build_iterations_by_module.keys():
 		build_iterations_by_module[module_id] = 0
 	GameEvents.resource_changed.emit("metal", metal)
 
 func add_metal(amount: int) -> void:
 	metal = min(metal + amount, max_metal)
+	# Проверяем, достигли ли максимум в первый раз
+	if metal == max_metal and not _max_metal_reached_notified:
+		_max_metal_reached_notified = true
+		GameEvents.max_resources_reached.emit("metal", metal)
 	GameEvents.resource_changed.emit("metal", metal)
 
 func spend_metal(amount: int) -> bool:
@@ -68,6 +74,8 @@ func _on_module_built(module_type: String, _pos: Vector2) -> void:
 	if module_type == Constants.MODULE_HULL:
 		# Модуль корпуса увеличивает лимит металла (читаем бонус из Constants)
 		max_metal += Constants.get_hull_metal_bonus()
+		# Сбрасываем флаг, так как лимит вырос
+		_max_metal_reached_notified = false
 		GameEvents.resource_changed.emit("metal", metal)
 		print("Resource Manager: Hull built! New max metal: ", max_metal)
 
