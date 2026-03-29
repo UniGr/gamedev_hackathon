@@ -48,11 +48,11 @@ var is_typing: bool = false
 var typing_tween: Tween
 var _pause_state_before_tutorial: bool = false
 var _pause_applied: bool = false
-var _raider_warning_shown: bool = false
 var _pending_raider_warning: bool = false
 var shop_opened: bool = false
 var _shop_guide_shown: bool = false
 var _pending_shop_guide: bool = false
+var _raider_warning_shown: bool = false
 
 func _ready() -> void:
 	# Диалог должен оставаться интерактивным даже когда игра на паузе.
@@ -68,6 +68,7 @@ func _ready() -> void:
 	GameEvents.resource_changed.connect(_on_resource_changed)
 	GameEvents.shop_opened.connect(_on_shop_opened)
 	GameEvents.shop_closed.connect(_on_shop_closed)
+	GameEvents.game_finished.connect(_on_game_finished)
 	# Мы удалили старую подписку на gui_input, теперь все работает через _input()
 
 func start_tutorial() -> void:
@@ -93,14 +94,9 @@ func _start_dialog(steps: Array[String]) -> void:
 
 
 func _on_raider_spawned(_position: Vector2) -> void:
-	# Показываем предупреждение только после завершения основного обучения
-	if current_tutorial_phase < 4:
-		return
-	
+	# Показываем предупреждение только при появлении первого налётчика
 	if _raider_warning_shown:
 		return
-
-	_raider_warning_shown = true
 	if visible:
 		_pending_raider_warning = true
 		return
@@ -111,6 +107,7 @@ func _on_raider_spawned(_position: Vector2) -> void:
 		_pending_raider_warning = true
 		return
 
+	_raider_warning_shown = true
 	_start_dialog(raider_warning_steps)
 
 func _on_resource_changed(type: String, new_amount: int) -> void:
@@ -195,14 +192,27 @@ func _on_shop_closed() -> void:
 
 func _on_raider_destroyed(_position: Vector2, _evolution_level: int, _source: String) -> void:
 	# Показываем советы об защите после первого уничтоженного врага
-	if current_tutorial_phase == 4 and not visible:
+	if current_tutorial_phase == 3 and not visible:
 		# Восстанавливаем паузу для диалога
 		if not _pause_applied:
 			_pause_state_before_tutorial = get_tree().paused
 			get_tree().paused = true
 			_pause_applied = true
 		_start_dialog(raider_defense_steps)
-
+func _on_game_finished(outcome: String, _reason: String) -> void:
+	if outcome == "lose":
+		var defeat_steps: Array[String] = [
+			"Капитан, мы потерпели поражение. Корабль разрушен.",
+			"Не расстраивайтесь, попробуйте снова!"
+		]
+		if not _pause_applied:
+			_pause_state_before_tutorial = get_tree().paused
+			get_tree().paused = true
+			_pause_applied = true
+		tutorial_steps = defeat_steps
+		show()
+		current_step = 0
+		_show_current_step()
 func _start_highlight_animation() -> void:
 	# Простая пульсация для выделенных слов (анимация цвета)
 	var tween = create_tween()
