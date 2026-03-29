@@ -87,8 +87,6 @@
 - `core_module.gd`
 - `collector_module.gd`
 - `reactor_module.gd`
-- `storage_module.gd`
-- `defense_module.gd`
 
 3. Обновлены константы:
 - новые ID модулей
@@ -201,8 +199,6 @@
 - `res://entities/modules/core_module.gd`
 - `res://entities/modules/collector_module.gd`
 - `res://entities/modules/reactor_module.gd`
-- `res://entities/modules/storage_module.gd`
-- `res://entities/modules/defense_module.gd`
 
 ### Изменённые
 - `res://entities/game_board.gd`

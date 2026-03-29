@@ -8,3 +8,4 @@ func _init() -> void:
 	max_hp = 260
 	tap_damage = 32
 	sprite_color = Color(0.3, 0.8, 0.3, 1.0) # Зеленый цвет корпуса
+	module_texture = preload("res://assets/sprites/hull.png")
