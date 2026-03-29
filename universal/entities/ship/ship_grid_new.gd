@@ -3,9 +3,9 @@ extends Node2D
 ## Legacy compatibility stub.
 ## Active ship/grid logic is implemented in res://entities/game_board.gd and res://core/grid_manager.gd.
 
-const CELL_SIZE: int = 90
-const GRID_WIDTH: int = 12
-const GRID_HEIGHT: int = 20
+const CELL_SIZE: int = GridManager.CELL_SIZE
+const GRID_WIDTH: int = GridManager.GRID_WIDTH
+const GRID_HEIGHT: int = GridManager.GRID_HEIGHT
 
 
 func world_to_grid(world_pos: Vector2) -> Vector2i:

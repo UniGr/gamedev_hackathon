@@ -21,7 +21,7 @@ signal hp_changed(module: ModuleBase, current_hp: int, max_hp: int, source: Stri
 @export var allow_player_tap_damage: bool = false
 
 var grid_position: Vector2i = Vector2i.ZERO
-var cell_size_px: float = 90.0
+var cell_size_px: float = float(GridManager.CELL_SIZE)
 var current_hp: int = 0
 
 var _clickable: Area2D
@@ -140,8 +140,7 @@ func _draw() -> void:
 		draw_texture_rect(module_texture, fill_rect, false)
 	else:
 		draw_rect(fill_rect, sprite_color, true)
-
-	draw_rect(fill_rect, Color(0.08, 0.08, 0.08, 1.0), false, 2.0)
+		draw_rect(fill_rect, Color(0.08, 0.08, 0.08, 1.0), false, 2.0)
 
 	var hp_ratio: float = get_hp_ratio()
 	var hp_back_size: Vector2 = Vector2(max(12.0, size_px.x - 12.0), 7.0)

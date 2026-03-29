@@ -14,9 +14,14 @@ const TempCombatSfxScript: Script = preload("res://entities/effects/temp_combat_
 const ClickableComponentScript: Script = preload("res://shared/components/clickable_component.gd")
 
 @export_group("Raider Movement")
-@export var movement_speed_px_per_sec: float = 230.0
+@export var movement_speed_px_per_sec: float = 285.0
 @export var attack_distance_px: float = 96.0
 @export var retarget_interval_sec: float = 0.35
+@export var path_wobble_strength: float = 0.22
+@export var path_wobble_frequency_hz: float = 1.1
+@export var path_wobble_strength_random_range: float = 0.12
+@export var path_wobble_frequency_random_range: float = 0.3
+@export var speed_random_range: float = 0.12
 
 @export_group("Raider Attack")
 @export var bite_delay_sec: float = 0.85
@@ -51,6 +56,11 @@ var _vfx: TempCombatVfx
 var _sfx: TempCombatSfx
 var _clickable: Area2D
 var _collision_shape: CollisionShape2D
+var _movement_time_sec: float = 0.0
+var _wobble_phase: float = 0.0
+var _runtime_wobble_strength: float = 0.0
+var _runtime_wobble_frequency_hz: float = 0.0
+var _runtime_speed_multiplier: float = 1.0
 
 
 func _ready() -> void:
@@ -60,6 +70,10 @@ func _ready() -> void:
 	add_to_group("raiders")
 	if _current_hp <= 0:
 		_current_hp = max(1, max_hp)
+	_wobble_phase = randf() * TAU
+	_runtime_wobble_strength = max(0.0, path_wobble_strength + randf_range(-path_wobble_strength_random_range, path_wobble_strength_random_range))
+	_runtime_wobble_frequency_hz = max(0.05, path_wobble_frequency_hz + randf_range(-path_wobble_frequency_random_range, path_wobble_frequency_random_range))
+	_runtime_speed_multiplier = max(0.85, 1.0 + randf_range(-speed_random_range, speed_random_range))
 
 	_retarget_timer = Timer.new()
 	_retarget_timer.one_shot = false
@@ -89,11 +103,14 @@ func _ready() -> void:
 
 	_ensure_clickable()
 	_update_click_shape()
+	_clamp_to_viewport()
 
 	queue_redraw()
 
 
 func _process(delta: float) -> void:
+	_movement_time_sec += delta
+
 	if _is_biting:
 		return
 
@@ -122,9 +139,14 @@ func _process(delta: float) -> void:
 		if hp_ratio < 0.35:
 			rage_bonus = 1.22 + 0.12 * min(1.0, _adaptation_pressure)
 
-		var speed: float = movement_speed_px_per_sec * rage_bonus
-		global_position += to_target.normalized() * speed * delta
-		rotation = to_target.angle()
+		var speed: float = movement_speed_px_per_sec * rage_bonus * _runtime_speed_multiplier
+		var move_dir: Vector2 = to_target.normalized()
+		var perp_dir: Vector2 = Vector2(-move_dir.y, move_dir.x)
+		var wobble: float = sin(_movement_time_sec * TAU * _runtime_wobble_frequency_hz + _wobble_phase)
+		var curved_dir: Vector2 = (move_dir + perp_dir * wobble * _runtime_wobble_strength).normalized()
+		global_position += curved_dir * speed * delta
+		rotation = curved_dir.angle()
+		_clamp_to_viewport()
 
 
 func set_game_board(board: Node) -> void:
@@ -497,29 +519,23 @@ func _release_reserved_target() -> void:
 	_reserved_target = null
 
 
+func _clamp_to_viewport() -> void:
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var body_half: float = body_size_px * 0.5
+	var hp_top_padding: float = body_size_px * 0.72 + 10.0
+
+	var min_x: float = body_half
+	var max_x: float = max(min_x, viewport_size.x - body_half)
+	var min_y: float = hp_top_padding
+	var max_y: float = max(min_y, viewport_size.y - body_half)
+
+	global_position = Vector2(
+		clamp(global_position.x, min_x, max_x),
+		clamp(global_position.y, min_y, max_y)
+	)
+
+
 func _draw() -> void:
-	var r: float = body_size_px * 0.5
-	var body := PackedVector2Array([
-		Vector2(r, 0.0),
-		Vector2(-r * 0.35, r * 0.55),
-		Vector2(-r * 0.8, 0.0),
-		Vector2(-r * 0.35, -r * 0.55),
-	])
-	var fang_top := PackedVector2Array([
-		Vector2(r * 0.45, -r * 0.18),
-		Vector2(r * 0.95, -r * 0.35),
-		Vector2(r * 0.45, -r * 0.02),
-	])
-	var fang_bottom := PackedVector2Array([
-		Vector2(r * 0.45, r * 0.18),
-		Vector2(r * 0.95, r * 0.35),
-		Vector2(r * 0.45, r * 0.02),
-	])
-
-	draw_colored_polygon(body, body_color)
-	draw_colored_polygon(fang_top, accent_color)
-	draw_colored_polygon(fang_bottom, accent_color)
-
 	var hp_ratio: float = get_hp_ratio()
 	var hp_width: float = body_size_px * 1.1
 	var hp_height: float = 10.0
