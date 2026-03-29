@@ -11,9 +11,9 @@ config_version=5
 "ï»¿config_version"=5
 
 [application]
-config/icon="res://assets/Gemini_Generated_Image_qtma9aqtma9aqtma.png"
+config/icon="res://assets/Gemini_Generated_Image_z2m6wvz2m6wvz2m6.png"
 
-config/name="universal"
+config/name="Universal"
 run/main_scene="res://ui/start_menu.tscn"
 config/features=PackedStringArray("4.6", "GL Compatibility")
 
@@ -33,6 +33,7 @@ window/size/viewport_height=2400
 window/size/window_width_override=540
 window/size/window_height_override=1200
 window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
 window/handheld/orientation=1
 
 [physics]

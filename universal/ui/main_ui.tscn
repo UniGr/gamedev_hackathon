@@ -1,235 +1,129 @@
-[gd_scene format=3 uid="uid://b1c2d3e4f5g6"]
+[gd_scene load_steps=25 format=3 uid="uid://b1c2d3e4f5g6"]
 
 [ext_resource type="Script" uid="uid://drc2amuhc3xj6" path="res://ui/main_ui.gd" id="1_a2b3c"]
 [ext_resource type="FontFile" uid="uid://c62uvuv7pptp5" path="res://assets/fonts/PixelifySans-VariableFont_wght.ttf" id="2_hlo7n"]
-[ext_resource type="Texture2D" path="res://assets/ui_icons/shop_basket_pixel.svg" id="3_shop_icon"]
-[ext_resource type="Texture2D" path="res://assets/ui_icons/metal_bar_under_pixel.svg" id="4_bar_under"]
-[ext_resource type="Texture2D" path="res://assets/ui_icons/metal_bar_fill_pixel.svg" id="5_bar_fill"]
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BarBG"]
-bg_color = Color(0.051, 0.031, 0.125, 0.8)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.439, 0.251, 0.690, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BarMetal"]
-bg_color = Color(0.941, 0.843, 0.180, 1)
-border_width_left = 1
-border_width_top = 1
-border_width_right = 1
-border_width_bottom = 1
-border_color = Color(0.769, 0.604, 0.078, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Btn"]
-bg_color = Color(0.227, 0.118, 0.431, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.756, 0.565, 0.875, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
-expand_margin_left = 0
-expand_margin_top = 0
-expand_margin_right = 0
-expand_margin_bottom = 0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BtnHover"]
-bg_color = Color(0.306, 0.169, 0.565, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.816, 0.627, 0.941, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
-expand_margin_left = 0
-expand_margin_top = 0
-expand_margin_right = 0
-expand_margin_bottom = 0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BtnDisabled"]
-bg_color = Color(0.102, 0.051, 0.208, 0.5)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.439, 0.251, 0.690, 0.5)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
-expand_margin_left = 0
-expand_margin_top = 0
-expand_margin_right = 0
-expand_margin_bottom = 0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BarBG2"]
-bg_color = Color(0.051, 0.031, 0.125, 0.8)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.439, 0.251, 0.690, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BarMetal2"]
-bg_color = Color(0.941, 0.816, 0.125, 0.9)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_EndPanel"]
-bg_color = Color(0.039, 0.02, 0.125, 0.96)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.756, 0.565, 0.875, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
-shadow_color = Color(0.102, 0.051, 0.208, 0.5)
-shadow_size = 8
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ScreenOuter"]
-bg_color = Color(0.0, 0.0, 0.0, 0.0)
-border_width_left = 24
-border_width_top = 24
-border_width_right = 24
-border_width_bottom = 24
-border_color = Color(0.816, 0.627, 0.941, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ScreenInner"]
-bg_color = Color(0.0, 0.0, 0.0, 0.0)
-border_width_left = 12
-border_width_top = 12
-border_width_right = 12
-border_width_bottom = 12
-border_color = Color(0.756, 0.565, 0.875, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
+[ext_resource type="Texture2D" path="res://assets/ui_icons/metal_bar_under_pixel.svg" id="8_bar_under"]
+[ext_resource type="Texture2D" path="res://assets/ui_icons/metal_bar_fill_pixel.svg" id="9_bar_fill"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_TopHeader"]
-bg_color = Color(0.149, 0.075, 0.302, 0.62)
+bg_color = Color(0.0392157, 0.0196078, 0.12549, 0.823529)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.439, 0.251, 0.690, 0.95)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
+border_color = Color(0.439216, 0.25098, 0.690196, 0.94902)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Btn"]
+bg_color = Color(0.227451, 0.117647, 0.431373, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.756863, 0.564706, 0.87451, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BtnHover"]
+bg_color = Color(0.305882, 0.168627, 0.564706, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.815686, 0.627451, 0.941176, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BtnDisabled"]
+bg_color = Color(0.101961, 0.0509804, 0.207843, 0.501961)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.439216, 0.25098, 0.690196, 0.501961)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ShopPanel"]
-bg_color = Color(0.039, 0.02, 0.125, 0.95)
+bg_color = Color(0.027451, 0.0117647, 0.0901961, 0.960784)
 border_width_left = 4
 border_width_top = 4
 border_width_right = 4
 border_width_bottom = 4
-border_color = Color(0.756, 0.565, 0.875, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
+border_color = Color(0.756863, 0.564706, 0.87451, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_CorePlaque"]
-bg_color = Color(0.082, 0.043, 0.184, 0.95)
+bg_color = Color(0.0588235, 0.0313726, 0.152941, 1)
 border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.756, 0.565, 0.875, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
+border_color = Color(0.756863, 0.564706, 0.87451, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_LevelSlot"]
-bg_color = Color(0.102, 0.051, 0.208, 1)
+bg_color = Color(0.101961, 0.0509804, 0.207843, 1)
 border_width_left = 2
 border_width_top = 2
 border_width_right = 2
 border_width_bottom = 2
-border_color = Color(0.439, 0.251, 0.690, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
+border_color = Color(0.439216, 0.25098, 0.690196, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_LevelSlotFull"]
+bg_color = Color(0.596078, 0.376471, 0.752941, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.756863, 0.564706, 0.87451, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ModuleHull"]
-bg_color = Color(0.071, 0.031, 0.141, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.596, 0.376, 0.753, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
+bg_color = Color(0.0392157, 0.0196078, 0.12549, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.3, 0.8, 0.3, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ModuleReactor"]
-bg_color = Color(0.071, 0.031, 0.141, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.941, 0.816, 0.125, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
+bg_color = Color(0.0392157, 0.0196078, 0.12549, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.95, 0.74, 0.2, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ModuleCollector"]
-bg_color = Color(0.071, 0.031, 0.141, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.161, 0.831, 0.941, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
+bg_color = Color(0.0392157, 0.0196078, 0.12549, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(1, 0.9, 0.2, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ModuleTurret"]
-bg_color = Color(0.071, 0.031, 0.141, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.878, 0.251, 0.251, 1)
-corner_radius_top_left = 0
-corner_radius_top_right = 0
-corner_radius_bottom_right = 0
-corner_radius_bottom_left = 0
+bg_color = Color(0.0392157, 0.0196078, 0.12549, 1)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.95, 0.32, 0.18, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_EndPanel"]
+bg_color = Color(0.027451, 0.0117647, 0.0901961, 0.98)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.756863, 0.564706, 0.87451, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ScreenOuter"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 24
+border_width_top = 24
+border_width_right = 24
+border_width_bottom = 24
+border_color = Color(0.815686, 0.627451, 0.941176, 0.235)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ScreenInner"]
+bg_color = Color(0, 0, 0, 0)
+border_width_left = 12
+border_width_top = 12
+border_width_right = 12
+border_width_bottom = 12
+border_color = Color(0.756863, 0.564706, 0.87451, 0.156)
 
 [node name="MainUI" type="CanvasLayer"]
 script = ExtResource("1_a2b3c")
@@ -252,21 +146,21 @@ mouse_filter = 2
 theme_override_constants/separation = 20
 
 [node name="TopHeader" type="PanelContainer" parent="MarginContainer/VBoxContainer" unique_id=1500310001]
-custom_minimum_size = Vector2(0, 108)
+custom_minimum_size = Vector2(0, 140)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_TopHeader")
 
 [node name="HeaderPadding" type="MarginContainer" parent="MarginContainer/VBoxContainer/TopHeader" unique_id=1500310002]
 layout_mode = 2
-theme_override_constants/margin_left = 6
+theme_override_constants/margin_left = 16
 theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 6
+theme_override_constants/margin_right = 16
 theme_override_constants/margin_bottom = 10
 
 [node name="TopPanel" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding" unique_id=1195133402]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 2
+theme_override_constants/separation = 12
 
 [node name="ResourceVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel" unique_id=963290861]
 layout_mode = 2
@@ -278,57 +172,33 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_hlo7n")
 theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
-theme_override_colors/font_outline_color = Color(0.102, 0.051, 0.208, 1)
-theme_override_constants/outline_size = 3
-theme_override_font_sizes/font_size = 42
-text = "МЕТАЛЛ 0/0"
+theme_override_font_sizes/font_size = 56
+text = "МЕТАЛЛ 0 / 200"
 
 [node name="MetalBar" type="TextureProgressBar" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/ResourceVBox" unique_id=1824190027]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(560, 34)
+custom_minimum_size = Vector2(0, 52)
 layout_mode = 2
 size_flags_horizontal = 3
-texture_under = ExtResource("4_bar_under")
-texture_progress = ExtResource("5_bar_fill")
+texture_under = ExtResource("8_bar_under")
+texture_progress = ExtResource("9_bar_fill")
 nine_patch_stretch = true
 stretch_margin_left = 2
 stretch_margin_top = 2
 stretch_margin_right = 2
 stretch_margin_bottom = 2
 
-[node name="ShopRow" type="HBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=197223552]
-visible = false
-layout_mode = 2
-mouse_filter = 2
-alignment = 1
-
 [node name="BtnShop" type="Button" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel" unique_id=788802664]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(44, 44)
+custom_minimum_size = Vector2(160, 80)
 layout_mode = 2
-theme_override_font_sizes/font_size = 16
 theme_override_fonts/font = ExtResource("2_hlo7n")
-theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
+theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
-icon = ExtResource("3_shop_icon")
-expand_icon = true
-icon_alignment = 1
-text = ""
-
-[node name="BtnBgmToggle" type="Button" parent="MarginContainer/VBoxContainer/ShopRow" unique_id=1017517942]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-theme_override_fonts/font = ExtResource("2_hlo7n")
-theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
-text = "♪ ON"
+text = "ЦЕХ"
 
 [node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer" unique_id=327372049]
 layout_mode = 2
@@ -344,7 +214,7 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 0
-color = Color(0.0, 0.0, 0.0, 0.58)
+color = Color(0.0156863, 0.00784314, 0.0470588, 0.862745)
 
 [node name="Center" type="CenterContainer" parent="ShopOverlay" unique_id=1955100002]
 layout_mode = 1
@@ -355,192 +225,265 @@ grow_horizontal = 2
 grow_vertical = 2
 
 [node name="ShopPanel" type="PanelContainer" parent="ShopOverlay/Center" unique_id=1955100003]
-custom_minimum_size = Vector2(720, 860)
+custom_minimum_size = Vector2(800, 1100)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_ShopPanel")
 
 [node name="ShopMargin" type="MarginContainer" parent="ShopOverlay/Center/ShopPanel" unique_id=1955100004]
 layout_mode = 2
-theme_override_constants/margin_left = 18
-theme_override_constants/margin_top = 18
-theme_override_constants/margin_right = 18
-theme_override_constants/margin_bottom = 18
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
 
 [node name="ShopVBox" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin" unique_id=1955100005]
 layout_mode = 2
-theme_override_constants/separation = 14
+theme_override_constants/separation = 30
 
-[node name="CorePlaque" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=1955100006]
-custom_minimum_size = Vector2(0, 132)
+[node name="CoreSection" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="CorePlaque" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection" unique_id=1955100006]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_CorePlaque")
 
-[node name="CoreMargin" type="MarginContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque" unique_id=1955100008]
+[node name="CoreMargin" type="MarginContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque" unique_id=1955100008]
 layout_mode = 2
-theme_override_constants/margin_left = 12
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 12
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 16
 
-[node name="CoreVBox" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin" unique_id=1955100009]
+[node name="CoreVBox" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque/CoreMargin" unique_id=1955100009]
 layout_mode = 2
-theme_override_constants/separation = 8
+theme_override_constants/separation = 12
 
-[node name="CoreTopRow" type="HBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox" unique_id=1955100010]
+[node name="CoreTopRow" type="HBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque/CoreMargin/CoreVBox" unique_id=1955100010]
 layout_mode = 2
-theme_override_constants/separation = 8
 
-[node name="CoreLabel" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox/CoreTopRow" unique_id=1955100007]
+[node name="CoreLabel" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque/CoreMargin/CoreVBox/CoreTopRow" unique_id=1955100007]
+layout_mode = 2
 size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("2_hlo7n")
-theme_override_font_sizes/font_size = 24
+theme_override_font_sizes/font_size = 38
 theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
 text = "• ЯДРО: АПГРЕЙД"
 
-[node name="CoreCost" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox/CoreTopRow" unique_id=1955100011]
+[node name="CoreCost" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque/CoreMargin/CoreVBox/CoreTopRow" unique_id=1955100011]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 38
+theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
+text = "375 •"
+
+[node name="CoreLevelLabel" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque/CoreMargin/CoreVBox" unique_id=1955100012]
+unique_name_in_owner = true
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_hlo7n")
 theme_override_font_sizes/font_size = 24
-theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
-text = "375 •"
-horizontal_alignment = 2
-
-[node name="CoreLevelLabel" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox" unique_id=1955100012]
-layout_mode = 2
-theme_override_fonts/font = ExtResource("2_hlo7n")
-theme_override_font_sizes/font_size = 16
-theme_override_colors/font_color = Color(0.596, 0.376, 0.753, 1)
+theme_override_colors/font_color = Color(0.756863, 0.564706, 0.87451, 1)
 text = "УРОВЕНЬ 0 / 5"
 
-[node name="LevelBars" type="HBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox" unique_id=1955100013]
-layout_mode = 2
-theme_override_constants/separation = 6
-
-[node name="LevelBar1" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox/LevelBars" unique_id=1955100014]
-custom_minimum_size = Vector2(110, 20)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
-
-[node name="LevelBar2" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox/LevelBars" unique_id=1955100015]
-custom_minimum_size = Vector2(110, 20)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
-
-[node name="LevelBar3" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox/LevelBars" unique_id=1955100016]
-custom_minimum_size = Vector2(110, 20)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
-
-[node name="LevelBar4" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox/LevelBars" unique_id=1955100017]
-custom_minimum_size = Vector2(110, 20)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
-
-[node name="LevelBar5" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox/LevelBars" unique_id=1955100018]
-custom_minimum_size = Vector2(110, 20)
-layout_mode = 2
-size_flags_horizontal = 3
-theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
-
-[node name="UpgradesPanel" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=201169882]
+[node name="CoreUpgradeBtn" type="Button" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque/CoreMargin/CoreVBox"]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-mouse_filter = 2
-theme_override_constants/separation = 12
+text = "КУПИТЬ"
 
-[node name="UpgradesTitle" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/UpgradesPanel" unique_id=1090121961]
-layout_mode = 2
-theme_override_font_sizes/font_size = 20
-theme_override_colors/font_color = Color(0.756, 0.565, 0.875, 1)
-text = "УРОВЕНЬ 0/5"
-horizontal_alignment = 1
-
-[node name="UpgradesList" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/UpgradesPanel" unique_id=168621323]
+[node name="LevelBars" type="HBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque/CoreMargin/CoreVBox" unique_id=1955100013]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 24)
 layout_mode = 2
-mouse_filter = 2
 theme_override_constants/separation = 8
+
+[node name="B1" type="Panel" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque/CoreMargin/CoreVBox/LevelBars"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
+
+[node name="B2" type="Panel" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque/CoreMargin/CoreVBox/LevelBars"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
+
+[node name="B3" type="Panel" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque/CoreMargin/CoreVBox/LevelBars"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
+
+[node name="B4" type="Panel" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque/CoreMargin/CoreVBox/LevelBars"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
+
+[node name="B5" type="Panel" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque/CoreMargin/CoreVBox/LevelBars"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
 
 [node name="BottomPanel" type="GridContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=1364788748]
 unique_name_in_owner = true
 layout_mode = 2
-mouse_filter = 2
-theme_override_constants/h_separation = 14
-theme_override_constants/v_separation = 14
+size_flags_vertical = 3
+theme_override_constants/h_separation = 20
+theme_override_constants/v_separation = 20
 columns = 2
 
 [node name="BtnHull" type="Button" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel" unique_id=2123110365]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 160)
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
-theme_override_fonts/font = ExtResource("2_hlo7n")
-theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_ModuleHull")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_ModuleHull")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ModuleHull")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ModuleHull")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
-text = "КОРПУС\n5М"
+
+[node name="V" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel/BtnHull"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel/BtnHull/V"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 38
+theme_override_colors/font_color = Color(0.3, 0.8, 0.3, 1)
+text = "КОРПУС"
+horizontal_alignment = 1
+
+[node name="Price" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel/BtnHull/V"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
+text = "75 +"
+horizontal_alignment = 1
 
 [node name="BtnReactor" type="Button" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel" unique_id=748902210]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 160)
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
-theme_override_fonts/font = ExtResource("2_hlo7n")
-theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_ModuleReactor")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_ModuleReactor")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ModuleReactor")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ModuleReactor")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
-text = "РЕАКТОР\n350М"
+
+[node name="V" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel/BtnReactor"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel/BtnReactor/V"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 38
+theme_override_colors/font_color = Color(0.95, 0.74, 0.2, 1)
+text = "РЕАКТОР"
+horizontal_alignment = 1
+
+[node name="Price" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel/BtnReactor/V"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
+text = "350 +"
+horizontal_alignment = 1
 
 [node name="BtnCollector" type="Button" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel" unique_id=1227542794]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 160)
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
-theme_override_fonts/font = ExtResource("2_hlo7n")
-theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_ModuleCollector")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_ModuleCollector")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ModuleCollector")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ModuleCollector")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
-text = "СБОРЩИК\n100М"
+
+[node name="V" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel/BtnCollector"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel/BtnCollector/V"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 38
+theme_override_colors/font_color = Color(1, 0.9, 0.2, 1)
+text = "СБОРЩИК"
+horizontal_alignment = 1
+
+[node name="Price" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel/BtnCollector/V"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
+text = "100 +"
+horizontal_alignment = 1
 
 [node name="BtnTurret" type="Button" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel" unique_id=688278749]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 160)
+custom_minimum_size = Vector2(0, 300)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 28
-theme_override_fonts/font = ExtResource("2_hlo7n")
-theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_ModuleTurret")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_ModuleTurret")
 theme_override_styles/hover = SubResource("StyleBoxFlat_ModuleTurret")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ModuleTurret")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
-text = "ТУРЕЛЬ\n240М"
+
+[node name="V" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel/BtnTurret"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+alignment = 1
+
+[node name="Label" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel/BtnTurret/V"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 38
+theme_override_colors/font_color = Color(0.95, 0.32, 0.18, 1)
+text = "ТУРЕЛЬ"
+horizontal_alignment = 1
+
+[node name="Price" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel/BtnTurret/V"]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
+text = "240 +"
+horizontal_alignment = 1
 
 [node name="BtnShopExit" type="Button" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=307490481]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
-theme_override_font_sizes/font_size = 20
 theme_override_fonts/font = ExtResource("2_hlo7n")
-theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
+theme_override_font_sizes/font_size = 36
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
-text = "◄ ВЫЙТИ ИЗ ЦЕХА"
+theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
+text = "ВЫЙТИ ИЗ ЦЕХА"
 
 [node name="EndOverlay" type="ColorRect" parent="." unique_id=986673759]
 unique_name_in_owner = true
@@ -573,36 +516,39 @@ theme_override_constants/margin_top = 30
 theme_override_constants/margin_right = 36
 theme_override_constants/margin_bottom = 30
 
-[node name="VBox" type="VBoxContainer" parent="EndOverlay/Center/Panel"]
+[node name="VBox" type="VBoxContainer" parent="EndOverlay/Center/Panel/InnerMargin"]
 layout_mode = 2
 theme_override_constants/separation = 24
 
-[node name="EndTitleLabel" type="Label" parent="EndOverlay/Center/Panel/VBox"]
+[node name="EndTitleLabel" type="Label" parent="EndOverlay/Center/Panel/InnerMargin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 48
-theme_override_colors/font_color = Color(0.756, 0.565, 0.875, 1)
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 80
+theme_override_colors/font_color = Color(0.756, 0.565, 0.87451, 1)
 text = "GAME OVER"
 horizontal_alignment = 1
 
-[node name="EndReasonLabel" type="Label" parent="EndOverlay/Center/Panel/VBox"]
+[node name="EndReasonLabel" type="Label" parent="EndOverlay/Center/Panel/InnerMargin/VBox"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
-theme_override_colors/font_color = Color(0.816, 0.627, 0.941, 1)
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 32
+theme_override_colors/font_color = Color(0.815686, 0.627451, 0.941176, 1)
 text = "Причина завершения"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="BtnRestart" type="Button" parent="EndOverlay/Center/Panel/VBox"]
+[node name="BtnRestart" type="Button" parent="EndOverlay/Center/Panel/InnerMargin/VBox"]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
-theme_override_font_sizes/font_size = 24
 theme_override_fonts/font = ExtResource("2_hlo7n")
-theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
+theme_override_font_sizes/font_size = 48
+theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
 text = "ПЕРЕЗАПУСК"
 
 [node name="ScreenBorder" type="PanelContainer" parent="." unique_id=1804509101]
