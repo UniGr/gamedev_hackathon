@@ -147,6 +147,78 @@ corner_radius_top_right = 0
 corner_radius_bottom_right = 0
 corner_radius_bottom_left = 0
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ShopPanel"]
+bg_color = Color(0.039, 0.02, 0.125, 0.95)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.756, 0.565, 0.875, 1)
+corner_radius_top_left = 0
+corner_radius_top_right = 0
+corner_radius_bottom_right = 0
+corner_radius_bottom_left = 0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_CorePlaque"]
+bg_color = Color(0.082, 0.043, 0.184, 0.95)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.756, 0.565, 0.875, 1)
+corner_radius_top_left = 0
+corner_radius_top_right = 0
+corner_radius_bottom_right = 0
+corner_radius_bottom_left = 0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ModuleHull"]
+bg_color = Color(0.071, 0.031, 0.141, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.596, 0.376, 0.753, 1)
+corner_radius_top_left = 0
+corner_radius_top_right = 0
+corner_radius_bottom_right = 0
+corner_radius_bottom_left = 0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ModuleReactor"]
+bg_color = Color(0.071, 0.031, 0.141, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.941, 0.816, 0.125, 1)
+corner_radius_top_left = 0
+corner_radius_top_right = 0
+corner_radius_bottom_right = 0
+corner_radius_bottom_left = 0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ModuleCollector"]
+bg_color = Color(0.071, 0.031, 0.141, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.161, 0.831, 0.941, 1)
+corner_radius_top_left = 0
+corner_radius_top_right = 0
+corner_radius_bottom_right = 0
+corner_radius_bottom_left = 0
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ModuleTurret"]
+bg_color = Color(0.071, 0.031, 0.141, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.878, 0.251, 0.251, 1)
+corner_radius_top_left = 0
+corner_radius_top_right = 0
+corner_radius_bottom_right = 0
+corner_radius_bottom_left = 0
+
 [node name="MainUI" type="CanvasLayer"]
 script = ExtResource("1_a2b3c")
 
@@ -251,96 +323,147 @@ layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
 
-[node name="UpgradesPanel" type="VBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=201169882]
+[node name="ShopOverlay" type="ColorRect" parent="." unique_id=1955100001]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.0, 0.0, 0.0, 0.58)
+
+[node name="Center" type="CenterContainer" parent="ShopOverlay" unique_id=1955100002]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="ShopPanel" type="PanelContainer" parent="ShopOverlay/Center" unique_id=1955100003]
+custom_minimum_size = Vector2(720, 860)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_ShopPanel")
+
+[node name="ShopMargin" type="MarginContainer" parent="ShopOverlay/Center/ShopPanel" unique_id=1955100004]
+layout_mode = 2
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 18
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 18
+
+[node name="ShopVBox" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin" unique_id=1955100005]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="CorePlaque" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=1955100006]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_CorePlaque")
+
+[node name="CoreLabel" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque" unique_id=1955100007]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
+text = "ЯДРО: АПГРЕЙД"
+horizontal_alignment = 1
+
+[node name="UpgradesPanel" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=201169882]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 12
 
-[node name="UpgradesTitle" type="Label" parent="MarginContainer/VBoxContainer/UpgradesPanel" unique_id=1090121961]
+[node name="UpgradesTitle" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/UpgradesPanel" unique_id=1090121961]
 layout_mode = 2
-theme_override_font_sizes/font_size = 32
+theme_override_font_sizes/font_size = 20
 theme_override_colors/font_color = Color(0.756, 0.565, 0.875, 1)
-text = "УЛУЧШЕНИЯ"
+text = "УРОВЕНЬ 0/5"
 horizontal_alignment = 1
 
-[node name="UpgradesList" type="VBoxContainer" parent="MarginContainer/VBoxContainer/UpgradesPanel" unique_id=168621323]
+[node name="UpgradesList" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/UpgradesPanel" unique_id=168621323]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 8
 
-[node name="BtnShopExit" type="Button" parent="MarginContainer/VBoxContainer/UpgradesPanel" unique_id=307490481]
-unique_name_in_owner = true
-layout_mode = 2
-theme_override_font_sizes/font_size = 18
-theme_override_fonts/font = ExtResource("2_hlo7n")
-theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
-theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
-text = "ВЫХОД"
-
-[node name="BottomPanel" type="GridContainer" parent="MarginContainer/VBoxContainer" unique_id=1364788748]
+[node name="BottomPanel" type="GridContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=1364788748]
 unique_name_in_owner = true
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/h_separation = 24
-theme_override_constants/v_separation = 24
+theme_override_constants/h_separation = 14
+theme_override_constants/v_separation = 14
 columns = 2
 
-[node name="BtnHull" type="Button" parent="MarginContainer/VBoxContainer/BottomPanel" unique_id=2123110365]
+[node name="BtnHull" type="Button" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel" unique_id=2123110365]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 28
 theme_override_fonts/font = ExtResource("2_hlo7n")
 theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_ModuleHull")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ModuleHull")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ModuleHull")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
 text = "КОРПУС\n5М"
 
-[node name="BtnReactor" type="Button" parent="MarginContainer/VBoxContainer/BottomPanel" unique_id=748902210]
+[node name="BtnReactor" type="Button" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel" unique_id=748902210]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 28
 theme_override_fonts/font = ExtResource("2_hlo7n")
 theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_ModuleReactor")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ModuleReactor")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ModuleReactor")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
 text = "РЕАКТОР\n350М"
 
-[node name="BtnCollector" type="Button" parent="MarginContainer/VBoxContainer/BottomPanel" unique_id=1227542794]
+[node name="BtnCollector" type="Button" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel" unique_id=1227542794]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 28
 theme_override_fonts/font = ExtResource("2_hlo7n")
 theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
-theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
-theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
-theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
+theme_override_styles/normal = SubResource("StyleBoxFlat_ModuleCollector")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ModuleCollector")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ModuleCollector")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
 text = "СБОРЩИК\n100М"
 
-[node name="BtnTurret" type="Button" parent="MarginContainer/VBoxContainer/BottomPanel" unique_id=688278749]
+[node name="BtnTurret" type="Button" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel" unique_id=688278749]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 160)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 28
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
+theme_override_styles/normal = SubResource("StyleBoxFlat_ModuleTurret")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_ModuleTurret")
+theme_override_styles/hover = SubResource("StyleBoxFlat_ModuleTurret")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
+text = "ТУРЕЛЬ\n240М"
+
+[node name="BtnShopExit" type="Button" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=307490481]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
 theme_override_fonts/font = ExtResource("2_hlo7n")
 theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
 theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_BtnDisabled")
-text = "ТУРЕЛЬ\n240М"
+text = "◄ ВЫЙТИ ИЗ ЦЕХА"
 
 [node name="EndOverlay" type="ColorRect" parent="." unique_id=986673759]
 unique_name_in_owner = true
