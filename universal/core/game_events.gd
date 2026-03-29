@@ -63,3 +63,6 @@ signal shop_opened
 
 ## Магазин закрыт
 signal shop_closed
+
+## Максимум ресурсов достигнут в первый раз
+signal max_resources_reached(resource_type: String, max_amount: int)
