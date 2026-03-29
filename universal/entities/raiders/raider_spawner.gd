@@ -18,7 +18,6 @@ var _spawn_cycle: Array[int] = []
 var _spawn_cycle_index: int = 0
 var _spawn_cycle_key: String = ""
 var _spawn_enabled_by_buildings: bool = false
-var _pending_tutorial_spawn_request: bool = false
 
 const BALANCE_ROWS: Array[Dictionary] = [
 	{
@@ -148,7 +147,6 @@ func _on_spawn_timer_timeout() -> void:
 	if _is_game_finished:
 		return
 	var buildings_count: int = _sync_spawn_timer_state()
-	_try_consume_pending_tutorial_spawn_request(buildings_count)
 	if not _spawn_enabled_by_buildings:
 		return
 	_cleanup_invalid_raiders()
@@ -164,8 +162,7 @@ func _on_spawn_timer_timeout() -> void:
 
 func _on_buildings_changed(_module_type: String, _position: Vector2) -> void:
 	_reset_spawn_cycle()
-	var buildings_count: int = _sync_spawn_timer_state()
-	_try_consume_pending_tutorial_spawn_request(buildings_count)
+	_sync_spawn_timer_state()
 
 
 func _sync_spawn_timer_state() -> int:
@@ -356,30 +353,11 @@ func _on_game_ended() -> void:
 func _on_tutorial_raider_spawn_requested() -> void:
 	if _is_game_finished:
 		return
-	_pending_tutorial_spawn_request = true
-	var buildings_count: int = _sync_spawn_timer_state()
-	_try_consume_pending_tutorial_spawn_request(buildings_count)
-
-
-func _try_consume_pending_tutorial_spawn_request(buildings_count: int = -1) -> void:
-	if not _pending_tutorial_spawn_request:
-		return
-	if _is_game_finished:
-		return
-
-	var current_buildings_count: int = buildings_count
-	if current_buildings_count < 0:
-		current_buildings_count = _get_current_buildings_count()
-	if current_buildings_count < max(1, min_buildings_for_spawn):
-		return
-
 	_cleanup_invalid_raiders()
 	if not _active_raiders.is_empty():
 		return
 
-	_pending_tutorial_spawn_request = false
-
-	var row: Dictionary = _get_balance_row(current_buildings_count)
+	var row: Dictionary = _get_balance_row(_get_current_buildings_count())
 	var tutorial_row: Dictionary = row.duplicate(true)
 	if int(tutorial_row.get("max_active", 0)) <= 0:
 		tutorial_row["max_active"] = 1
