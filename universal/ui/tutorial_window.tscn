@@ -2,7 +2,7 @@
 
 [ext_resource type="Texture2D" path="res://assets/sprites/nadya.png" id="2_nadya"]
 [ext_resource type="Script" uid="uid://bk340xvps1kf" path="res://ui/tutorial_window.gd" id="2_uupdj"]
-[ext_resource type="FontFile" path="res://assets/fonts/PixelifySans-VariableFont_wght.ttf" id="3_8w6qn"]
+[ext_resource type="FontFile" path="res://assets/fonts/PressStart2P-Regular.ttf" id="3_8w6qn"]
 
 [sub_resource type="StyleBoxFlat" id="TutorialPanel"]
 bg_color = Color(0.039, 0.02, 0.125, 0.95)
@@ -72,7 +72,7 @@ theme_override_constants/separation = 10
 
 [node name="NameLabel" type="Label" parent="Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxContainer" unique_id=1367529767]
 layout_mode = 2
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 34
 theme_override_fonts/font = ExtResource("3_8w6qn")
 theme_override_colors/font_color = Color(0.756, 0.565, 0.875, 1)
 text = "НАДЯ"
@@ -81,7 +81,7 @@ text = "НАДЯ"
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_fonts/normal_font = ExtResource("3_8w6qn")
-theme_override_font_sizes/normal_font_size = 20
+theme_override_font_sizes/normal_font_size = 26
 theme_override_colors/default_color = Color(0.816, 0.627, 0.941, 1)
 text = "Текст диалога будет здесь..."
 fit_content = true

@@ -8,8 +8,10 @@ const MAIN_SCENE_FALLBACK: String = "res://universal/main.tscn"
 
 func _ready() -> void:
 	print("--- МЕНЮ ЗАГРУЖЕНО ---")
-	btn_start.add_theme_font_size_override("font_size", 140)
-	btn_exit.add_theme_font_size_override("font_size", 90)
+	_configure_button_pivot(btn_start)
+	_configure_button_pivot(btn_exit)
+	btn_start.resized.connect(_on_button_resized.bind(btn_start))
+	btn_exit.resized.connect(_on_button_resized.bind(btn_exit))
 	
 	# Привязываем сигналы
 	btn_start.pressed.connect(_on_btn_start_pressed)
@@ -23,6 +25,14 @@ func _ready() -> void:
 	
 	# Пульсирующая анимация для кнопки старта
 	_start_pulse_animation()
+
+
+func _configure_button_pivot(button: Button) -> void:
+	button.pivot_offset = button.size * 0.5
+
+
+func _on_button_resized(button: Button) -> void:
+	_configure_button_pivot(button)
 
 func _start_pulse_animation() -> void:
 	var tween = create_tween()

@@ -2,6 +2,7 @@ extends CanvasLayer
 
 @onready var metal_label: Label = %MetalLabel
 @onready var metal_bar: TextureProgressBar = %MetalBar
+@onready var shop_metal_label: Label = %ShopMetalLabel
 @onready var btn_reactor: Button = %BtnReactor
 @onready var btn_collector: Button = %BtnCollector
 @onready var btn_hull: Button = %BtnHull
@@ -55,6 +56,7 @@ func _refresh_ui() -> void:
 	var metal = ResourceManager.metal
 	var max_metal = ResourceManager.max_metal
 	metal_label.text = "МЕТАЛЛ %d / %d" % [metal, max_metal]
+	shop_metal_label.text = "МЕТАЛЛ %d / %d" % [metal, max_metal]
 	
 	if metal_bar:
 		metal_bar.max_value = max_metal

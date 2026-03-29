@@ -1,17 +1,18 @@
-[gd_scene load_steps=25 format=3 uid="uid://b1c2d3e4f5g6"]
+[gd_scene load_steps=29 format=3 uid="uid://b1c2d3e4f5g6"]
 
 [ext_resource type="Script" uid="uid://drc2amuhc3xj6" path="res://ui/main_ui.gd" id="1_a2b3c"]
-[ext_resource type="FontFile" uid="uid://c62uvuv7pptp5" path="res://assets/fonts/PixelifySans-VariableFont_wght.ttf" id="2_hlo7n"]
+[ext_resource type="FontFile" uid="uid://c62uvuv7pptp5" path="res://assets/fonts/PressStart2P-Regular.ttf" id="2_hlo7n"]
 [ext_resource type="Texture2D" path="res://assets/ui_icons/metal_bar_under_pixel.svg" id="8_bar_under"]
 [ext_resource type="Texture2D" path="res://assets/ui_icons/metal_bar_fill_pixel.svg" id="9_bar_fill"]
+[ext_resource type="Texture2D" path="res://assets/ui_icons/metal_coin_pixel.svg" id="10_coin"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_TopHeader"]
-bg_color = Color(0.0392157, 0.0196078, 0.12549, 0.823529)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.439216, 0.25098, 0.690196, 0.94902)
+bg_color = Color(0.0117647, 0.0117647, 0.0313726, 0.901961)
+border_width_left = 8
+border_width_top = 8
+border_width_right = 8
+border_width_bottom = 10
+border_color = Color(0.756863, 0.564706, 0.87451, 0.980392)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Btn"]
 bg_color = Color(0.227451, 0.117647, 0.431373, 1)
@@ -74,7 +75,7 @@ bg_color = Color(0.0392157, 0.0196078, 0.12549, 1)
 border_width_left = 4
 border_width_top = 4
 border_width_right = 4
-border_width_bottom = 4
+border_width_bottom = 9
 border_color = Color(0.3, 0.8, 0.3, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ModuleReactor"]
@@ -82,7 +83,7 @@ bg_color = Color(0.0392157, 0.0196078, 0.12549, 1)
 border_width_left = 4
 border_width_top = 4
 border_width_right = 4
-border_width_bottom = 4
+border_width_bottom = 9
 border_color = Color(0.95, 0.74, 0.2, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ModuleCollector"]
@@ -90,7 +91,7 @@ bg_color = Color(0.0392157, 0.0196078, 0.12549, 1)
 border_width_left = 4
 border_width_top = 4
 border_width_right = 4
-border_width_bottom = 4
+border_width_bottom = 9
 border_color = Color(1, 0.9, 0.2, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ModuleTurret"]
@@ -98,7 +99,7 @@ bg_color = Color(0.0392157, 0.0196078, 0.12549, 1)
 border_width_left = 4
 border_width_top = 4
 border_width_right = 4
-border_width_bottom = 4
+border_width_bottom = 9
 border_color = Color(0.95, 0.32, 0.18, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_EndPanel"]
@@ -125,6 +126,12 @@ border_width_right = 12
 border_width_bottom = 12
 border_color = Color(0.756863, 0.564706, 0.87451, 0.156)
 
+[sub_resource type="Shader" id="Shader_MetalPanelPattern"]
+code = "shader_type canvas_item;\nuniform vec4 color_dark : source_color = vec4(0.03, 0.02, 0.11, 0.65);\nuniform vec4 color_mid : source_color = vec4(0.09, 0.05, 0.22, 0.55);\nuniform float density = 24.0;\nvoid fragment() {\n\tfloat v = fract((UV.x + UV.y) * density);\n\tfloat stripe = step(0.5, v);\n\tvec4 col = mix(color_dark, color_mid, stripe);\n\tCOLOR = col;\n}\n"
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_MetalPanelPattern"]
+shader = SubResource("Shader_MetalPanelPattern")
+
 [node name="MainUI" type="CanvasLayer"]
 script = ExtResource("1_a2b3c")
 
@@ -146,38 +153,65 @@ mouse_filter = 2
 theme_override_constants/separation = 20
 
 [node name="TopHeader" type="PanelContainer" parent="MarginContainer/VBoxContainer" unique_id=1500310001]
-custom_minimum_size = Vector2(0, 140)
+custom_minimum_size = Vector2(0, 148)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_TopHeader")
+
+[node name="MetalPatternBg" type="ColorRect" parent="MarginContainer/VBoxContainer/TopHeader" unique_id=1500310014]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+material = SubResource("ShaderMaterial_MetalPanelPattern")
+color = Color(1, 1, 1, 1)
 
 [node name="HeaderPadding" type="MarginContainer" parent="MarginContainer/VBoxContainer/TopHeader" unique_id=1500310002]
 layout_mode = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 18
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 18
+theme_override_constants/margin_bottom = 12
 
 [node name="TopPanel" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding" unique_id=1195133402]
 layout_mode = 2
 mouse_filter = 2
-theme_override_constants/separation = 12
+theme_override_constants/separation = 18
 
-[node name="ResourceVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel" unique_id=963290861]
+[node name="MetalGroup" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel" unique_id=963290860]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 1
+theme_override_constants/separation = 14
+
+[node name="MetalIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup" unique_id=963290862]
+custom_minimum_size = Vector2(38, 38)
+layout_mode = 2
+texture = ExtResource("10_coin")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="ResourceVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup" unique_id=963290861]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
+theme_override_constants/separation = 6
 
-[node name="MetalLabel" type="Label" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/ResourceVBox" unique_id=354726117]
+[node name="MetalLabel" type="Label" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup/ResourceVBox" unique_id=354726117]
 unique_name_in_owner = true
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_fonts/font = ExtResource("2_hlo7n")
 theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
-theme_override_font_sizes/font_size = 56
+theme_override_font_sizes/font_size = 28
 text = "МЕТАЛЛ 0 / 200"
 
-[node name="MetalBar" type="TextureProgressBar" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/ResourceVBox" unique_id=1824190027]
+[node name="MetalBar" type="TextureProgressBar" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup/ResourceVBox" unique_id=1824190027]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 52)
+custom_minimum_size = Vector2(0, 34)
 layout_mode = 2
 size_flags_horizontal = 3
 texture_under = ExtResource("8_bar_under")
@@ -216,45 +250,78 @@ grow_vertical = 2
 mouse_filter = 0
 color = Color(0.0156863, 0.00784314, 0.0470588, 0.862745)
 
-[node name="Center" type="CenterContainer" parent="ShopOverlay" unique_id=1955100002]
+[node name="Center" type="MarginContainer" parent="ShopOverlay" unique_id=1955100002]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_constants/margin_left = 30
+theme_override_constants/margin_top = 64
+theme_override_constants/margin_right = 30
+theme_override_constants/margin_bottom = 80
 
 [node name="ShopPanel" type="PanelContainer" parent="ShopOverlay/Center" unique_id=1955100003]
-custom_minimum_size = Vector2(800, 1100)
 layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_ShopPanel")
 
 [node name="ShopMargin" type="MarginContainer" parent="ShopOverlay/Center/ShopPanel" unique_id=1955100004]
 layout_mode = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 24
+theme_override_constants/margin_left = 28
+theme_override_constants/margin_top = 22
+theme_override_constants/margin_right = 28
+theme_override_constants/margin_bottom = 32
 
 [node name="ShopVBox" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin" unique_id=1955100005]
 layout_mode = 2
-theme_override_constants/separation = 30
+size_flags_vertical = 3
+theme_override_constants/separation = 14
+
+[node name="TopInset" type="Control" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=1955100015]
+custom_minimum_size = Vector2(0, 16)
+layout_mode = 2
+
+[node name="ShopMetalLabel" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=1955100014]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 34
+theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
+text = "МЕТАЛЛ 0 / 200"
+horizontal_alignment = 1
 
 [node name="CoreSection" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox"]
 layout_mode = 2
+size_flags_horizontal = 4
 theme_override_constants/separation = 10
+
+[node name="CoreToModulesSpacer" type="Control" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=1955100016]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ModulesTitle" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=1955100017]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 34
+theme_override_colors/font_color = Color(0.756863, 0.564706, 0.87451, 1)
+text = "МОДУЛИ"
+horizontal_alignment = 1
 
 [node name="CorePlaque" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection" unique_id=1955100006]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 180)
+custom_minimum_size = Vector2(0, 200)
 layout_mode = 2
+size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_CorePlaque")
 
 [node name="CoreMargin" type="MarginContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque" unique_id=1955100008]
 layout_mode = 2
-theme_override_constants/margin_left = 20
+theme_override_constants/margin_left = 14
 theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 20
+theme_override_constants/margin_right = 14
 theme_override_constants/margin_bottom = 16
 
 [node name="CoreVBox" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CoreSection/CorePlaque/CoreMargin" unique_id=1955100009]
@@ -327,11 +394,15 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
 
 [node name="BottomPanel" type="GridContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=1364788748]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 700)
+layout_mode = 2
+theme_override_constants/h_separation = 16
+theme_override_constants/v_separation = 16
+columns = 2
+
+[node name="ModulesBottomSpacer" type="Control" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=1955100018]
 layout_mode = 2
 size_flags_vertical = 3
-theme_override_constants/h_separation = 20
-theme_override_constants/v_separation = 20
-columns = 2
 
 [node name="BtnHull" type="Button" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/BottomPanel" unique_id=2123110365]
 unique_name_in_owner = true
