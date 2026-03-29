@@ -3,21 +3,26 @@ extends CanvasLayer
 @onready var overlay: ColorRect = $Overlay
 @onready var dialog_text: RichTextLabel = $Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/DialogText
 @onready var name_label: Label = $Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/NameLabel
-@onready var avatar: TextureRect = $Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/Avatar
-
-const TUTORIAL_ID_INTRO: String = "nadya_intro"
-const TUTORIAL_ID_RAIDER: String = "nadya_raider_warning"
 
 var intro_steps: Array[String] = [
-	"Капитан, вы меня слышите? Это Надя, ваш бортовой ИИ.",
+	"Капитан, вы меня слышите? Это Н.А.Д.Я., ваша Наблюдательная Автономная Диспетческая Ячейка.",
 	"Наш корабль серьезно пострадал. Мы застряли в секторе космического мусора.",
-	"Чтобы выжить, нам нужно собирать обломки. Тапайте по пролетающему мусору, чтобы добыть Металл!",
-	"Используйте Металл для постройки модулей. Постройте Сборщик, и он начнет собирать мусор автоматически."
+	# part 2
+	"Чтобы выжить, нам нужно собирать обломки. Нажимайте по пролетающему мусору, чтобы добыть МЕТАЛЛ!",
+	#part 3 75 metal stored
+	"Отлично! Теперь нажмите на кнопку МАГАЗИН, чтобы открыть меню покупок.",
+	"В магазине вы можете купить модули. Начните с Корпуса за 75 МЕТАЛЛ.",
+	"Удачи, Капитан! Собирайте ресурсы, стройте и обороняйтесь. Н.А.Д.Я. всегда рядом."
 ]
+
+
 var raider_warning_steps: Array[String] = [
+	#part 4 - where enemy spawn
 	"Капитан, тревога! Это вражеский налётчик. Он хочет забрать наши ресурсы.",
 	"Чтобы отбиться, кликайте прямо по врагу, как по мусору.",
-	"Для автоматизации постройте турели: их можно купить в магазине."
+	#part 5 - when enemy killed
+	"Капитан, для автоматизации защиты от врагов постройте турели: их можно купить в магазине."
+	""
 ]
 
 var tutorial_steps: Array[String] = []
@@ -25,25 +30,24 @@ var tutorial_steps: Array[String] = []
 var current_step: int = 0
 var is_typing: bool = false
 var typing_tween: Tween
-var avatar_tween: Tween
 var _pause_state_before_tutorial: bool = false
 var _pause_applied: bool = false
 var _raider_warning_shown: bool = false
 var _pending_raider_warning: bool = false
+var shop_opened: bool = false
 
 func _ready() -> void:
 	# Диалог должен оставаться интерактивным даже когда игра на паузе.
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	hide() 
-	_raider_warning_shown = SaveManager.is_tutorial_shown(TUTORIAL_ID_RAIDER)
 	GameEvents.game_started.connect(start_tutorial)
 	GameEvents.raider_spawned.connect(_on_raider_spawned)
+	GameEvents.resource_changed.connect(_on_resource_changed)
+	GameEvents.shop_opened.connect(_on_shop_opened)
+	GameEvents.shop_closed.connect(_on_shop_closed)
 	# Мы удалили старую подписку на gui_input, теперь все работает через _input()
 
 func start_tutorial() -> void:
-	if SaveManager.is_tutorial_shown(TUTORIAL_ID_INTRO):
-		return
-	SaveManager.mark_tutorial_shown(TUTORIAL_ID_INTRO)
 	_start_dialog(intro_steps)
 
 
@@ -52,17 +56,12 @@ func _start_dialog(steps: Array[String]) -> void:
 		return
 
 	if not _pause_applied:
-		var tree := get_tree()
-		if tree != null:
-			_pause_state_before_tutorial = tree.paused
-			tree.paused = true
-		else:
-			_pause_state_before_tutorial = false
+		_pause_state_before_tutorial = get_tree().paused
+		get_tree().paused = true
 		_pause_applied = true
 
 	tutorial_steps = steps
 	show()
-	_play_avatar_intro()
 	current_step = 0
 	_show_current_step()
 
@@ -70,12 +69,8 @@ func _start_dialog(steps: Array[String]) -> void:
 func _on_raider_spawned(_position: Vector2) -> void:
 	if _raider_warning_shown:
 		return
-	if SaveManager.is_tutorial_shown(TUTORIAL_ID_RAIDER):
-		_raider_warning_shown = true
-		return
 
 	_raider_warning_shown = true
-	SaveManager.mark_tutorial_shown(TUTORIAL_ID_RAIDER)
 	if visible:
 		_pending_raider_warning = true
 		return
@@ -88,13 +83,29 @@ func _on_raider_spawned(_position: Vector2) -> void:
 
 	_start_dialog(raider_warning_steps)
 
+func _on_resource_changed(type: String, new_amount: int) -> void:
+	# Логика для интерактивных шагов, если нужно
+	pass
+
+func _on_shop_opened() -> void:
+	shop_opened = true
+	# Если ждем открытия магазина, перейти к следующему шагу
+	if visible and current_step == 4:  # После шага о нажатии на магазин
+		current_step += 1
+		_show_current_step()
+
+func _on_shop_closed() -> void:
+	shop_opened = false
+
 func _show_current_step() -> void:
 	if current_step >= tutorial_steps.size():
 		_end_tutorial()
 		return
 
 	is_typing = true
-	dialog_text.text = tutorial_steps[current_step]
+	var text = tutorial_steps[current_step]
+	text = _add_highlight_animation(text)
+	dialog_text.text = text
 	dialog_text.visible_ratio = 0.0 # Сбрасываем видимость текста в ноль
 	
 	if typing_tween:
@@ -103,31 +114,40 @@ func _show_current_step() -> void:
 	typing_tween = create_tween()
 	var duration = tutorial_steps[current_step].length() * 0.03
 	typing_tween.tween_property(dialog_text, "visible_ratio", 1.0, duration)
-	typing_tween.finished.connect(func(): is_typing = false)
+	typing_tween.finished.connect(func(): 
+		is_typing = false
+		_start_highlight_animation()
+	)
+
+func _add_highlight_animation(text: String) -> String:
+	# Выделяем слова капсом и цветом
+	text = text.replace("Н.А.Д.Я.", "[color=yellow][b]Н.А.Д.Я.[/b][/color]")
+	text = text.replace("МЕТАЛЛ", "[color=orange][b]МЕТАЛЛ[/b][/color]")
+	text = text.replace("ВРАГИ", "[color=red][b]ВРАГИ[/b][/color]")
+	text = text.replace("ВРАГАМ", "[color=red][b]ВРАГАМ[/b][/color]")
+	return text
+
+func _start_highlight_animation() -> void:
+	# Простая пульсация для выделенных слов (анимация цвета)
+	var tween = create_tween()
+	tween.set_loops()
+	tween.set_ease(Tween.EASE_IN_OUT)
+	tween.set_trans(Tween.TRANS_SINE)
+	
+	# Анимируем modulate для всего текста (простая пульсация)
+	tween.tween_property(dialog_text, "modulate", Color(1.2, 1.2, 1.2), 1.0)
+	tween.tween_property(dialog_text, "modulate", Color(1.0, 1.0, 1.0), 1.0)
 
 func _end_tutorial() -> void:
 	hide()
 	if _pause_applied:
-		var tree := get_tree()
-		if tree != null:
-			tree.paused = _pause_state_before_tutorial
+		get_tree().paused = _pause_state_before_tutorial
 		_pause_applied = false
 	print("Обучение завершено!")
 	if _pending_raider_warning:
 		_pending_raider_warning = false
 		_start_dialog(raider_warning_steps)
 	# Здесь можно запустить спавн мусора/врагов
-
-
-func _play_avatar_intro() -> void:
-	if avatar_tween:
-		avatar_tween.kill()
-
-	avatar.modulate = Color(1.0, 1.0, 1.0, 0.0)
-	avatar.scale = Vector2(0.92, 0.92)
-	avatar_tween = create_tween().set_parallel(true)
-	avatar_tween.tween_property(avatar, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.24)
-	avatar_tween.tween_property(avatar, "scale", Vector2.ONE, 0.24)
 
 # ==========================================
 # ГЛОБАЛЬНЫЙ ПЕРЕХВАТ КЛИКОВ
