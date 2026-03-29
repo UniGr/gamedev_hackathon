@@ -66,3 +66,18 @@ signal shop_closed
 
 ## Максимум ресурсов достигнут в первый раз
 signal max_resources_reached(resource_type: String, max_amount: int)
+
+## Туториал: подсветить/сфокусировать конкретный UI-элемент
+## target_id: логический ID цели (например: "shop_button", "hull")
+## accent_color: цвет акцента для подсветки
+## allow_interaction: разрешено ли действие по клику по целевому элементу
+signal tutorial_focus_changed(target_id: String, accent_color: Color, allow_interaction: bool)
+
+## Туториал: снять подсветку со всех UI-элементов
+signal tutorial_focus_cleared
+
+## UI сообщает актуальную глобальную область целевого элемента
+signal tutorial_target_rect_changed(target_id: String, target_rect: Rect2)
+
+## Туториал запрашивает действие, эквивалентное нажатию на UI-элемент
+signal tutorial_action_requested(action_id: String)

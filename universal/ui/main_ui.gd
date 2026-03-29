@@ -28,8 +28,13 @@ extends CanvasLayer
 var _is_game_finished: bool = false
 var _shop_open: bool = false
 var _level_slot_base_styles: Array[StyleBoxFlat] = []
+var _tutorial_target_controls: Dictionary = {}
+var _tutorial_focused_control: Control
+var _tutorial_focus_tween: Tween
+var _tutorial_focus_color: Color = Color.WHITE
 
 const LEVEL_BAR_FILLED_COLOR: Color = Color(0.941, 0.816, 0.125, 1.0)
+const TUTORIAL_FOCUS_PULSE: Color = Color(1.2, 1.2, 1.2, 1.0)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -40,6 +45,9 @@ func _ready() -> void:
 	if GameEvents.has_signal("game_finished"):
 		GameEvents.game_finished.connect(_on_game_finished)
 	GameEvents.upgrade_purchased.connect(_on_upgrade_purchased)
+	GameEvents.tutorial_focus_changed.connect(_on_tutorial_focus_changed)
+	GameEvents.tutorial_focus_cleared.connect(_on_tutorial_focus_cleared)
+	GameEvents.tutorial_action_requested.connect(_on_tutorial_action_requested)
 
 	btn_reactor.pressed.connect(_on_btn_reactor_pressed)
 	btn_collector.pressed.connect(_on_btn_collector_pressed)
@@ -55,10 +63,20 @@ func _ready() -> void:
 	core_plaque.gui_input.connect(_on_core_plaque_input)
 
 	_cache_level_slot_styles()
+	_register_tutorial_targets()
 
 	_refresh_ui()
 	_set_shop_open(false, false)
 	end_overlay.visible = false
+
+func _process(_delta: float) -> void:
+	if _tutorial_focused_control == null:
+		return
+	if not is_instance_valid(_tutorial_focused_control):
+		return
+	if not _tutorial_focused_control.visible:
+		return
+	GameEvents.tutorial_target_rect_changed.emit(_get_focused_target_id(), _tutorial_focused_control.get_global_rect())
 
 func _on_resource_changed(type: String, _new_total: int) -> void:
 	if type == "metal":
@@ -231,3 +249,60 @@ func _on_btn_restart_pressed() -> void:
 	if ResourceManager.has_method("reset"): ResourceManager.reset()
 	if UpgradeManager.has_method("reset"): UpgradeManager.reset()
 	get_tree().reload_current_scene()
+
+func _register_tutorial_targets() -> void:
+	_tutorial_target_controls = {
+		"shop_button": btn_shop,
+		"hull": btn_hull,
+		"reactor": btn_reactor,
+		"collector": btn_collector,
+		"turret": btn_turret,
+		"core": core_plaque,
+	}
+
+func _on_tutorial_focus_changed(target_id: String, accent_color: Color, _allow_interaction: bool) -> void:
+	_on_tutorial_focus_cleared()
+	if not _tutorial_target_controls.has(target_id):
+		return
+
+	var target = _tutorial_target_controls[target_id]
+	if not (target is Control):
+		return
+
+	_tutorial_focused_control = target as Control
+	_tutorial_focus_color = accent_color
+	if not _tutorial_focused_control.visible:
+		return
+
+	_tutorial_focused_control.modulate = _tutorial_focus_color
+	_tutorial_focus_tween = create_tween()
+	_tutorial_focus_tween.set_loops()
+	_tutorial_focus_tween.set_trans(Tween.TRANS_SINE)
+	_tutorial_focus_tween.set_ease(Tween.EASE_IN_OUT)
+	_tutorial_focus_tween.tween_property(_tutorial_focused_control, "modulate", TUTORIAL_FOCUS_PULSE, 0.45)
+	_tutorial_focus_tween.tween_property(_tutorial_focused_control, "modulate", _tutorial_focus_color, 0.45)
+
+	GameEvents.tutorial_target_rect_changed.emit(target_id, _tutorial_focused_control.get_global_rect())
+
+func _on_tutorial_focus_cleared() -> void:
+	if _tutorial_focus_tween:
+		_tutorial_focus_tween.kill()
+		_tutorial_focus_tween = null
+	if _tutorial_focused_control and is_instance_valid(_tutorial_focused_control):
+		_tutorial_focused_control.modulate = Color.WHITE
+	_tutorial_focused_control = null
+
+func _on_tutorial_action_requested(action_id: String) -> void:
+	match action_id:
+		"open_shop":
+			if not _shop_open:
+				_on_btn_shop_pressed()
+		"buy_hull":
+			if _shop_open and not btn_hull.disabled:
+				_on_btn_hull_pressed()
+
+func _get_focused_target_id() -> String:
+	for id in _tutorial_target_controls.keys():
+		if _tutorial_target_controls[id] == _tutorial_focused_control:
+			return str(id)
+	return ""

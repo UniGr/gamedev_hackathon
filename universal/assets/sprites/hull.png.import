@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cgkgypk658l2"
-path="res://.godot/imported/reactor.png-4da2e2740266bf5b241e6d5d8388e514.ctex"
+uid="uid://lanb2op3eq0h"
+path="res://.godot/imported/hull.png-0ce05abb16baae668aad24c8556f6e50.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/reactor.png"
-dest_files=["res://.godot/imported/reactor.png-4da2e2740266bf5b241e6d5d8388e514.ctex"]
+source_file="res://assets/sprites/hull.png"
+dest_files=["res://.godot/imported/hull.png-0ce05abb16baae668aad24c8556f6e50.ctex"]
 
 [params]
 

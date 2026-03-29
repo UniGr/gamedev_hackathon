@@ -6,9 +6,7 @@ enum ModuleType {
 	CORE = 0,
 	COLLECTOR = 1,
 	REACTOR = 2,
-	STORAGE = 3,
-	DEFENSE = 4,
-	TURRET = 5,
+	TURRET = 3,
 }
 
 # Строковые ID модулей для более удобного использования

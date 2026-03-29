@@ -7,6 +7,4 @@ class_name ResourceBalanceConfig
 
 @export var collector_cost_metal: int = 100
 @export var reactor_cost_metal: int = 350
-@export var storage_cost_metal: int = 60
-@export var defense_cost_metal: int = 120
 @export var hull_cost_metal: int = 75

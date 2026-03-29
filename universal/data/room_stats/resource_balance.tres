@@ -9,6 +9,4 @@ max_metal = 200
 hull_metal_bonus = 100
 collector_cost_metal = 100
 reactor_cost_metal = 350
-storage_cost_metal = 60
-defense_cost_metal = 120
 hull_cost_metal = 75
