@@ -20,8 +20,6 @@ var _is_game_finished: bool = false
 @onready var upgrades_list: VBoxContainer = %UpgradesList
 
 var _shop_open: bool = false
-var _shop_tips_shown: bool = false
-var _shop_tips_label: Label
 var _upgrade_button_by_id: Dictionary = {}
 
 func _ready() -> void:
@@ -51,18 +49,6 @@ func _ready() -> void:
 	
 	_set_shop_open(false, false)
 	end_overlay.visible = false
-
-	_shop_tips_label = Label.new()
-	_shop_tips_label.visible = false
-	_shop_tips_label.align = Label.ALIGN_CENTER
-	_shop_tips_label.valign = Label.VALIGN_CENTER
-	_shop_tips_label.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	_shop_tips_label.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	_shop_tips_label.bbcode_enabled = true
-	_shop_tips_label.text = ""
-	_shop_tips_label.add_theme_font_size_override("font_size", 24)
-	_shop_tips_label.modulate = Color(1, 1, 1, 0.95)
-	add_child(_shop_tips_label)
 
 	_update_buttons(ResourceManager.metal)
 	_refresh_upgrade_buttons(ResourceManager.metal)
@@ -116,7 +102,7 @@ func _update_buttons(current_metal: int) -> void:
 	btn_reactor.disabled = current_metal < ResourceManager.get_current_module_cost(Constants.MODULE_REACTOR)
 	btn_collector.disabled = current_metal < ResourceManager.get_current_module_cost(Constants.MODULE_COLLECTOR)
 	btn_turret.disabled = current_metal < ResourceManager.get_current_module_cost(Constants.MODULE_TURRET)
-	btn_shop.disabled = current_metal < 75
+	btn_shop.disabled = false
 
 
 func _build_upgrade_buttons() -> void:
@@ -148,35 +134,8 @@ func _on_btn_shop_pressed() -> void:
 	if _is_game_finished:
 		return
 
-	if ResourceManager.metal < 75:
-		_show_shop_lock_tip()
-		AudioManager.play_ui_error() if AudioManager.has_method("play_ui_error") else null
-		return
-	
 	AudioManager.play_ui_open()
 	_set_shop_open(not _shop_open, true)
-
-	if not _shop_tips_shown:
-		_shop_tips_shown = true
-		_show_shop_module_tips()
-
-func _show_shop_lock_tip() -> void:
-	_shop_tips_label.bbcode_text = "[color=orange][b]Магазин откроется после 75 металла.[/b][/color]"
-	_shop_tips_label.visible = true
-	var lock_timer = get_tree().create_timer(2.0)
-	await lock_timer.timeout
-	_shop_tips_label.visible = false
-
-func _show_shop_module_tips() -> void:
-	_shop_tips_label.bbcode_text = "[b]Подсказки по модулям:[/b]\n"
-	_shop_tips_label.bbcode_text += "• [color=cyan]Корпус[/color] — защита корабля.\n"
-	_shop_tips_label.bbcode_text += "• [color=cyan]Реактор[/color] — даёт энергию, открывает новые возможности.\n"
-	_shop_tips_label.bbcode_text += "• [color=cyan]Сборщик[/color] — ускоряет добычу металла.\n"
-	_shop_tips_label.bbcode_text += "• [color=cyan]Турель[/color] — оборона от врагов."
-	_shop_tips_label.visible = true
-	var tips_timer = get_tree().create_timer(4.0)
-	await tips_timer.timeout
-	_shop_tips_label.visible = false
 
 func _on_module_built(_type: String, _pos: Vector2) -> void:
 	if _is_game_finished:
