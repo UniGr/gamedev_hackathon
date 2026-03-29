@@ -10,6 +10,7 @@ extends CanvasLayer
 @onready var btn_bgm_toggle: Button = %BtnBgmToggle
 @onready var btn_shop_exit: Button = %BtnShopExit
 @onready var bottom_panel: Control = %BottomPanel
+@onready var shop_overlay: ColorRect = %ShopOverlay
 @onready var end_overlay: ColorRect = %EndOverlay
 @onready var end_title_label: Label = %EndTitleLabel
 @onready var end_reason_label: Label = %EndReasonLabel
@@ -59,11 +60,11 @@ func _ready() -> void:
 func _apply_static_font_overrides() -> void:
 	# В некоторых сборках безопаснее задавать размеры через API, а не через serialized theme_override_font_sizes.
 	btn_shop.add_theme_font_size_override("font_size", 16)
-	btn_shop_exit.add_theme_font_size_override("font_size", 42)
-	btn_hull.add_theme_font_size_override("font_size", 48)
-	btn_reactor.add_theme_font_size_override("font_size", 48)
-	btn_collector.add_theme_font_size_override("font_size", 48)
-	btn_turret.add_theme_font_size_override("font_size", 48)
+	btn_shop_exit.add_theme_font_size_override("font_size", 20)
+	btn_hull.add_theme_font_size_override("font_size", 28)
+	btn_reactor.add_theme_font_size_override("font_size", 28)
+	btn_collector.add_theme_font_size_override("font_size", 28)
+	btn_turret.add_theme_font_size_override("font_size", 28)
 	btn_restart.add_theme_font_size_override("font_size", 46)
 
 func _on_resource_changed(type: String, new_total: int) -> void:
@@ -202,6 +203,7 @@ func _refresh_upgrade_buttons(current_metal: int) -> void:
 
 func _set_shop_open(value: bool, sync_pause: bool) -> void:
 	_shop_open = value
+	shop_overlay.visible = value
 	bottom_panel.visible = value
 	upgrades_panel.visible = value
 	btn_shop_exit.visible = value
@@ -239,6 +241,7 @@ func _on_btn_collector_pressed() -> void:
 
 func _hide_shop_for_build_mode() -> void:
 	_shop_open = false
+	shop_overlay.visible = false
 	bottom_panel.visible = false
 	upgrades_panel.visible = false
 	btn_shop_exit.visible = false
