@@ -1,8 +1,13 @@
 extends CanvasLayer
 
 @onready var overlay: ColorRect = $Overlay
-@onready var dialog_text: RichTextLabel = $Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/DialogText
-@onready var name_label: Label = $Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/NameLabel
+@onready var dialog_panel: PanelContainer = $Overlay/MarginContainer/HBoxContainer/DialogPanel
+@onready var dialog_text: RichTextLabel = $Overlay/MarginContainer/HBoxContainer/DialogPanel/MarginContainer/VBoxContainer/DialogText
+@onready var name_label: Label = $Overlay/MarginContainer/HBoxContainer/DialogPanel/MarginContainer/VBoxContainer/NameLabel
+
+const BASE_DIALOG_PANEL_HEIGHT: float = 224.0
+const DIALOG_CONTENT_PADDING: float = 110.0
+const MAX_DIALOG_HEIGHT_RATIO: float = 0.55
 
 const COLOR_HULL_TEXT: String = "#4DCC4D"
 const COLOR_REACTOR_TEXT: String = "#F2BD33"
@@ -27,15 +32,15 @@ var raider_warning_steps: Array[String] = [
 
 var raider_defense_steps: Array[String] = [
 	"Отличная работа, Капитан!",
-    "Напоминаю, для автоматизации защиты от [color=red]ВРАГОВ[/color] постройте ТУРЕЛИ: их можно купить в магазине."
+	"Напоминаю, для автоматизации защиты от [color=red]ВРАГОВ[/color] постройте ТУРЕЛИ: их можно купить в ЦЕХЕ."
 ]
 
 var shop_invite_steps: Array[String] = [
-    "Капитан, у вас достаточно [color=orange]МЕТАЛЛА[/color]! Зайдите в [color=green]МАГАЗИН[/color], чтобы купить модули для корабля."
+	"Капитан, у вас достаточно [color=orange]МЕТАЛЛА[/color]! Зайдите в [color=green]ЦЕХ[/color], чтобы купить модули для корабля."
 ]
 
 var shop_guide_steps: Array[String] = [
-	"Магазин открыт! Я расскажу об основных модулях, каждый  из них уникален и необходим нашему кораблю:",
+	"ЦЕХ открыт! Я расскажу об основных модулях, каждый  из них уникален и необходим нашему кораблю:",
 	"[color=%s]КОРПУС[/color] — увеличивает максимальное количество ресурсов." % COLOR_HULL_TEXT,
 	"[color=%s]РЕАКТОР[/color] — без них у нас не будет энергии для работы модулей." % COLOR_REACTOR_TEXT,
 	"Реактор запитывает соседние ячейки и позволяет строить модули в них",
@@ -46,6 +51,7 @@ var shop_guide_steps: Array[String] = [
 	"Сейчас у нас хватает [color=orange]МЕТАЛЛА[/color] на [color=%s]КОРПУС[/color]. Самое время его приобрести" % COLOR_HULL_TEXT,
 	"Не переживайте, я буду указывать на разрешенные места для строительства модулей",
 ]
+
 var reactor_guide_steps: Array[String] = [
 	"Капитан, вы накопили [color=orange]375 МЕТАЛЛА[/color]! Этого хватит для постройки [color=cyan]РЕАКТОРА[/color].",
 	"Каждому новому отсеку нужна энергия. Постройте [color=cyan]РЕАКТОР[/color], чтобы увеличить энергоемкость корабля и продолжить расширение базы!",
@@ -54,7 +60,7 @@ var reactor_guide_steps: Array[String] = [
 
 var max_resources_steps: Array[String] = [
 	"Капитан! Мы накопили максимальное количество [color=orange]МЕТАЛЛА[/color]!",
-	"Нам нужно потратить ресурсы на постройку модулей или апгрейдов. Направляйтесь в [color=cyan]МАГАЗИН[/color] и используйте металл!",
+	"Нам нужно потратить ресурсы на постройку модулей или апгрейдов. Направляйтесь в [color=cyan]ЦЕХ[/color] и используйте металл!",
 ]
 
 # ========== СИСТЕМНЫЕ ПЕРЕМЕННЫЕ ==========
@@ -73,9 +79,7 @@ var _raider_defense_shown: bool = false
 var _shop_invite_shown: bool = false
 var _shop_guide_shown: bool = false
 var _reactor_guide_shown: bool = false
-# var _max_resources_shown: bool = false
 var _max_resources_shown_times: int = 0
-
 
 # Флаг для защиты от закликивания (анти-скип)
 var _is_input_blocked: bool = false
@@ -84,14 +88,19 @@ var _focused_target_rect: Rect2 = Rect2()
 var _step_allows_target_interaction: bool = false
 var _step_action_id: String = ""
 var _focus_cutout_panels: Array[ColorRect] = []
-var _cutout_layer: CanvasLayer
+var _cutout_layer: CanvasLayer = null  # Слой для затемнения (layer = -1)
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS # Работаем даже при паузе
 	hide()
 	dialog_text.bbcode_enabled = true
 	
-	_create_cutout_layer()
+	# Восстанавливаем обычное затемнение - полный экран
+	overlay.anchor_left = 0.0
+	overlay.anchor_top = 0.0
+	overlay.anchor_right = 1.0
+	overlay.anchor_bottom = 1.0
+	overlay.visible = true
 	
 	GameEvents.raider_spawned.connect(_on_raider_spawned)
 	GameEvents.raider_destroyed.connect(_on_raider_destroyed)
@@ -130,7 +139,6 @@ func _play_next_dialog() -> void:
 func _hide_and_unpause() -> void:
 	hide()
 	_clear_focus_target()
-	_destroy_focus_cutout()
 	if _pause_applied:
 		get_tree().paused = _pause_state_before_tutorial
 		_pause_applied = false
@@ -151,17 +159,20 @@ func _show_current_step() -> void:
 
 	_apply_focus_for_current_step()
 
+	dialog_panel.custom_minimum_size.y = BASE_DIALOG_PANEL_HEIGHT
 	is_typing = true
 	dialog_text.text = tutorial_steps[current_step]
 	dialog_text.visible_ratio = 0.0 
+	call_deferred("_update_dialog_panel_height", 0.0)
 	
 	if typing_tween: 
 		typing_tween.kill()
 		
 	typing_tween = create_tween()
 	var duration = tutorial_steps[current_step].length() * 0.03
-	typing_tween.tween_property(dialog_text, "visible_ratio", 1.0, duration)
+	typing_tween.tween_method(_on_typing_progress, 0.0, 1.0, duration)
 	typing_tween.finished.connect(func(): 
+		_update_dialog_panel_height(1.0)
 		is_typing = false
 		_start_highlight_animation()
 	)
@@ -234,7 +245,7 @@ func _input(event: InputEvent) -> void:
 		# Перехватываем событие, чтобы оно не просочилось в саму игру под окном Нади
 		get_viewport().set_input_as_handled() 
 		
-		# Если блокировка активна - игнорируем нажатие (но в игру оно уже не пойдет благодаря строке выше)
+		# Если блокировка активна - игнорируем нажатие
 		if _is_input_blocked:
 			return
 		
@@ -242,6 +253,7 @@ func _input(event: InputEvent) -> void:
 			if typing_tween: 
 				typing_tween.kill()
 			dialog_text.visible_ratio = 1.0
+			_update_dialog_panel_height(1.0)
 			is_typing = false
 			_start_highlight_animation()
 		else:
@@ -287,7 +299,6 @@ func _set_focus_target(target_id: String, accent_color: Color, allow_interaction
 	_step_allows_target_interaction = allow_interaction
 	_step_action_id = action_id
 	_focused_target_rect = Rect2()
-	overlay.color = Color(0.102, 0.051, 0.208, 0.0)
 	GameEvents.tutorial_focus_changed.emit(target_id, accent_color, allow_interaction)
 
 func _clear_focus_target() -> void:
@@ -295,15 +306,12 @@ func _clear_focus_target() -> void:
 	_focused_target_rect = Rect2()
 	_step_allows_target_interaction = false
 	_step_action_id = ""
-	overlay.color = Color(0.102, 0.051, 0.208, 0.8)
-	_destroy_focus_cutout()
 	GameEvents.tutorial_focus_cleared.emit()
 
 func _on_tutorial_target_rect_changed(target_id: String, target_rect: Rect2) -> void:
 	if target_id != _focused_target_id:
 		return
 	_focused_target_rect = target_rect
-	_update_focus_cutout()
 
 func _can_trigger_step_action(event_position: Vector2) -> bool:
 	if _focused_target_id.is_empty():
@@ -319,50 +327,35 @@ func _extract_event_position(event: InputEvent) -> Vector2:
 		return (event as InputEventScreenTouch).position
 	return Vector2(-10000.0, -10000.0)
 
-func _create_cutout_layer() -> void:
-	_cutout_layer = CanvasLayer.new()
-	_cutout_layer.layer = 1
-	add_child(_cutout_layer)
+func _on_typing_progress(ratio: float) -> void:
+	dialog_text.visible_ratio = ratio
+	_update_dialog_panel_height(ratio)
 
-func _create_focus_cutout() -> void:
-	_destroy_focus_cutout()
-	if _focused_target_rect.size.x <= 0.0 or _focused_target_rect.size.y <= 0.0:
+func _update_dialog_panel_height(progress: float = 1.0) -> void:
+	var viewport_height: float = get_viewport().get_visible_rect().size.y
+	if viewport_height <= 0.0:
 		return
 
-	var viewport_rect = get_viewport().get_visible_rect()
-	var viewport_size = viewport_rect.size
-	
-	var padding = 0
-	var target_top = max(0, _focused_target_rect.position.y - padding)
-	var target_left = max(0, _focused_target_rect.position.x - padding)
-	var target_right = min(viewport_size.x, _focused_target_rect.position.x + _focused_target_rect.size.x + padding)
-	var target_bottom = min(viewport_size.y, _focused_target_rect.position.y + _focused_target_rect.size.y + padding)
+	# Рост только правой панели диалога: окно Н.А.Д.Я. слева остаётся фиксированным.
+	var text_height: float = dialog_text.get_content_height()
+	var requested_height: float = max(BASE_DIALOG_PANEL_HEIGHT, text_height + DIALOG_CONTENT_PADDING)
+	var max_dialog_height: float = viewport_height * MAX_DIALOG_HEIGHT_RATIO
+	var full_target_height: float = clamp(requested_height, BASE_DIALOG_PANEL_HEIGHT, max_dialog_height)
+	var clamped_progress: float = clamp(progress, 0.0, 1.0)
+	var target_height: float = lerp(BASE_DIALOG_PANEL_HEIGHT, full_target_height, clamped_progress)
+	dialog_panel.custom_minimum_size.y = target_height
 
-	var rects_to_draw = [
-		Rect2(0, 0, viewport_size.x, target_top),
-		Rect2(0, target_bottom, viewport_size.x, viewport_size.y - target_bottom),
-		Rect2(0, target_top, target_left, target_bottom - target_top),
-		Rect2(target_right, target_top, viewport_size.x - target_right, target_bottom - target_top),
-	]
+func _create_cutout_layer() -> void:
+	pass  # Затемнение отключено - только подсветка
 
-	for rect in rects_to_draw:
-		if rect.size.x > 0 and rect.size.y > 0:
-			var panel = ColorRect.new()
-			panel.color = Color(0.102, 0.051, 0.208, 0.8)
-			panel.anchor_left = 0.0
-			panel.anchor_top = 0.0
-			panel.anchor_right = 0.0
-			panel.anchor_bottom = 0.0
-			panel.offset_left = rect.position.x
-			panel.offset_top = rect.position.y
-			panel.offset_right = rect.position.x + rect.size.x
-			panel.offset_bottom = rect.position.y + rect.size.y
-			panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			_cutout_layer.add_child(panel)
-			_focus_cutout_panels.append(panel)
+func _create_full_screen_darkening() -> void:
+	pass  # Затемнение отключено
+
+func _create_focus_cutout() -> void:
+	pass  # Затемнение отключено
 
 func _update_focus_cutout() -> void:
-	_create_focus_cutout()
+	pass  # Затемнение отключено
 
 func _destroy_focus_cutout() -> void:
 	for panel in _focus_cutout_panels:
