@@ -22,6 +22,7 @@ func _init() -> void:
 	max_hp = 165
 	tap_damage = 28
 	sprite_color = Color(1.0, 0.9, 0.2, 1.0) # Желтый
+	module_texture = preload("res://assets/sprites/collector.png")
 
 
 func _ready() -> void:

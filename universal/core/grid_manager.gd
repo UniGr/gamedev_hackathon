@@ -3,7 +3,7 @@ class_name GridManager
 
 const GRID_WIDTH: int = 12
 const GRID_HEIGHT: int = 20
-const CELL_SIZE: int = 90
+const CELL_SIZE: int = 135
 
 var _occupied_cells: Dictionary = {}
 var _powered_cells: Dictionary = {}
@@ -18,6 +18,9 @@ func reset_grid() -> void:
 
 func canBuildAt(pos: Vector2i, module_type: String, size: Vector2i = Vector2i.ONE) -> bool:
 	if not _is_area_inside_grid(pos, size):
+		return false
+
+	if _is_below_core_build_limit(pos, size):
 		return false
 
 	if _is_area_occupied(pos, size):
@@ -110,6 +113,18 @@ func _is_area_reactor_restricted(pos: Vector2i, size: Vector2i) -> bool:
 					if _core_cells.has(affected_cell) or _reactor_cells.has(affected_cell):
 						return true
 	return false
+
+func _is_below_core_build_limit(pos: Vector2i, size: Vector2i) -> bool:
+	if _core_cells.is_empty():
+		return false
+
+	var core_bottom_y: int = _core_cells[0].y
+	for core_cell in _core_cells:
+		if core_cell.y > core_bottom_y:
+			core_bottom_y = core_cell.y
+
+	var placement_bottom_y: int = pos.y + size.y - 1
+	return placement_bottom_y > core_bottom_y
 
 func _mark_power_around_cells(cells: Array[Vector2i], radius: int) -> void:
 	for source_cell in cells:

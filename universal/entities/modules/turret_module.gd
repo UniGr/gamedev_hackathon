@@ -42,6 +42,7 @@ func _init() -> void:
 	max_hp = 200
 	tap_damage = 32
 	sprite_color = Color(0.95, 0.32, 0.18, 1.0)
+	module_texture = preload("res://assets/sprites/turret.png")
 	_base_sprite_color = sprite_color
 
 

@@ -16,6 +16,7 @@ func _init() -> void:
 	max_hp = 480
 	tap_damage = 22
 	sprite_color = Color(0.86, 0.26, 0.26, 1.0)
+	module_texture = preload("res://assets/sprites/core.png")
 
 
 func _ready() -> void:

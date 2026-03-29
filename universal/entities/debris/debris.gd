@@ -49,6 +49,7 @@ func _ready() -> void:
 	add_to_group("debris")
 	_apply_visual()
 	_apply_unit_size()
+	_clamp_to_viewport()
 	_setup_random_rotation()
 	if _clickable.has_signal("clicked"):
 		_clickable.connect("clicked", _on_clicked)
@@ -56,7 +57,21 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	position += _get_movement_vector() * movement_speed_px_per_sec * delta
+	_clamp_to_viewport()
 	rotation += _rotation_speed_rad_per_sec * delta
+
+
+func _clamp_to_viewport() -> void:
+	var viewport_size: Vector2 = get_viewport_rect().size
+	var half_size: Vector2 = unit_size_px * 0.5
+	var min_x: float = half_size.x
+	var max_x: float = max(min_x, viewport_size.x - half_size.x)
+	var min_y: float = half_size.y
+
+	global_position = Vector2(
+		clamp(global_position.x, min_x, max_x),
+		max(global_position.y, min_y)
+	)
 
 
 func auto_collect() -> void:

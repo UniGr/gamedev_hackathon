@@ -1,6 +1,6 @@
 extends Node2D
 
-const CELL_SIZE: float = 90.0
+const CELL_SIZE: float = float(GridManager.CELL_SIZE)
 const CORE_START_CELL: Vector2i = Vector2i(5, 17)
 
 const CORE_MODULE_SCRIPT: Script = preload("res://entities/modules/core_module.gd")
