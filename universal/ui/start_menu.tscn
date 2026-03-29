@@ -2,7 +2,8 @@
 
 [ext_resource type="Script" uid="uid://btdd4teupx4ke" path="res://ui/start_menu.gd" id="1_sm"]
 [ext_resource type="Texture2D" uid="uid://dwg8p8qd8fr5m" path="res://assets/background.png" id="2_bg"]
-[ext_resource type="FontFile" uid="uid://c62uvuv7pptp5" path="res://assets/fonts/PixelifySans-VariableFont_wght.ttf" id="3_loyqk"]
+[ext_resource type="FontFile" uid="uid://c62uvuv7pptp5" path="res://assets/fonts/PixelifySans-VariableFont_wght.ttf" id="3_font"]
+[ext_resource type="Texture2D" uid="uid://bau3koey21dai" path="res://assets/Gemini_Generated_Image_z2m6wvz2m6wvz2m6.png" id="4_appicon"]
 
 [sub_resource type="StyleBoxFlat" id="PixelBorder_Outer"]
 bg_color = Color(0.0, 0.0, 0.0, 0.0)
@@ -114,46 +115,33 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 
-[node name="LogoBox" type="ColorRect" parent="Control" unique_id=3039123456]
+[node name="LogoIcon" type="TextureRect" parent="Control" unique_id=3039123456]
 anchors_preset = 8
 anchor_left = 0.5
-anchor_top = 0.0
 anchor_right = 0.5
-anchor_bottom = 0.0
-offset_left = -60.0
-offset_top = 40.0
-offset_right = 60.0
-offset_bottom = 160.0
+offset_left = -200.0
+offset_top = 120.0
+offset_right = 200.0
+offset_bottom = 520.0
+grow_horizontal = 2
 mouse_filter = 2
-color = Color(0.439, 0.251, 0.690, 1)
-
-[node name="LogoInner" type="ColorRect" parent="Control/LogoBox" unique_id=3039123457]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.5
-anchor_right = 0.5
-anchor_bottom = 0.5
-offset_left = -45.0
-offset_top = -45.0
-offset_right = 45.0
-offset_bottom = 45.0
-mouse_filter = 2
-color = Color(0.227, 0.118, 0.431, 1)
+texture = ExtResource("4_appicon")
+expand_mode = 1
+stretch_mode = 5
+texture_filter = 1
 
 [node name="UniversalLabel" type="Label" parent="Control" unique_id=3039123458]
 anchors_preset = 8
 anchor_left = 0.5
-anchor_top = 0.0
 anchor_right = 0.5
-anchor_bottom = 0.0
-offset_left = -120.0
-offset_top = 165.0
-offset_right = 120.0
-offset_bottom = 185.0
+offset_left = -300.0
+offset_top = 540.0
+offset_right = 300.0
+offset_bottom = 600.0
 grow_horizontal = 2
 mouse_filter = 2
-theme_override_fonts/font = ExtResource("3_loyqk")
-theme_override_font_sizes/font_size = 14
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 40
 theme_override_colors/font_color = Color(0.756, 0.565, 0.875, 1)
 text = "★ UNIVERSAL ★"
 horizontal_alignment = 1
@@ -161,80 +149,79 @@ horizontal_alignment = 1
 [node name="TitleLabel" type="Label" parent="Control" unique_id=3039123459]
 anchors_preset = 8
 anchor_left = 0.5
-anchor_top = 0.0
 anchor_right = 0.5
-anchor_bottom = 0.0
-offset_left = -150.0
-offset_top = 185.0
-offset_right = 150.0
-offset_bottom = 265.0
+offset_left = -500.0
+offset_top = 620.0
+offset_right = 500.0
+offset_bottom = 980.0
 grow_horizontal = 2
 mouse_filter = 2
-theme_override_fonts/font = ExtResource("3_loyqk")
-theme_override_font_sizes/font_size = 40
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 200
 theme_override_colors/font_color = Color(0.756, 0.565, 0.875, 1)
-text = "HYPER
-JUMP"
-horizontal_alignment = 1
-
-[node name="SubtitleLabel" type="Label" parent="Control" unique_id=3039123460]
-anchors_preset = 8
-anchor_left = 0.5
-anchor_top = 0.0
-anchor_right = 0.5
-anchor_bottom = 0.0
-offset_left = -120.0
-offset_top = 265.0
-offset_right = 120.0
-offset_bottom = 285.0
-grow_horizontal = 2
-mouse_filter = 2
-theme_override_fonts/font = ExtResource("3_loyqk")
-theme_override_font_sizes/font_size = 10
-theme_override_colors/font_color = Color(0.756, 0.565, 0.875, 1)
-text = "SCAVENGING THE VOID"
+text = "HYPER\nJUMP"
 horizontal_alignment = 1
 
 [node name="BtnStart" type="Button" parent="Control" unique_id=1919690249]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(400, 100)
+custom_minimum_size = Vector2(800, 240)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
-offset_left = -200.0
-offset_top = -50.0
-offset_right = 200.0
-offset_bottom = 50.0
+offset_left = -400.0
+offset_top = 100.0
+offset_right = 400.0
+offset_bottom = 340.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_font_sizes/font_size = 24
-theme_override_fonts/font = ExtResource("3_loyqk")
+theme_override_font_sizes/font_size = 80
+theme_override_fonts/font = ExtResource("3_font")
 theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
 theme_override_styles/normal = SubResource("StyleBox_StartBtn")
 theme_override_styles/hover = SubResource("StyleBox_StartBtnHover")
 theme_override_styles/pressed = SubResource("StyleBox_StartBtnPressed")
 text = "▶ ИГРАТЬ"
 
+[node name="SoulLabel" type="Label" parent="Control" unique_id=3039123462]
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -500.0
+offset_top = 380.0
+offset_right = 500.0
+offset_bottom = 440.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.596, 0.376, 0.753, 1)
+text = "Сделано с душой на хакатон — Fungi Studio, команда 12 Universal Group <3"
+horizontal_alignment = 1
+autowrap_mode = 2
+
 [node name="BtnExit" type="Button" parent="Control" unique_id=1919690250]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(400, 100)
+custom_minimum_size = Vector2(500, 140)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
 anchor_top = 1.0
 anchor_right = 0.5
 anchor_bottom = 1.0
-offset_left = -200.0
-offset_top = -250.0
-offset_right = 200.0
-offset_bottom = -150.0
+offset_left = -250.0
+offset_top = -340.0
+offset_right = 250.0
+offset_bottom = -200.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_font_sizes/font_size = 24
-theme_override_fonts/font = ExtResource("3_loyqk")
+theme_override_font_sizes/font_size = 48
+theme_override_fonts/font = ExtResource("3_font")
 theme_override_colors/font_color = Color(0.941, 0.875, 1.0, 1)
 theme_override_styles/normal = SubResource("StyleBox_StartBtn")
 theme_override_styles/hover = SubResource("StyleBox_StartBtnHover")
@@ -248,13 +235,13 @@ anchor_top = 1.0
 anchor_right = 0.0
 anchor_bottom = 1.0
 offset_left = 30.0
-offset_top = -40.0
-offset_right = 130.0
+offset_top = -60.0
+offset_right = 200.0
 offset_bottom = -20.0
 grow_vertical = 0
 mouse_filter = 2
-theme_override_fonts/font = ExtResource("3_loyqk")
-theme_override_font_sizes/font_size = 10
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 24
 theme_override_colors/font_color = Color(0.439, 0.251, 0.690, 1)
 text = "BUILD 0.4.2"
 horizontal_alignment = 0

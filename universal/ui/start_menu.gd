@@ -8,8 +8,8 @@ const MAIN_SCENE_FALLBACK: String = "res://universal/main.tscn"
 
 func _ready() -> void:
 	print("--- МЕНЮ ЗАГРУЖЕНО ---")
-	btn_start.add_theme_font_size_override("font_size", 100)
-	btn_exit.add_theme_font_size_override("font_size", 60)
+	btn_start.add_theme_font_size_override("font_size", 140)
+	btn_exit.add_theme_font_size_override("font_size", 90)
 	
 	# Привязываем сигналы
 	btn_start.pressed.connect(_on_btn_start_pressed)
