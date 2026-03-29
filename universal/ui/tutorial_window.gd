@@ -3,155 +3,228 @@ extends CanvasLayer
 @onready var overlay: ColorRect = $Overlay
 @onready var dialog_text: RichTextLabel = $Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/DialogText
 @onready var name_label: Label = $Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/VBoxContainer/NameLabel
-@onready var avatar: TextureRect = $Overlay/MarginContainer/PanelContainer/MarginContainer/HBoxContainer/Avatar
 
-const TUTORIAL_ID_INTRO: String = "nadya_intro"
-const TUTORIAL_ID_RAIDER: String = "nadya_raider_warning"
-
+# ========== ТЕКСТЫ ДИАЛОГОВ ==========
 var intro_steps: Array[String] = [
-	"Капитан, вы меня слышите? Это Надя, ваш бортовой ИИ.",
+	"Капитан, вы меня слышите? Это [color=yellow]Н.А.Д.Я.[/color], ваша Наблюдательная Автономная Диспетчерская Ячейка.",
 	"Наш корабль серьезно пострадал. Мы застряли в секторе космического мусора.",
-	"Чтобы выжить, нам нужно собирать обломки. Тапайте по пролетающему мусору, чтобы добыть Металл!",
-	"Используйте Металл для постройки модулей. Постройте Сборщик, и он начнет собирать мусор автоматически."
 ]
+
+var gathering_steps: Array[String] = [
+	"Чтобы выжить, нам нужно собирать обломки. Нажимайте по пролетающему [color=brown]МУСОРУ[/color], чтобы добыть [color=orange]МЕТАЛЛ[/color]!",
+]
+
 var raider_warning_steps: Array[String] = [
-	"Капитан, тревога! Это вражеский налётчик. Он хочет забрать наши ресурсы.",
-	"Чтобы отбиться, кликайте прямо по врагу, как по мусору.",
-	"Для автоматизации постройте турели: их можно купить в магазине."
+	"Капитан, тревога! Это [color=red]ВРАГ[/color]. Он хочет забрать наши ресурсы.",
+    "Чтобы уничтожить врага, нажимайте по нему так быстро как только сможете"
 ]
 
-var tutorial_steps: Array[String] = []
+var raider_defense_steps: Array[String] = [
+	"Отличная работа, Капитан!",
+    "Напоминаю, для автоматизации защиты от [color=red]ВРАГОВ[/color] постройте ТУРЕЛИ: их можно купить в магазине."
+]
 
+var shop_invite_steps: Array[String] = [
+    "Капитан, у вас достаточно [color=orange]МЕТАЛЛА[/color]! Зайдите в [color=green]МАГАЗИН[/color], чтобы купить модули для корабля."
+]
+
+var shop_guide_steps: Array[String] = [
+	"Магазин открыт! Я расскажу об основных модулях, каждый  из них уникален и необходим нашему кораблю:",
+	"[color=cyan]КОРПУС[/color] — увеличивает максимальное количество ресурсов.",
+	"[color=cyan]РЕАКТОР[/color] — без них у нас не будет энергии для работы модулей.",
+	"Реактор запитывает соседние ячейки и позволяет строить модули в них",
+	"Обратите внимание, что [color=cyan]РЕАКТОРЫ[/color] не должны питать [color=cyan]ЯДРО[/color] и наоборот",
+	"[color=cyan]СБОРЩИК[/color] — автоматически добывает ближайший к к вашему кораблю мусор",
+	"[color=cyan]ТУРЕЛЬ[/color] — оборонительный модуль, атакует врагов автоматически.",
+	"[color=cyan]ЯДРО[/color] — увеличивает количество металла, получаемого с каждого обломка.",
+	"Сейчас у нас хватает [color=orange]МЕТАЛЛА[/color] на [color=cyan]КОРПУС[/color]. Самое время его приобрести",
+	"Не переживайте, я буду указывать на разрешенные места для строительства модулей",
+]
+var reactor_guide_steps: Array[String] = [
+	"Капитан, вы накопили [color=orange]375 МЕТАЛЛА[/color]! Этого хватит для постройки [color=cyan]РЕАКТОРА[/color].",
+	"Каждому новому отсеку нужна энергия. Постройте [color=cyan]РЕАКТОР[/color], чтобы увеличить энергоемкость корабля и продолжить расширение базы!",
+    "Если вам удастся построить [color=cyan]4 РЕАКТОРА[/color],нам хватит энергии для [color=cyan]ГИПЕРПРЫЖКA[/color]"
+]
+
+var max_resources_steps: Array[String] = [
+	"Капитан! Мы накопили максимальное количество [color=orange]МЕТАЛЛА[/color]!",
+	"Нам нужно потратить ресурсы на постройку модулей или апгрейдов. Направляйтесь в [color=cyan]МАГАЗИН[/color] и используйте металл!",
+]
+
+# ========== СИСТЕМНЫЕ ПЕРЕМЕННЫЕ ==========
+var dialog_queue: Array[Array] = [] # Очередь диалогов
+var tutorial_steps: Array[String] = []
 var current_step: int = 0
 var is_typing: bool = false
 var typing_tween: Tween
-var avatar_tween: Tween
+var highlight_tween: Tween
+
+# Флаги состояний и паузы
 var _pause_state_before_tutorial: bool = false
 var _pause_applied: bool = false
 var _raider_warning_shown: bool = false
-var _pending_raider_warning: bool = false
+var _raider_defense_shown: bool = false
+var _shop_invite_shown: bool = false
+var _shop_guide_shown: bool = false
+var _reactor_guide_shown: bool = false
+# var _max_resources_shown: bool = false
+var _max_resources_shown_times: int = 0
+
+
+# Флаг для защиты от закликивания (анти-скип)
+var _is_input_blocked: bool = false
 
 func _ready() -> void:
-	# Диалог должен оставаться интерактивным даже когда игра на паузе.
-	process_mode = Node.PROCESS_MODE_ALWAYS
-	hide() 
-	_raider_warning_shown = SaveManager.is_tutorial_shown(TUTORIAL_ID_RAIDER)
-	GameEvents.game_started.connect(start_tutorial)
+	process_mode = Node.PROCESS_MODE_ALWAYS # Работаем даже при паузе
+	hide()
+	dialog_text.bbcode_enabled = true
+	
 	GameEvents.raider_spawned.connect(_on_raider_spawned)
-	# Мы удалили старую подписку на gui_input, теперь все работает через _input()
+	GameEvents.raider_destroyed.connect(_on_raider_destroyed)
+	GameEvents.resource_changed.connect(_on_resource_changed)
+	GameEvents.max_resources_reached.connect(_on_max_resources_reached)
+	GameEvents.shop_opened.connect(_on_shop_opened)
+	GameEvents.game_finished.connect(_on_game_finished)
+	
+	# Ждем ровно 0.5 секунды после загрузки сцены и вызываем стартовый диалог.
+	get_tree().create_timer(0.5, true, false, true).timeout.connect(_on_game_started)
 
-func start_tutorial() -> void:
-	if SaveManager.is_tutorial_shown(TUTORIAL_ID_INTRO):
+# ========== ЛОГИКА ОЧЕРЕДИ ==========
+func _queue_dialog(steps: Array[String]) -> void:
+	if steps.is_empty(): 
 		return
-	SaveManager.mark_tutorial_shown(TUTORIAL_ID_INTRO)
-	_start_dialog(intro_steps)
+	dialog_queue.append(steps)
+	if not visible:
+		_play_next_dialog()
 
-
-func _start_dialog(steps: Array[String]) -> void:
-	if steps.is_empty():
+func _play_next_dialog() -> void:
+	if dialog_queue.is_empty():
+		_hide_and_unpause()
 		return
-
+		
 	if not _pause_applied:
-		var tree := get_tree()
-		if tree != null:
-			_pause_state_before_tutorial = tree.paused
-			tree.paused = true
-		else:
-			_pause_state_before_tutorial = false
+		_pause_state_before_tutorial = get_tree().paused
+		get_tree().paused = true
 		_pause_applied = true
-
-	tutorial_steps = steps
-	show()
-	_play_avatar_intro()
+		
+	tutorial_steps = dialog_queue.pop_front()
 	current_step = 0
+	show()
 	_show_current_step()
 
-
-func _on_raider_spawned(_position: Vector2) -> void:
-	if _raider_warning_shown:
-		return
-	if SaveManager.is_tutorial_shown(TUTORIAL_ID_RAIDER):
-		_raider_warning_shown = true
-		return
-
-	_raider_warning_shown = true
-	SaveManager.mark_tutorial_shown(TUTORIAL_ID_RAIDER)
-	if visible:
-		_pending_raider_warning = true
-		return
-	# Небольшая задержка, чтобы игрок успел увидеть появление врага
-	await get_tree().create_timer(1.5).timeout
-	# Если за это время открылся другой диалог — поставим предупреждение в очередь
-	if visible:
-		_pending_raider_warning = true
-		return
-
-	_start_dialog(raider_warning_steps)
+func _hide_and_unpause() -> void:
+	hide()
+	if _pause_applied:
+		get_tree().paused = _pause_state_before_tutorial
+		_pause_applied = false
 
 func _show_current_step() -> void:
 	if current_step >= tutorial_steps.size():
-		_end_tutorial()
+		_play_next_dialog()
 		return
+
+	# Включаем защиту от случайных кликов на 0.5 секунд
+	_is_input_blocked = true
+	get_tree().create_timer(0.5, true, false, true).timeout.connect(func(): _is_input_blocked = false)
+
+	# Сбрасываем цвет перед новой репликой
+	dialog_text.modulate = Color.WHITE
+	if highlight_tween:
+		highlight_tween.kill()
 
 	is_typing = true
 	dialog_text.text = tutorial_steps[current_step]
-	dialog_text.visible_ratio = 0.0 # Сбрасываем видимость текста в ноль
+	dialog_text.visible_ratio = 0.0 
 	
-	if typing_tween:
+	if typing_tween: 
 		typing_tween.kill()
 		
 	typing_tween = create_tween()
 	var duration = tutorial_steps[current_step].length() * 0.03
 	typing_tween.tween_property(dialog_text, "visible_ratio", 1.0, duration)
-	typing_tween.finished.connect(func(): is_typing = false)
+	typing_tween.finished.connect(func(): 
+		is_typing = false
+		_start_highlight_animation()
+	)
 
-func _end_tutorial() -> void:
-	hide()
-	if _pause_applied:
-		var tree := get_tree()
-		if tree != null:
-			tree.paused = _pause_state_before_tutorial
-		_pause_applied = false
-	print("Обучение завершено!")
-	if _pending_raider_warning:
-		_pending_raider_warning = false
-		_start_dialog(raider_warning_steps)
-	# Здесь можно запустить спавн мусора/врагов
+func _start_highlight_animation() -> void:
+	if highlight_tween:
+		highlight_tween.kill()
+	highlight_tween = create_tween()
+	highlight_tween.set_loops()
+	highlight_tween.set_ease(Tween.EASE_IN_OUT)
+	highlight_tween.set_trans(Tween.TRANS_SINE)
+	highlight_tween.tween_property(dialog_text, "modulate", Color(1.2, 1.2, 1.2), 1.0)
+	highlight_tween.tween_property(dialog_text, "modulate", Color(1.0, 1.0, 1.0), 1.0)
 
+# ========== РЕАКЦИИ НА ИГРОВЫЕ СОБЫТИЯ ==========
+func _on_game_started() -> void:
+	_queue_dialog(intro_steps)
+	_queue_dialog(gathering_steps)
 
-func _play_avatar_intro() -> void:
-	if avatar_tween:
-		avatar_tween.kill()
+func _on_raider_spawned(_position: Vector2) -> void:
+	if _raider_warning_shown: 
+		return
+	_raider_warning_shown = true
+	await get_tree().create_timer(1.5, true, false, true).timeout
+	_queue_dialog(raider_warning_steps)
 
-	avatar.modulate = Color(1.0, 1.0, 1.0, 0.0)
-	avatar.scale = Vector2(0.92, 0.92)
-	avatar_tween = create_tween().set_parallel(true)
-	avatar_tween.tween_property(avatar, "modulate", Color(1.0, 1.0, 1.0, 1.0), 0.24)
-	avatar_tween.tween_property(avatar, "scale", Vector2.ONE, 0.24)
+func _on_resource_changed(type: String, new_amount: int) -> void:
+	if type == "metal":
+		if new_amount >= 75 and not _shop_invite_shown:
+			_shop_invite_shown = true
+			_queue_dialog(shop_invite_steps)
+			
+		if new_amount >= 375 and not _reactor_guide_shown:
+			_reactor_guide_shown = true
+			_queue_dialog(reactor_guide_steps)
 
-# ==========================================
-# ГЛОБАЛЬНЫЙ ПЕРЕХВАТ КЛИКОВ
-# ==========================================
+func _on_shop_opened() -> void:
+	if not _shop_guide_shown and ResourceManager.metal >= 75:
+		_shop_guide_shown = true
+		_queue_dialog(shop_guide_steps)
+
+func _on_max_resources_reached(resource_type: String, _max_amount: int) -> void:
+	if _max_resources_shown_times < 2:
+		_max_resources_shown_times += 1
+		print("DEBUG: Max resources reached times: ", _max_resources_shown_times)
+		_queue_dialog(max_resources_steps)
+
+func _on_raider_destroyed(_position: Vector2, _evolution_level: int, _source: String) -> void:
+	if _raider_warning_shown and not _raider_defense_shown:
+		_raider_defense_shown = true
+		_queue_dialog(raider_defense_steps)
+
+func _on_game_finished(outcome: String, _reason: String) -> void:
+	if outcome == "lose":
+		var defeat_steps: Array[String] = [
+			"КАПИТАН, МЫ ПОТЕРПЕЛИ ПОРАЖЕНИЕ! АКТИВИРУЮ РЕЖИМ ПОСЛЕДНЕЙ НАДЕЖДЫ...",
+		]
+		dialog_queue.clear()
+		_queue_dialog(defeat_steps)
+
+# ========== ГЛОБАЛЬНЫЙ ПЕРЕХВАТ КЛИКОВ ==========
 func _input(event: InputEvent) -> void:
-	# Если Надя спрятана, мы вообще не вмешиваемся в клики
-	if not visible:
+	if not visible: 
 		return
 
-	# Проверяем, что это левый клик мыши или тап по экрану смартфона
 	var is_click = event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_LEFT and event.pressed
 	var is_touch = event is InputEventScreenTouch and event.pressed
 	
 	if is_click or is_touch:
-		# МАГИЯ: Забираем клик себе! Теперь он не пройдет сквозь интерфейс в игру.
+		# Перехватываем событие, чтобы оно не просочилось в саму игру под окном Нади
 		get_viewport().set_input_as_handled() 
 		
+		# Если блокировка активна - игнорируем нажатие (но в игру оно уже не пойдет благодаря строке выше)
+		if _is_input_blocked:
+			return
+		
 		if is_typing:
-			# Если текст еще печатается - моментально показываем его весь
-			if typing_tween:
+			if typing_tween: 
 				typing_tween.kill()
 			dialog_text.visible_ratio = 1.0
 			is_typing = false
+			_start_highlight_animation()
 		else:
-			# Если текст уже напечатан - идем к следующей реплике
 			current_step += 1
 			_show_current_step()

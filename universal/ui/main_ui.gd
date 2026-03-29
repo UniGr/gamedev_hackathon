@@ -141,6 +141,11 @@ func _set_shop_open(value: bool, sync_pause: bool) -> void:
 	if sync_pause:
 		get_tree().paused = value
 
+	if value:
+		GameEvents.shop_opened.emit()
+	else:
+		GameEvents.shop_closed.emit()
+
 func _on_btn_shop_exit_pressed() -> void:
 	AudioManager.play_ui_click()
 	_set_shop_open(false, true)
