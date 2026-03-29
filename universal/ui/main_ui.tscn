@@ -171,6 +171,18 @@ corner_radius_top_right = 0
 corner_radius_bottom_right = 0
 corner_radius_bottom_left = 0
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_LevelSlot"]
+bg_color = Color(0.102, 0.051, 0.208, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.439, 0.251, 0.690, 1)
+corner_radius_top_left = 0
+corner_radius_top_right = 0
+corner_radius_bottom_right = 0
+corner_radius_bottom_left = 0
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ModuleHull"]
 bg_color = Color(0.071, 0.031, 0.141, 1)
 border_width_left = 3
@@ -359,19 +371,84 @@ layout_mode = 2
 theme_override_constants/separation = 14
 
 [node name="CorePlaque" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=1955100006]
+custom_minimum_size = Vector2(0, 132)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_CorePlaque")
 
-[node name="CoreLabel" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque" unique_id=1955100007]
+[node name="CoreMargin" type="MarginContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque" unique_id=1955100008]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 10
+
+[node name="CoreVBox" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin" unique_id=1955100009]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CoreTopRow" type="HBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox" unique_id=1955100010]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CoreLabel" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox/CoreTopRow" unique_id=1955100007]
+size_flags_horizontal = 3
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 24
+theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
+text = "• ЯДРО: АПГРЕЙД"
+
+[node name="CoreCost" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox/CoreTopRow" unique_id=1955100011]
 layout_mode = 2
 theme_override_fonts/font = ExtResource("2_hlo7n")
-theme_override_font_sizes/font_size = 28
+theme_override_font_sizes/font_size = 24
 theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
-text = "ЯДРО: АПГРЕЙД"
-horizontal_alignment = 1
+text = "375 •"
+horizontal_alignment = 2
+
+[node name="CoreLevelLabel" type="Label" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox" unique_id=1955100012]
+layout_mode = 2
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.596, 0.376, 0.753, 1)
+text = "УРОВЕНЬ 0 / 5"
+
+[node name="LevelBars" type="HBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox" unique_id=1955100013]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="LevelBar1" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox/LevelBars" unique_id=1955100014]
+custom_minimum_size = Vector2(110, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
+
+[node name="LevelBar2" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox/LevelBars" unique_id=1955100015]
+custom_minimum_size = Vector2(110, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
+
+[node name="LevelBar3" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox/LevelBars" unique_id=1955100016]
+custom_minimum_size = Vector2(110, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
+
+[node name="LevelBar4" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox/LevelBars" unique_id=1955100017]
+custom_minimum_size = Vector2(110, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
+
+[node name="LevelBar5" type="PanelContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox/CorePlaque/CoreMargin/CoreVBox/LevelBars" unique_id=1955100018]
+custom_minimum_size = Vector2(110, 20)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_LevelSlot")
 
 [node name="UpgradesPanel" type="VBoxContainer" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=201169882]
 unique_name_in_owner = true
+visible = false
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 12
