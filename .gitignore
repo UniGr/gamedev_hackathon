@@ -1,6 +1,7 @@
 # Godot 4+ specific ignores
 .godot/
 
+Godot_*
 # Godot-specific ignores
 .import/
 export.cfg
@@ -13,6 +14,9 @@ export_presets.cfg
 .mono/
 data_*/
 mono_crash.*.json
+
+my_release_key.*
+
 
 # System/OS specific ignores
 .DS_Store
