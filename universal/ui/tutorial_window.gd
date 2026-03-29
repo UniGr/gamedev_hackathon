@@ -67,7 +67,9 @@ var _raider_defense_shown: bool = false
 var _shop_invite_shown: bool = false
 var _shop_guide_shown: bool = false
 var _reactor_guide_shown: bool = false
-var _max_resources_shown: bool = false
+# var _max_resources_shown: bool = false
+var _max_resources_shown_times: int = 0
+
 
 # Флаг для защиты от закликивания (анти-скип)
 var _is_input_blocked: bool = false
@@ -183,8 +185,9 @@ func _on_shop_opened() -> void:
 		_queue_dialog(shop_guide_steps)
 
 func _on_max_resources_reached(resource_type: String, _max_amount: int) -> void:
-	if resource_type == "metal" and not _max_resources_shown:
-		_max_resources_shown = true
+	if _max_resources_shown_times < 2:
+		_max_resources_shown_times += 1
+		print("DEBUG: Max resources reached times: ", _max_resources_shown_times)
 		_queue_dialog(max_resources_steps)
 
 func _on_raider_destroyed(_position: Vector2, _evolution_level: int, _source: String) -> void:
