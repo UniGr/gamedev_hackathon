@@ -30,6 +30,16 @@ var raider_defense_steps: Array[String] = [
 	"Капитан, для автоматизации защиты от [color=red][b]врагов[/b][/color] постройте турели: их можно купить в магазине."
 ]
 
+# ========== ЧАСТЬ Х: Обучение магазина (1 раз при 75+ металла) ==========
+var shop_guide_steps: Array[String] = [
+	"Хорошо, капитан. Магазин открыт! Я расскажу об основных модулях, за каждый отвечает свой эффект:",
+	"[color=cyan]Корпус[/color] — базовая защита, которая смягчает урон.",
+	"[color=cyan]Реактор[/color] — источник энергии, расширяет возможности строительства.",
+	"[color=cyan]Сборщик[/color] — увеличивает скорость добычи металла.",
+	"[color=cyan]Турель[/color] — оборонительный модуль, атакует врагов автоматически.",
+	"[color=cyan]Специальный модуль[/color] — уникальный эффект: усиление урона/щит/экон. Используй по ситуации."
+]
+
 var tutorial_steps: Array[String] = []
 
 var current_step: int = 0
@@ -41,6 +51,8 @@ var _pause_applied: bool = false
 var _raider_warning_shown: bool = false
 var _pending_raider_warning: bool = false
 var shop_opened: bool = false
+var _shop_guide_shown: bool = false
+var _pending_shop_guide: bool = false
 
 func _ready() -> void:
 	# Диалог должен оставаться интерактивным даже когда игра на паузе.
@@ -161,9 +173,21 @@ func _hide_and_unpause() -> void:
 		_pause_applied = false
 	print("Диалог скрыт, пауза восстановлена")
 
+	if _pending_shop_guide:
+		_pending_shop_guide = false
+		_start_dialog(shop_guide_steps)
+
 func _on_shop_opened() -> void:
 	shop_opened = true
 	print("Магазин открыт. Текущая фаза: ", current_tutorial_phase)
+
+	# Один раз, при 75+ металла, триггерим гайд Надя по модулям
+	if not _shop_guide_shown and ResourceManager.metal >= 75:
+		_shop_guide_shown = true
+		if visible:
+			_pending_shop_guide = true
+			return
+		_start_dialog(shop_guide_steps)
 
 func _on_shop_closed() -> void:
 	shop_opened = false
