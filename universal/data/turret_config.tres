@@ -1,0 +1,21 @@
+[gd_resource type="Resource" script_class="TurretConfig" load_steps=2 format=3 uid="uid://cturretconfig001"]
+
+[ext_resource type="Script" path="res://data/turret_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+fire_cooldown_sec = 0.42
+attack_range_cells = 4.8
+turret_damage = 34
+lock_on_bonus_damage = 8
+lock_on_after_shots = 3
+burst_shots = 2
+burst_interval_sec = 0.08
+heat_per_shot = 0.16
+cool_per_sec = 0.42
+overheat_threshold = 1.0
+cooldown_resume_threshold = 0.35
+laser_color = Color(1.0, 0.35, 0.15, 1.0)
+hacked_tint = Color(0.3, 0.95, 0.95, 1.0)
+max_hp = 200
+tap_damage = 32

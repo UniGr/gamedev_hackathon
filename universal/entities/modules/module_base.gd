@@ -1,7 +1,6 @@
 extends Node2D
 class_name ModuleBase
 
-const CLICKABLE_COMPONENT_SCRIPT: Script = preload("res://shared/components/clickable_component.gd")
 const HEALTH_COMPONENT_SCRIPT: Script = preload("res://shared/components/health_component.gd")
 
 signal destroy_requested(module: ModuleBase, source: String)
@@ -90,33 +89,14 @@ func _ensure_clickable() -> void:
 	if _clickable != null and is_instance_valid(_clickable):
 		return
 
-	_clickable = Area2D.new()
-	_clickable.name = "ClickableComponent"
-	_clickable.script = CLICKABLE_COMPONENT_SCRIPT
-	_clickable.set("one_shot", false)
-	add_child(_clickable)
-
-	_collision_shape = CollisionShape2D.new()
-	_collision_shape.name = "CollisionShape2D"
-	_clickable.add_child(_collision_shape)
-
-	if _clickable.has_signal("clicked"):
-		_clickable.connect("clicked", _on_tapped)
+	var setup: Dictionary = ClickableSetup.create_clickable(self, _on_tapped, false)
+	_clickable = setup.get("clickable") as Area2D
+	_collision_shape = setup.get("collision") as CollisionShape2D
 
 
 func _update_click_shape_size() -> void:
-	if _collision_shape == null or not is_instance_valid(_collision_shape):
-		return
-
-	var rect_shape: RectangleShape2D
-	if _collision_shape.shape is RectangleShape2D:
-		rect_shape = _collision_shape.shape as RectangleShape2D
-	else:
-		rect_shape = RectangleShape2D.new()
-		_collision_shape.shape = rect_shape
-
-	rect_shape.size = Vector2(grid_size.x * cell_size_px, grid_size.y * cell_size_px)
-	_collision_shape.position = Vector2(rect_shape.size.x * 0.5, rect_shape.size.y * 0.5)
+	var size: Vector2 = Vector2(grid_size.x * cell_size_px, grid_size.y * cell_size_px)
+	ClickableSetup.update_rect_shape(_collision_shape, size)
 
 
 func _on_tapped() -> void:

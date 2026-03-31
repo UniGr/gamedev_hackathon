@@ -2,6 +2,11 @@ extends "res://entities/modules/module_base.gd"
 class_name CollectorModule
 const LASER_RENDERER_SCRIPT: Script = preload("res://shared/components/laser_renderer.gd")
 
+## Data-Driven: конфиг коллектора загружается из .tres
+const DEFAULT_CONFIG: CollectorConfig = preload("res://data/collector_config.tres")
+
+@export var config: CollectorConfig = DEFAULT_CONFIG
+
 @export var collect_cooldown_sec: float = 5.0
 @export var collect_radius_from_ship_edge_cells: float = 5.0
 @export var mark_radius_from_ship_edge_cells: float = 7.0
@@ -19,10 +24,23 @@ func _init() -> void:
 	module_id = Constants.MODULE_COLLECTOR
 	grid_size = Vector2i.ONE
 	metal_cost = Constants.get_module_cost(module_id)
-	max_hp = 165
-	tap_damage = 28
 	sprite_color = Color(1.0, 0.9, 0.2, 1.0) # Желтый
 	module_texture = preload("res://assets/sprites/collector.png")
+	_apply_config()
+
+
+func _apply_config() -> void:
+	if config == null:
+		config = DEFAULT_CONFIG
+	if config == null:
+		return
+	
+	collect_cooldown_sec = config.collect_cooldown_sec
+	collect_radius_from_ship_edge_cells = config.collect_radius_from_ship_edge_cells
+	mark_radius_from_ship_edge_cells = config.mark_radius_from_ship_edge_cells
+	laser_color = config.laser_color
+	max_hp = config.max_hp
+	tap_damage = config.tap_damage
 
 
 func _ready() -> void:
