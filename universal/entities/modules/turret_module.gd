@@ -1,5 +1,6 @@
 extends "res://entities/modules/module_base.gd"
 class_name TurretModule
+const LASER_RENDERER_SCRIPT: Script = preload("res://shared/components/laser_renderer.gd")
 
 enum TargetMode {
 	NEAREST,
@@ -24,8 +25,7 @@ enum TargetMode {
 
 var _fire_timer: Timer
 var _burst_timer: Timer
-var _laser_hide_timer: Timer
-var _laser: Line2D
+var _laser_renderer: LaserRenderer
 var _current_target: Node2D
 var _consecutive_hits_on_target: int = 0
 var _shots_left_in_burst: int = 0
@@ -47,6 +47,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
+	super._ready()
 	_fire_timer = Timer.new()
 	_fire_timer.one_shot = false
 	_fire_timer.wait_time = max(0.1, fire_cooldown_sec)
@@ -60,17 +61,13 @@ func _ready() -> void:
 	_burst_timer.timeout.connect(_on_burst_timer)
 	add_child(_burst_timer)
 
-	_laser_hide_timer = Timer.new()
-	_laser_hide_timer.one_shot = true
-	_laser_hide_timer.wait_time = 0.08
-	_laser_hide_timer.timeout.connect(_hide_laser)
-	add_child(_laser_hide_timer)
-
-	_laser = Line2D.new()
-	_laser.width = 4.0
-	_laser.default_color = laser_color
-	_laser.visible = false
-	add_child(_laser)
+	_laser_renderer = LASER_RENDERER_SCRIPT.new() as LaserRenderer
+	if _laser_renderer != null:
+		_laser_renderer.name = "LaserRenderer"
+		_laser_renderer.flash_duration_sec = 0.08
+		add_child(_laser_renderer)
+		_laser_renderer.set_width(4.0)
+		_laser_renderer.set_color(laser_color)
 
 
 func _process(delta: float) -> void:
@@ -213,24 +210,14 @@ func _find_target() -> Node2D:
 
 
 func _show_laser_to(target_world: Vector2) -> void:
-	var origin: Vector2 = Vector2(grid_size.x * cell_size_px * 0.5, grid_size.y * cell_size_px * 0.5)
-	var target_local: Vector2 = to_local(target_world)
-	_laser.points = PackedVector2Array([origin, target_local])
-	_laser.visible = true
-	_laser_hide_timer.start()
+	if _laser_renderer == null:
+		return
+	_laser_renderer.flash_from_center_to_global(target_world, cell_size_px, grid_size)
 
 
 func _hide_laser() -> void:
-	_laser.visible = false
-
-
-func _is_build_mode_active() -> bool:
-	var cursor: Node = get_parent()
-	while cursor != null:
-		if cursor.has_method("is_build_mode_active"):
-			return bool(cursor.call("is_build_mode_active"))
-		cursor = cursor.get_parent()
-	return false
+	if _laser_renderer != null:
+		_laser_renderer.hide_laser()
 
 
 func apply_hack_disable(duration_sec: float) -> void:

@@ -83,6 +83,7 @@ func enter_build_mode(module_type: String) -> void:
 	var temp_module: ModuleBase = script_ref.new() as ModuleBase
 	_active_build_size = temp_module.grid_size
 	temp_module.queue_free()
+	GameEvents.build_mode_changed.emit(true)
 	
 	_show_valid_placements(module_type, _active_build_size)
 
@@ -108,6 +109,8 @@ func _clear_highlights() -> void:
 	if highlights_root != null:
 		for child in highlights_root.get_children():
 			child.queue_free()
+	if _active_build_type != "":
+		GameEvents.build_mode_changed.emit(false)
 	_active_build_type = ""
 
 

@@ -2,6 +2,7 @@ extends Node2D
 class_name ModuleBase
 
 const CLICKABLE_COMPONENT_SCRIPT: Script = preload("res://shared/components/clickable_component.gd")
+const HEALTH_COMPONENT_SCRIPT: Script = preload("res://shared/components/health_component.gd")
 
 signal destroy_requested(module: ModuleBase, source: String)
 signal hp_changed(module: ModuleBase, current_hp: int, max_hp: int, source: String)
@@ -26,6 +27,14 @@ var current_hp: int = 0
 
 var _clickable: Area2D
 var _collision_shape: CollisionShape2D
+var _is_build_mode_active_cached: bool = false
+var _health: HealthComponent
+
+
+func _ready() -> void:
+	if GameEvents.has_signal("build_mode_changed"):
+		GameEvents.build_mode_changed.connect(_on_build_mode_changed)
+	_ensure_health_component()
 
 
 func configure(cell_pos: Vector2i, cell_size: float) -> void:
@@ -34,6 +43,8 @@ func configure(cell_pos: Vector2i, cell_size: float) -> void:
 	position = Vector2(cell_pos.x * cell_size_px, cell_pos.y * cell_size_px)
 	if current_hp <= 0:
 		current_hp = max(1, max_hp)
+		if _health != null:
+			_health.set_max_hp(max_hp, true)
 	_ensure_clickable()
 	_update_click_shape_size()
 	queue_redraw()
@@ -61,22 +72,15 @@ func take_damage(amount: int, source: String = "unknown") -> bool:
 	if damage <= 0:
 		return false
 
-	if current_hp <= 0:
-		current_hp = max(1, max_hp)
-
-	current_hp = max(0, current_hp - damage)
-	hp_changed.emit(self, current_hp, max_hp, source)
-	GameEvents.module_damaged.emit(module_id, current_hp, max_hp, Vector2(grid_position), source)
-	queue_redraw()
-
-	if current_hp <= 0:
-		destroy_requested.emit(self, source)
-		return true
-
-	return false
+	_ensure_health_component()
+	if _health == null:
+		return false
+	return _health.take_damage(damage, source)
 
 
 func get_hp_ratio() -> float:
+	if _health != null:
+		return _health.get_hp_ratio()
 	if max_hp <= 0:
 		return 0.0
 	return clamp(float(current_hp) / float(max_hp), 0.0, 1.0)
@@ -124,12 +128,55 @@ func _on_tapped() -> void:
 
 
 func _is_build_mode_active() -> bool:
-	var cursor: Node = get_parent()
-	while cursor != null:
-		if cursor.has_method("is_build_mode_active"):
-			return bool(cursor.call("is_build_mode_active"))
-		cursor = cursor.get_parent()
-	return false
+	return _is_build_mode_active_cached
+
+
+func _on_build_mode_changed(is_active: bool) -> void:
+	_is_build_mode_active_cached = is_active
+
+
+func _ensure_health_component() -> void:
+	if _health != null and is_instance_valid(_health):
+		return
+
+	var existing: Node = get_node_or_null("HealthComponent")
+	if existing is HealthComponent:
+		_health = existing as HealthComponent
+	else:
+		_health = HEALTH_COMPONENT_SCRIPT.new() as HealthComponent
+		_health.name = "HealthComponent"
+		add_child(_health)
+
+	_health.max_hp = max(1, max_hp)
+	_health.initial_hp = max(1, current_hp) if current_hp > 0 else _health.max_hp
+	_health.reset(current_hp <= 0)
+	max_hp = _health.max_hp
+	current_hp = _health.current_hp
+
+	if not _health.damaged.is_connected(_on_health_damaged):
+		_health.damaged.connect(_on_health_damaged)
+	if not _health.died.is_connected(_on_health_died):
+		_health.died.connect(_on_health_died)
+	if not _health.hp_changed.is_connected(_on_health_hp_changed):
+		_health.hp_changed.connect(_on_health_hp_changed)
+
+
+func _on_health_damaged(_amount: int, new_hp: int, health_max_hp: int, source: String) -> void:
+	current_hp = new_hp
+	max_hp = health_max_hp
+	hp_changed.emit(self, current_hp, max_hp, source)
+	GameEvents.module_damaged.emit(module_id, current_hp, max_hp, Vector2(grid_position), source)
+	queue_redraw()
+
+
+func _on_health_died(source: String) -> void:
+	destroy_requested.emit(self, source)
+
+
+func _on_health_hp_changed(new_hp: int, health_max_hp: int) -> void:
+	current_hp = new_hp
+	max_hp = health_max_hp
+	queue_redraw()
 
 
 func _draw() -> void:

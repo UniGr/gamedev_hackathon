@@ -39,6 +39,12 @@ func set_role(role: int) -> void:
 	_role = clamp(role, ROLE_NORMAL, ROLE_SPRINTER)
 
 
+func configure_retarget_interval(interval_sec: float) -> void:
+	retarget_interval_sec = maxf(0.1, interval_sec)
+	if _retarget_timer != null:
+		_retarget_timer.wait_time = retarget_interval_sec
+
+
 func get_target() -> ModuleBase:
 	return _target
 

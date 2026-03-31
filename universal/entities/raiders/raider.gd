@@ -10,9 +10,15 @@ enum RaiderRole {
 const TempCombatVfxScript: Script = preload("res://entities/effects/temp_combat_vfx.gd")
 const TempCombatSfxScript: Script = preload("res://entities/effects/temp_combat_sfx.gd")
 const ClickableComponentScript: Script = preload("res://shared/components/clickable_component.gd")
+const HealthComponentScript: Script = preload("res://shared/components/health_component.gd")
 const TextureNormal: Texture2D = preload("res://assets/sprites/normal.png")
 const TextureSprinter: Texture2D = preload("res://assets/sprites/sprinter.png")
 const TextureTank: Texture2D = preload("res://assets/sprites/tank.png")
+
+const RaiderAIComponentScript: Script = preload("res://shared/components/raider_ai_component.gd")
+const RaiderMovementComponentScript: Script = preload("res://shared/components/raider_movement_component.gd")
+const RaiderCombatComponentScript: Script = preload("res://shared/components/raider_combat_component.gd")
+const ViewportBoundsComponentScript: Script = preload("res://shared/components/viewport_bounds_component.gd")
 
 @export_group("Raider Movement")
 @export var movement_speed_px_per_sec: float = 285.0
@@ -41,52 +47,30 @@ const TextureTank: Texture2D = preload("res://assets/sprites/tank.png")
 @export var accent_color: Color = Color(1.0, 0.45, 0.45, 1.0)
 
 var _board: Node
-var _target: ModuleBase
-var _reserved_target: ModuleBase
-var _is_biting: bool = false
-var _current_hp: int = 0
 var _role: int = RaiderRole.NORMAL
+var _is_biting: bool = false
 
-var _retarget_timer: Timer
-var _bite_timer: Timer
 var _vfx: TempCombatVfx
 var _sfx: TempCombatSfx
+var _health: HealthComponent
 var _body_sprite: Sprite2D
 var _clickable: Area2D
 var _collision_shape: CollisionShape2D
-var _movement_time_sec: float = 0.0
-var _wobble_phase: float = 0.0
-var _runtime_wobble_strength: float = 0.0
-var _runtime_wobble_frequency_hz: float = 0.0
-var _runtime_speed_multiplier: float = 1.0
+
+var _ai: RaiderAIComponent
+var _movement: RaiderMovementComponent
+var _combat: RaiderCombatComponent
+var _viewport_bounds: ViewportBoundsComponent
 
 
 func _ready() -> void:
-	# Налетчик должен замирать на паузе вместе с остальным игровым миром.
 	process_mode = Node.PROCESS_MODE_PAUSABLE
-
 	add_to_group("raiders")
+
 	_body_sprite = get_node_or_null("BodySprite") as Sprite2D
 	_apply_role_sprite()
-	if _current_hp <= 0:
-		_current_hp = max(1, max_hp)
-	_wobble_phase = randf() * TAU
-	_runtime_wobble_strength = max(0.0, path_wobble_strength + randf_range(-path_wobble_strength_random_range, path_wobble_strength_random_range))
-	_runtime_wobble_frequency_hz = max(0.05, path_wobble_frequency_hz + randf_range(-path_wobble_frequency_random_range, path_wobble_frequency_random_range))
-	_runtime_speed_multiplier = max(0.85, 1.0 + randf_range(-speed_random_range, speed_random_range))
-
-	_retarget_timer = Timer.new()
-	_retarget_timer.one_shot = false
-	_retarget_timer.wait_time = max(0.1, retarget_interval_sec)
-	_retarget_timer.timeout.connect(_on_retarget_timeout)
-	add_child(_retarget_timer)
-	_retarget_timer.start()
-
-	_bite_timer = Timer.new()
-	_bite_timer.one_shot = true
-	_bite_timer.wait_time = max(0.1, bite_delay_sec)
-	_bite_timer.timeout.connect(_on_bite_timeout)
-	add_child(_bite_timer)
+	_ensure_health_component()
+	_ensure_runtime_components()
 
 	_vfx = TempCombatVfxScript.new() as TempCombatVfx
 	if _vfx != null:
@@ -103,49 +87,46 @@ func _ready() -> void:
 
 	_ensure_clickable()
 	_update_click_shape()
+	_configure_components_from_exports()
 	_clamp_to_viewport()
-
 	queue_redraw()
 
 
 func _process(delta: float) -> void:
-	_movement_time_sec += delta
-
 	if _is_biting:
 		return
-
 	if _board == null:
 		_queue_despawn()
 		return
-
-	if not _is_target_valid():
-		_acquire_target()
-
-	if not _is_target_valid():
+	if _ai == null or _movement == null:
 		_queue_despawn()
 		return
 
-	var target_pos: Vector2 = _target.get_world_center()
-	var to_target: Vector2 = target_pos - global_position
-	var distance: float = to_target.length()
-
-	if distance <= attack_distance_px:
-		_start_bite()
+	if not _ai.is_target_valid():
+		_ai.acquire_target()
+	if not _ai.is_target_valid():
+		_queue_despawn()
 		return
 
-	if distance > 0.001:
-		var speed: float = movement_speed_px_per_sec * _runtime_speed_multiplier
-		var move_dir: Vector2 = to_target.normalized()
-		var perp_dir: Vector2 = Vector2(-move_dir.y, move_dir.x)
-		var wobble: float = sin(_movement_time_sec * TAU * _runtime_wobble_frequency_hz + _wobble_phase)
-		var curved_dir: Vector2 = (move_dir + perp_dir * wobble * _runtime_wobble_strength).normalized()
-		global_position += curved_dir * speed * delta
-		rotation = curved_dir.angle()
-		_clamp_to_viewport()
+	var target: ModuleBase = _ai.get_target()
+	if target == null or not is_instance_valid(target):
+		_queue_despawn()
+		return
+
+	var reached: bool = _movement.move_toward_target(target.get_world_center(), delta)
+	if reached:
+		_start_bite(target)
+		return
+
+	_clamp_to_viewport()
 
 
 func set_game_board(board: Node) -> void:
 	_board = board
+	if _ai != null:
+		_ai.set_board(board)
+	if _combat != null:
+		_combat.set_board(board)
 
 
 func configure_from_balance(balance: RaiderBalance) -> void:
@@ -159,17 +140,13 @@ func configure_from_balance(balance: RaiderBalance) -> void:
 	max_hp = max(1, balance.raider_max_hp)
 	bite_damage = max(1, balance.raider_bite_damage)
 	player_tap_damage = max(1, balance.player_tap_damage_to_raider)
-	_current_hp = max_hp
-
-	if _retarget_timer != null:
-		_retarget_timer.wait_time = retarget_interval_sec
-	if _bite_timer != null:
-		_bite_timer.wait_time = bite_delay_sec
+	_set_health_to(max_hp)
+	_configure_components_from_exports()
 
 
 func configure_role_hp(role_hp: int) -> void:
 	max_hp = max(1, role_hp)
-	_current_hp = max_hp
+	_set_health_to(max_hp)
 	queue_redraw()
 
 
@@ -179,123 +156,132 @@ func configure_role(role: int) -> void:
 	_update_role_name()
 	_apply_role_sprite()
 	_update_click_shape()
+	if _ai != null:
+		_ai.set_role(_role)
 	queue_redraw()
 
 
-func _start_bite() -> void:
-	if _is_biting:
-		return
+func take_damage(amount: int, source: String = "unknown") -> bool:
+	var damage: int = max(1, amount)
+	_ensure_health_component()
+	if _health == null:
+		return false
+	return _health.take_damage(damage, source)
 
+
+func take_tap_damage(amount: int) -> bool:
+	return take_damage(amount, "tap")
+
+
+func get_hp_ratio() -> float:
+	if _health != null:
+		return _health.get_hp_ratio()
+	if max_hp <= 0:
+		return 0.0
+	return 1.0
+
+
+func get_role_name() -> String:
+	return role_name
+
+
+func _start_bite(target: ModuleBase) -> void:
+	if _combat == null or _is_biting:
+		return
 	_is_biting = true
+	_combat.start_bite(target)
+
+
+func _on_bite_started() -> void:
 	GameEvents.raider_bite.emit(global_position)
 	if _sfx != null:
 		_sfx.play_bite(global_position)
 	if _vfx != null:
 		_vfx.play_bite(global_position)
-	_bite_timer.start()
 
 
-func _on_bite_timeout() -> void:
+func _on_bite_executed(target: Node, success: bool) -> void:
 	var target_world: Vector2 = global_position
-	var bite_success: bool = false
+	if target != null and is_instance_valid(target) and target is ModuleBase:
+		target_world = (target as ModuleBase).get_world_center()
 
-	if _is_target_valid() and _board != null:
-		target_world = _target.get_world_center()
-		if _board.has_method("try_bite_module"):
-			bite_success = bool(_board.call("try_bite_module", _target, bite_damage))
-
-	if bite_success:
+	if success:
 		if _vfx != null:
 			_vfx.play_destroy(target_world)
 		if _sfx != null:
 			_sfx.play_destroy(target_world)
 
 	_is_biting = false
-	if not _is_target_valid():
-		_acquire_target()
+	if _ai != null and not _ai.is_target_valid():
+		_ai.acquire_target()
 
 
-func _on_retarget_timeout() -> void:
-	if not _is_target_valid():
-		_acquire_target()
-
-
-func _acquire_target() -> void:
-	_release_reserved_target()
-	_target = null
-	if _board == null or not _board.has_method("get_attackable_modules"):
-		return
-
-	var modules_any: Variant = _board.call("get_attackable_modules")
-	if not (modules_any is Array):
-		return
-
-	var modules: Array = modules_any as Array
-	if modules.is_empty():
-		return
-
-	var best_priority: int = -999999
-	var best_score: float = INF
-	for candidate_any in modules:
-		if not (candidate_any is ModuleBase):
-			continue
-		var candidate: ModuleBase = candidate_any as ModuleBase
-		if not is_instance_valid(candidate):
-			continue
-
-		var candidate_priority: int = 0
-		if _board.has_method("get_module_tactical_priority"):
-			candidate_priority = int(_board.call("get_module_tactical_priority", candidate.module_id))
-		candidate_priority += _get_role_priority_bonus(candidate.module_id)
-
-		var distance: float = global_position.distance_to(candidate.get_world_center())
-		var exposure_bonus: float = 0.0
-		if _board.has_method("get_module_exposure_score"):
-			var exposure_any: Variant = _board.call("get_module_exposure_score", candidate)
-			var exposure: float = float(exposure_any)
-			exposure_bonus = -exposure * 48.0
-
-		var hp_bias: float = 0.0
-		if candidate.has_method("get_hp_ratio"):
-			var hp_ratio: float = float(candidate.call("get_hp_ratio"))
-			hp_bias = hp_ratio * 64.0
-
-		var target_pressure_penalty: float = 0.0
-		if _board.has_method("get_target_pressure"):
-			target_pressure_penalty = float(_board.call("get_target_pressure", candidate)) * 32.0
-
-		var anti_core_bias: float = 0.0
-		if candidate.module_id == Constants.MODULE_CORE and modules.size() > 1:
-			anti_core_bias = 180.0
-
-		var role_bias: float = _get_role_target_bias(candidate)
-
-		var score: float = distance + exposure_bonus + hp_bias + target_pressure_penalty + anti_core_bias + role_bias
-		var is_better_priority: bool = candidate_priority > best_priority
-		var is_equal_priority_better_score: bool = candidate_priority == best_priority and score < best_score
-		if is_better_priority or is_equal_priority_better_score:
-			best_priority = candidate_priority
-			best_score = score
-			_target = candidate
-
-	if _target != null and _board != null and _board.has_method("claim_module_target"):
-		_board.call("claim_module_target", _target)
-		_reserved_target = _target
-
-
-func _is_target_valid() -> bool:
-	return _target != null and is_instance_valid(_target)
+func _on_tapped() -> void:
+	take_tap_damage(player_tap_damage)
 
 
 func _queue_despawn() -> void:
 	if is_queued_for_deletion():
 		return
-	_release_reserved_target()
 	queue_free()
 
 
-func _exit_tree() -> void:
-	_release_reserved_target()
+func _ensure_runtime_components() -> void:
+	if _ai == null:
+		_ai = get_node_or_null("RaiderAIComponent") as RaiderAIComponent
+		if _ai == null:
+			_ai = RaiderAIComponentScript.new() as RaiderAIComponent
+			_ai.name = "RaiderAIComponent"
+			add_child(_ai)
+	if _movement == null:
+		_movement = get_node_or_null("RaiderMovementComponent") as RaiderMovementComponent
+		if _movement == null:
+			_movement = RaiderMovementComponentScript.new() as RaiderMovementComponent
+			_movement.name = "RaiderMovementComponent"
+			add_child(_movement)
+	if _combat == null:
+		_combat = get_node_or_null("RaiderCombatComponent") as RaiderCombatComponent
+		if _combat == null:
+			_combat = RaiderCombatComponentScript.new() as RaiderCombatComponent
+			_combat.name = "RaiderCombatComponent"
+			add_child(_combat)
+	if _viewport_bounds == null:
+		_viewport_bounds = get_node_or_null("ViewportBoundsComponent") as ViewportBoundsComponent
+		if _viewport_bounds == null:
+			_viewport_bounds = ViewportBoundsComponentScript.new() as ViewportBoundsComponent
+			_viewport_bounds.name = "ViewportBoundsComponent"
+			add_child(_viewport_bounds)
+
+	if not _combat.bite_started.is_connected(_on_bite_started):
+		_combat.bite_started.connect(_on_bite_started)
+	if not _combat.bite_executed.is_connected(_on_bite_executed):
+		_combat.bite_executed.connect(_on_bite_executed)
+
+
+func _configure_components_from_exports() -> void:
+	if _ai != null:
+		_ai.configure_retarget_interval(retarget_interval_sec)
+		_ai.set_role(_role)
+		_ai.set_board(_board)
+
+	if _movement != null:
+		_movement.configure_speed(movement_speed_px_per_sec)
+		_movement.configure_attack_distance(attack_distance_px)
+		_movement.path_wobble_strength = path_wobble_strength
+		_movement.path_wobble_frequency_hz = path_wobble_frequency_hz
+		_movement.path_wobble_strength_random_range = path_wobble_strength_random_range
+		_movement.path_wobble_frequency_random_range = path_wobble_frequency_random_range
+		_movement.speed_random_range = speed_random_range
+		_movement.randomize_parameters()
+
+	if _combat != null:
+		_combat.configure_bite(bite_delay_sec, bite_damage)
+		_combat.set_board(_board)
+
+	if _viewport_bounds != null:
+		_viewport_bounds.enabled = false
+		_viewport_bounds.set_half_size(Vector2(body_size_px * 0.5, body_size_px * 0.5))
+		_viewport_bounds.set_margins(0.0, body_size_px * 0.72 + 10.0 - (body_size_px * 0.5), 0.0)
 
 
 func _ensure_clickable() -> void:
@@ -330,82 +316,7 @@ func _update_click_shape() -> void:
 	circle.radius = body_size_px * 0.6
 
 
-func _on_tapped() -> void:
-	take_tap_damage(player_tap_damage)
-
-
-func take_damage(amount: int, source: String = "unknown") -> bool:
-	var damage: int = max(1, amount)
-	_current_hp = max(0, _current_hp - damage)
-	GameEvents.raider_damaged.emit(_current_hp, max_hp, global_position)
-
-	if _vfx != null:
-		_vfx.play_bite(global_position)
-	if _sfx != null:
-		_sfx.play_bite(global_position)
-
-	queue_redraw()
-
-	if _current_hp <= 0:
-		if _vfx != null:
-			_vfx.play_destroy(global_position)
-		if _sfx != null:
-			_sfx.play_destroy(global_position)
-		GameEvents.raider_destroyed.emit(global_position, 0, source)
-		queue_free()
-		return true
-
-	return false
-
-
-func take_tap_damage(amount: int) -> bool:
-	return take_damage(amount, "tap")
-
-
-func get_hp_ratio() -> float:
-	if max_hp <= 0:
-		return 0.0
-	return clamp(float(_current_hp) / float(max_hp), 0.0, 1.0)
-
-
-func get_role_name() -> String:
-	return role_name
-
-
-func _get_role_target_bias(candidate: ModuleBase) -> float:
-	match _role:
-		RaiderRole.SPRINTER:
-			if _board != null and _board.has_method("get_module_exposure_score"):
-				var exposure: float = float(_board.call("get_module_exposure_score", candidate))
-				return -exposure * 42.0
-			return 0.0
-		RaiderRole.TANK:
-			if candidate.module_id == Constants.MODULE_REACTOR or candidate.module_id == Constants.MODULE_CORE:
-				return -54.0
-			return 0.0
-		_:
-			return 0.0
-
-
-func _get_role_priority_bonus(module_id: String) -> int:
-	match _role:
-		RaiderRole.SPRINTER:
-			if module_id == Constants.MODULE_HULL or module_id == Constants.MODULE_COLLECTOR:
-				return 40
-			if module_id == Constants.MODULE_TURRET:
-				return -70
-			return 0
-		RaiderRole.TANK:
-			if module_id == Constants.MODULE_REACTOR or module_id == Constants.MODULE_CORE:
-				return 15
-			return 0
-		_:
-			return 0
-
-
 func _apply_role_modifiers() -> void:
-	# По запросу пользователя все варианты врагов сохраняют одинаковый базовый показ
-	# (масштаб, направление и движение), отличается только спрайт.
 	pass
 
 
@@ -432,27 +343,20 @@ func _apply_role_sprite() -> void:
 			_body_sprite.texture = TextureNormal
 
 
-func _release_reserved_target() -> void:
-	if _reserved_target == null:
-		return
-	if _board != null and _board.has_method("release_module_target"):
-		_board.call("release_module_target", _reserved_target)
-	_reserved_target = null
-
-
 func _clamp_to_viewport() -> void:
+	if _viewport_bounds != null:
+		_viewport_bounds.clamp_parent_position()
+		return
 	var viewport_size: Vector2 = get_viewport_rect().size
 	var body_half: float = body_size_px * 0.5
 	var hp_top_padding: float = body_size_px * 0.72 + 10.0
-
-	var min_x: float = body_half
-	var max_x: float = max(min_x, viewport_size.x - body_half)
-	var min_y: float = hp_top_padding
-	var max_y: float = max(min_y, viewport_size.y - body_half)
-
-	global_position = Vector2(
-		clamp(global_position.x, min_x, max_x),
-		clamp(global_position.y, min_y, max_y)
+	global_position = ViewportBoundsComponent.clamp_position(
+		global_position,
+		viewport_size,
+		Vector2(body_half, body_half),
+		0.0,
+		hp_top_padding - body_half,
+		0.0
 	)
 
 
@@ -463,3 +367,63 @@ func _draw() -> void:
 	var hp_pos: Vector2 = Vector2(-hp_width * 0.5, -body_size_px * 0.72)
 	draw_rect(Rect2(hp_pos, Vector2(hp_width, hp_height)), Color(0.08, 0.08, 0.08, 0.88), true)
 	draw_rect(Rect2(hp_pos, Vector2(hp_width * hp_ratio, hp_height)), Color(1.0, 0.18, 0.18, 0.98), true)
+
+
+func _ensure_health_component() -> void:
+	if _health != null and is_instance_valid(_health):
+		return
+
+	var existing: Node = get_node_or_null("HealthComponent")
+	if existing is HealthComponent:
+		_health = existing as HealthComponent
+	else:
+		_health = HealthComponentScript.new() as HealthComponent
+		_health.name = "HealthComponent"
+		_health.max_hp = max(1, max_hp)
+		_health.initial_hp = _health.max_hp
+		add_child(_health)
+
+	_health.set_max_hp(max(1, max_hp), true)
+	max_hp = _health.max_hp
+
+	if not _health.damaged.is_connected(_on_health_damaged):
+		_health.damaged.connect(_on_health_damaged)
+	if not _health.died.is_connected(_on_health_died):
+		_health.died.connect(_on_health_died)
+	if not _health.hp_changed.is_connected(_on_health_hp_changed):
+		_health.hp_changed.connect(_on_health_hp_changed)
+
+
+func _set_health_to(new_max_hp: int) -> void:
+	_ensure_health_component()
+	if _health == null:
+		return
+	_health.set_max_hp(max(1, new_max_hp), true)
+	max_hp = _health.max_hp
+	queue_redraw()
+
+
+func _on_health_damaged(_amount: int, current_hp: int, health_max_hp: int, _source: String) -> void:
+	max_hp = health_max_hp
+	GameEvents.raider_damaged.emit(current_hp, max_hp, global_position)
+
+	if _vfx != null:
+		_vfx.play_bite(global_position)
+	if _sfx != null:
+		_sfx.play_bite(global_position)
+
+	queue_redraw()
+
+
+func _on_health_died(source: String) -> void:
+	if _vfx != null:
+		_vfx.play_destroy(global_position)
+	if _sfx != null:
+		_sfx.play_destroy(global_position)
+	GameEvents.raider_destroyed.emit(global_position, 0, source)
+	queue_free()
+
+
+func _on_health_hp_changed(_current_hp: int, health_max_hp: int) -> void:
+	max_hp = health_max_hp
+	queue_redraw()

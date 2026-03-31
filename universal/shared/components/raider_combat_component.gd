@@ -3,7 +3,7 @@ class_name RaiderCombatComponent
 ## Компонент боя рейдера — кусание модулей и получение урона.
 
 signal bite_started()
-signal bite_executed(target: ModuleBase, success: bool)
+signal bite_executed(target: Node, success: bool)
 signal damage_taken(current_hp: int, max_hp: int)
 signal died(source: String)
 
@@ -15,7 +15,7 @@ signal died(source: String)
 var _current_hp: int = 0
 var _is_biting: bool = false
 var _bite_timer: Timer
-var _pending_target: ModuleBase
+var _pending_target: Node
 var _board: Node
 
 
@@ -53,7 +53,7 @@ func is_biting() -> bool:
 	return _is_biting
 
 
-func start_bite(target: ModuleBase) -> void:
+func start_bite(target: Node) -> void:
 	if _is_biting:
 		return
 	
@@ -64,7 +64,7 @@ func start_bite(target: ModuleBase) -> void:
 
 
 func _on_bite_timeout() -> void:
-	var target: ModuleBase = _pending_target
+	var target: Node = _pending_target
 	var bite_success: bool = false
 	
 	if target != null and is_instance_valid(target) and _board != null:
@@ -92,6 +92,10 @@ func take_damage(amount: int, source: String = "unknown") -> bool:
 
 func take_tap_damage() -> bool:
 	return take_damage(player_tap_damage, "tap")
+
+
+func take_tap_damage_amount(amount: int) -> bool:
+	return take_damage(maxi(1, amount), "tap")
 
 
 func get_hp() -> int:
