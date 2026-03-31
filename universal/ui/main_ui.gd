@@ -1,5 +1,8 @@
 extends CanvasLayer
 
+const ShopStateControllerScript: Script = preload("res://ui/shop_state_controller.gd")
+const TutorialFocusControllerScript: Script = preload("res://ui/tutorial_focus_controller.gd")
+
 @onready var metal_label: Label = %MetalLabel
 @onready var metal_counter: Label = %MetalCounter
 @onready var metal_bar: TextureProgressBar = %MetalBar
@@ -26,19 +29,16 @@ extends CanvasLayer
 @onready var core_plaque: PanelContainer = %CorePlaque
 
 var _is_game_finished: bool = false
-var _shop_open: bool = false
 var _level_slot_base_styles: Array[StyleBoxFlat] = []
-var _tutorial_target_controls: Dictionary = {}
-var _tutorial_focused_control: Control
-var _tutorial_focus_tween: Tween
-var _tutorial_focus_color: Color = Color.WHITE
+var _shop_state: ShopStateController
+var _tutorial_focus: TutorialFocusController
 
 const LEVEL_BAR_FILLED_COLOR: Color = Color(0.941, 0.816, 0.125, 1.0)
-const TUTORIAL_FOCUS_PULSE: Color = Color(6.5, 6.5, 6.5, 1.0)  # Экстра-яркий пик поверх затемнения
-const TUTORIAL_FOCUS_BASE_BOOST: float = 2.2  # Минимум пульса тоже яркий
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_shop_state = ShopStateControllerScript.new() as ShopStateController
+	_tutorial_focus = TutorialFocusControllerScript.new() as TutorialFocusController
 
 	GameEvents.resource_changed.connect(_on_resource_changed)
 	GameEvents.module_built.connect(_on_module_built)
@@ -71,13 +71,8 @@ func _ready() -> void:
 	end_overlay.visible = false
 
 func _process(_delta: float) -> void:
-	if _tutorial_focused_control == null:
-		return
-	if not is_instance_valid(_tutorial_focused_control):
-		return
-	if not _tutorial_focused_control.visible:
-		return
-	GameEvents.tutorial_target_rect_changed.emit(_get_focused_target_id(), _tutorial_focused_control.get_global_rect())
+	if _tutorial_focus != null:
+		_tutorial_focus.process_focus_tracking()
 
 func _on_resource_changed(type: String, _new_total: int) -> void:
 	if type == "metal":
@@ -151,18 +146,15 @@ func _on_core_plaque_input(event: InputEvent) -> void:
 func _on_btn_shop_pressed() -> void:
 	if _is_game_finished: return
 	AudioManager.play_ui_open()
-	_set_shop_open(not _shop_open, true)
+	_set_shop_open(not _is_shop_open(), true)
 
 func _set_shop_open(value: bool, sync_pause: bool) -> void:
-	_shop_open = value
-	shop_overlay.visible = value
-	if sync_pause:
-		get_tree().paused = value
+	if _shop_state != null:
+		_shop_state.set_shop_open(value, sync_pause, shop_overlay)
 
-	if value:
-		GameEvents.shop_opened.emit()
-	else:
-		GameEvents.shop_closed.emit()
+
+func _is_shop_open() -> bool:
+	return _shop_state != null and _shop_state.is_shop_open()
 
 func _on_btn_shop_exit_pressed() -> void:
 	_set_shop_open(false, true)
@@ -249,65 +241,35 @@ func _on_btn_restart_pressed() -> void:
 	get_tree().reload_current_scene()
 
 func _register_tutorial_targets() -> void:
-	_tutorial_target_controls = {
+	if _tutorial_focus == null:
+		return
+	_tutorial_focus.register_targets({
 		"shop_button": btn_shop,
 		"hull": btn_hull,
 		"reactor": btn_reactor,
 		"collector": btn_collector,
 		"turret": btn_turret,
 		"core": core_plaque,
-	}
+	})
 
 func _on_tutorial_focus_changed(target_id: String, accent_color: Color, _allow_interaction: bool) -> void:
-	_on_tutorial_focus_cleared()
-	if not _tutorial_target_controls.has(target_id):
-		return
-
-	var target = _tutorial_target_controls[target_id]
-	if not (target is Control):
-		return
-
-	_tutorial_focused_control = target as Control
-	_tutorial_focus_color = accent_color
-	if not _tutorial_focused_control.visible:
-		return
-
-	var boosted_focus_color := Color(
-		_tutorial_focus_color.r * TUTORIAL_FOCUS_BASE_BOOST,
-		_tutorial_focus_color.g * TUTORIAL_FOCUS_BASE_BOOST,
-		_tutorial_focus_color.b * TUTORIAL_FOCUS_BASE_BOOST,
-		1.0
-	)
-
-	_tutorial_focused_control.modulate = boosted_focus_color
-	_tutorial_focus_tween = create_tween()
-	_tutorial_focus_tween.set_loops()
-	_tutorial_focus_tween.set_trans(Tween.TRANS_SINE)
-	_tutorial_focus_tween.set_ease(Tween.EASE_IN_OUT)
-	_tutorial_focus_tween.tween_property(_tutorial_focused_control, "modulate", TUTORIAL_FOCUS_PULSE, 0.3)
-	_tutorial_focus_tween.tween_property(_tutorial_focused_control, "modulate", boosted_focus_color, 0.3)
-
-	GameEvents.tutorial_target_rect_changed.emit(target_id, _tutorial_focused_control.get_global_rect())
+	if _tutorial_focus != null:
+		_tutorial_focus.focus_target(target_id, accent_color)
 
 func _on_tutorial_focus_cleared() -> void:
-	if _tutorial_focus_tween:
-		_tutorial_focus_tween.kill()
-		_tutorial_focus_tween = null
-	if _tutorial_focused_control and is_instance_valid(_tutorial_focused_control):
-		_tutorial_focused_control.modulate = Color.WHITE
-	_tutorial_focused_control = null
+	if _tutorial_focus != null:
+		_tutorial_focus.clear_focus()
 
 func _on_tutorial_action_requested(action_id: String) -> void:
 	match action_id:
 		"open_shop":
-			if not _shop_open:
+			if not _is_shop_open():
 				_on_btn_shop_pressed()
 		"buy_hull":
-			if _shop_open and not btn_hull.disabled:
+			if _is_shop_open() and not btn_hull.disabled:
 				_on_btn_hull_pressed()
 
 func _get_focused_target_id() -> String:
-	for id in _tutorial_target_controls.keys():
-		if _tutorial_target_controls[id] == _tutorial_focused_control:
-			return str(id)
-	return ""
+	if _tutorial_focus == null:
+		return ""
+	return _tutorial_focus.get_focused_target_id()

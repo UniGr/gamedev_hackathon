@@ -33,6 +33,9 @@ func _ready() -> void:
 	var debris_spawner: Node = get_node_or_null("DebrisSpawner")
 	if debris_spawner != null:
 		debris_spawner.process_mode = Node.PROCESS_MODE_PAUSABLE
+	var raider_spawner: Node = get_node_or_null("RaiderSpawner")
+	if raider_spawner != null and raider_spawner.has_method("configure_game_board"):
+		raider_spawner.call("configure_game_board", self)
 
 	_module_script_by_id = {
 		Constants.MODULE_COLLECTOR: COLLECTOR_MODULE_SCRIPT,

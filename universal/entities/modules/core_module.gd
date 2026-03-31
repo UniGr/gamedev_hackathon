@@ -20,6 +20,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
+	super._ready()
 
 	defence = base_defence
 	defence_value_changed.emit(defence)

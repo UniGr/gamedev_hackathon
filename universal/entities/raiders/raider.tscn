@@ -1,10 +1,30 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://entities/raiders/raider.gd" id="1_raider"]
 [ext_resource type="Texture2D" path="res://assets/sprites/normal.png" id="2_normal"]
+[ext_resource type="Script" path="res://shared/components/health_component.gd" id="3_health"]
+[ext_resource type="Script" path="res://shared/components/raider_ai_component.gd" id="4_ai"]
+[ext_resource type="Script" path="res://shared/components/raider_movement_component.gd" id="5_move"]
+[ext_resource type="Script" path="res://shared/components/raider_combat_component.gd" id="6_combat"]
+[ext_resource type="Script" path="res://shared/components/viewport_bounds_component.gd" id="7_bounds"]
 
 [node name="Raider" type="Node2D"]
 script = ExtResource("1_raider")
+
+[node name="HealthComponent" type="Node" parent="."]
+script = ExtResource("3_health")
+
+[node name="RaiderAIComponent" type="Node" parent="."]
+script = ExtResource("4_ai")
+
+[node name="RaiderMovementComponent" type="Node" parent="."]
+script = ExtResource("5_move")
+
+[node name="RaiderCombatComponent" type="Node" parent="."]
+script = ExtResource("6_combat")
+
+[node name="ViewportBoundsComponent" type="Node" parent="."]
+script = ExtResource("7_bounds")
 
 [node name="BodySprite" type="Sprite2D" parent="."]
 position = Vector2(0, 36)

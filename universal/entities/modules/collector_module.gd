@@ -1,5 +1,6 @@
 extends "res://entities/modules/module_base.gd"
 class_name CollectorModule
+const LASER_RENDERER_SCRIPT: Script = preload("res://shared/components/laser_renderer.gd")
 
 @export var collect_cooldown_sec: float = 5.0
 @export var collect_radius_from_ship_edge_cells: float = 5.0
@@ -7,8 +8,7 @@ class_name CollectorModule
 @export var laser_color: Color = Color(0.30, 0.95, 1.0, 1.0)
 
 var _collect_timer: Timer
-var _laser_hide_timer: Timer
-var _laser: Line2D
+var _laser_renderer: LaserRenderer
 var _ship_bounds_provider: Callable
 var _is_on_cooldown: bool = false
 var _collector_id: int = 0
@@ -26,6 +26,7 @@ func _init() -> void:
 
 
 func _ready() -> void:
+	super._ready()
 	_collector_id = get_instance_id()
 
 	_collect_timer = Timer.new()
@@ -34,17 +35,13 @@ func _ready() -> void:
 	_collect_timer.timeout.connect(_on_cooldown_finished)
 	add_child(_collect_timer)
 
-	_laser_hide_timer = Timer.new()
-	_laser_hide_timer.one_shot = true
-	_laser_hide_timer.wait_time = 0.08
-	_laser_hide_timer.timeout.connect(_hide_laser)
-	add_child(_laser_hide_timer)
-
-	_laser = Line2D.new()
-	_laser.width = 3.0
-	_laser.default_color = laser_color
-	_laser.visible = false
-	add_child(_laser)
+	_laser_renderer = LASER_RENDERER_SCRIPT.new() as LaserRenderer
+	if _laser_renderer != null:
+		_laser_renderer.name = "LaserRenderer"
+		_laser_renderer.flash_duration_sec = 0.08
+		add_child(_laser_renderer)
+		_laser_renderer.set_width(3.0)
+		_laser_renderer.set_color(laser_color)
 
 
 func _process(_delta: float) -> void:
@@ -196,16 +193,14 @@ func _distance_to_rect(point: Vector2, rect: Rect2) -> float:
 
 
 func _show_laser_to(target_world: Vector2) -> void:
-	var local_origin: Vector2 = Vector2(grid_size.x * cell_size_px * 0.5, grid_size.y * cell_size_px * 0.5)
-	var local_target: Vector2 = to_local(target_world)
-
-	_laser.points = PackedVector2Array([local_origin, local_target])
-	_laser.visible = true
-	_laser_hide_timer.start()
+	if _laser_renderer == null:
+		return
+	_laser_renderer.flash_from_center_to_global(target_world, cell_size_px, grid_size)
 
 
 func _hide_laser() -> void:
-	_laser.visible = false
+	if _laser_renderer != null:
+		_laser_renderer.hide_laser()
 
 
 func _validate_or_release_mark() -> void:

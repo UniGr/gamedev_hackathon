@@ -63,7 +63,7 @@ func hide_laser() -> void:
 		_line.visible = false
 
 
-func is_visible() -> bool:
+func is_laser_visible() -> bool:
 	return _line != null and _line.visible
 
 

@@ -55,15 +55,15 @@ func set_margins(x: float, top: float, bottom: float) -> void:
 static func clamp_position(
 	position: Vector2,
 	viewport_size: Vector2,
-	half_size: Vector2,
-	margin_x: float = 0.0,
-	margin_top: float = 0.0,
-	margin_bottom: float = 0.0
+	clamp_half_size: Vector2,
+	clamp_margin_x: float = 0.0,
+	clamp_margin_top: float = 0.0,
+	clamp_margin_bottom: float = 0.0
 ) -> Vector2:
-	var min_x: float = half_size.x + margin_x
-	var max_x: float = maxf(min_x, viewport_size.x - half_size.x - margin_x)
-	var min_y: float = half_size.y + margin_top
-	var max_y: float = maxf(min_y, viewport_size.y - half_size.y - margin_bottom)
+	var min_x: float = clamp_half_size.x + clamp_margin_x
+	var max_x: float = maxf(min_x, viewport_size.x - clamp_half_size.x - clamp_margin_x)
+	var min_y: float = clamp_half_size.y + clamp_margin_top
+	var max_y: float = maxf(min_y, viewport_size.y - clamp_half_size.y - clamp_margin_bottom)
 	
 	return Vector2(
 		clampf(position.x, min_x, max_x),

@@ -11,6 +11,8 @@ extends Node2D
 @export var spawn_offset_y_px: float = 110.0
 @export var spawn_margin_x_px: float = 64.0
 
+@export var game_board_path: NodePath
+
 var _rng: RandomNumberGenerator = RandomNumberGenerator.new()
 var _spawn_timer: Timer
 var _active_raiders: Array[Node2D] = []
@@ -19,6 +21,7 @@ var _spawn_cycle: Array[int] = []
 var _spawn_cycle_index: int = 0
 var _spawn_cycle_key: String = ""
 var _spawn_enabled_by_buildings: bool = false
+var _game_board: Node
 
 
 func _ready() -> void:
@@ -26,6 +29,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_PAUSABLE
 
 	_rng.randomize()
+	_resolve_game_board()
 	if GameEvents.has_signal("game_ended"):
 		GameEvents.game_ended.connect(_on_game_ended)
 	if GameEvents.has_signal("module_built"):
@@ -110,9 +114,8 @@ func _spawn_raider_from_wave(wave: RaiderWaveRow) -> void:
 	if raider.has_method("configure_role_hp"):
 		raider.call("configure_role_hp", hp)
 
-	var board: Node = get_parent()
-	if board != null and raider.has_method("set_game_board"):
-		raider.call("set_game_board", board)
+	if _game_board != null and raider.has_method("set_game_board"):
+		raider.call("set_game_board", _game_board)
 
 	add_child(raider)
 	_active_raiders.append(raider)
@@ -120,7 +123,7 @@ func _spawn_raider_from_wave(wave: RaiderWaveRow) -> void:
 
 
 func _get_current_buildings_count() -> int:
-	var board: Node = get_parent()
+	var board: Node = _game_board
 	if board == null:
 		return 0
 
@@ -294,10 +297,20 @@ func _spawn_tutorial_fallback_raider() -> void:
 	if raider.has_method("configure_role_hp"):
 		raider.call("configure_role_hp", max(1, balance.raider_max_hp))
 
-	var board: Node = get_parent()
-	if board != null and raider.has_method("set_game_board"):
-		raider.call("set_game_board", board)
+	if _game_board != null and raider.has_method("set_game_board"):
+		raider.call("set_game_board", _game_board)
 
 	add_child(raider)
 	_active_raiders.append(raider)
 	raider.tree_exited.connect(_on_raider_tree_exited.bind(raider))
+
+
+func configure_game_board(board: Node) -> void:
+	_game_board = board
+
+
+func _resolve_game_board() -> void:
+	if _game_board != null and is_instance_valid(_game_board):
+		return
+	if game_board_path != NodePath():
+		_game_board = get_node_or_null(game_board_path)
