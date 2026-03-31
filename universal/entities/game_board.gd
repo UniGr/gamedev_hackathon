@@ -8,6 +8,8 @@ const COLLECTOR_MODULE_SCRIPT: Script = preload("res://entities/modules/collecto
 const REACTOR_MODULE_SCRIPT: Script = preload("res://entities/modules/reactor_module.gd")
 const HULL_MODULE_SCRIPT: Script = preload("res://entities/modules/hull_module.gd")
 const TURRET_MODULE_SCRIPT: Script = preload("res://entities/modules/turret_module.gd")
+const TARGET_PRESSURE_TRACKER_SCRIPT: Script = preload("res://shared/components/target_pressure_tracker.gd")
+const GAME_STATE_CONTROLLER_SCRIPT: Script = preload("res://shared/components/game_state_controller.gd")
 
 var gridTileManager: GridManager
 var _modules_root: Node2D
@@ -16,8 +18,8 @@ var _core_module: CoreModule
 var _placed_modules: Array[ModuleBase] = []
 var _module_script_by_id: Dictionary = {}
 var _ship_bounds_rect: Rect2 = Rect2()
-var _target_pressure_by_module: Dictionary = {}
-var _is_game_finished: bool = false
+var _pressure_tracker: TargetPressureTracker
+var _game_state: GameStateController
 var _is_collapsing_unattached: bool = false
 var _build_controller: BuildModeController
 
@@ -62,12 +64,22 @@ func _ready() -> void:
 	_build_controller.configure(CELL_SIZE, _module_script_by_id, gridTileManager, _highlights_root)
 	_build_controller.build_executed.connect(_on_build_executed)
 
+	# Инициализация TargetPressureTracker
+	_pressure_tracker = TARGET_PRESSURE_TRACKER_SCRIPT.new() as TargetPressureTracker
+	_pressure_tracker.name = "TargetPressureTracker"
+	add_child(_pressure_tracker)
+
+	# Инициализация GameStateController
+	_game_state = GAME_STATE_CONTROLLER_SCRIPT.new() as GameStateController
+	_game_state.name = "GameStateController"
+	add_child(_game_state)
+
 	_spawn_core()
 
 	print("GameBoard Initialized at origin: ", _modules_root.position)
 
 func _unhandled_input(event: InputEvent) -> void:
-	if _is_game_finished:
+	if _game_state != null and _game_state.is_game_finished():
 		return
 	if not _build_controller.is_build_mode_active():
 		return
@@ -205,13 +217,15 @@ func _get_ship_bounds_rect() -> Rect2:
 	return _ship_bounds_rect
 
 func _on_module_tree_exited(module: ModuleBase) -> void:
-	_target_pressure_by_module.erase(module)
+	if _pressure_tracker != null:
+		_pressure_tracker.clear_target(module)
 	_placed_modules.erase(module)
 	gridTileManager.unregister_module(module)
 	if module == _core_module:
 		_core_module = null
 	_refresh_ship_bounds()
-	if not _is_game_finished and not _is_collapsing_unattached:
+	var is_finished: bool = _game_state != null and _game_state.is_game_finished()
+	if not is_finished and not _is_collapsing_unattached:
 		call_deferred("_collapse_unattached_modules")
 
 
@@ -220,7 +234,7 @@ func _on_module_destroy_requested(module: ModuleBase, source: String) -> void:
 
 
 func _destroy_module(module: ModuleBase, source: String) -> bool:
-	if _is_game_finished:
+	if _game_state != null and _game_state.is_game_finished():
 		return false
 
 	if module == null or not is_instance_valid(module):
@@ -229,20 +243,14 @@ func _destroy_module(module: ModuleBase, source: String) -> bool:
 	if not _placed_modules.has(module):
 		return false
 
-
-
 	var destroyed_module_id: String = module.module_id
 	var destroyed_pos: Vector2 = Vector2(module.grid_position)
 	module.queue_free()
 	GameEvents.module_destroyed.emit(destroyed_module_id, destroyed_pos)
 
 	if module == _core_module:
-		_is_game_finished = true
-		var reason: String = "core_destroyed"
-		if source == "raider":
-			reason = "core_eaten_by_raiders"
-		GameEvents.game_finished.emit("lose", reason)
-		GameEvents.game_ended.emit()
+		if _game_state != null:
+			_game_state.handle_core_destroyed(source)
 	else:
 		if not _is_collapsing_unattached:
 			call_deferred("_collapse_unattached_modules")
@@ -251,14 +259,10 @@ func _destroy_module(module: ModuleBase, source: String) -> bool:
 
 
 func _check_win_condition() -> void:
-	if _is_game_finished:
+	if _game_state == null:
 		return
-
-	var result: Dictionary = GameConditionChecker.check_win(_placed_modules, _is_game_finished)
-	if result.get("won", false):
-		_is_game_finished = true
-		GameEvents.game_finished.emit("win", result.get("reason", ""))
-		GameEvents.game_ended.emit()
+	_game_state.set_modules_reference(_placed_modules, _core_module)
+	_game_state.check_win_condition()
 
 
 func get_attackable_modules() -> Array[ModuleBase]:
@@ -325,48 +329,24 @@ func try_bite_module(module: ModuleBase, damage: int = 1) -> bool:
 	return _destroy_module(module, "raider")
 
 
-func get_module_tactical_priority(module_id: String) -> int:
-	match module_id:
-		Constants.MODULE_TURRET:
-			return 100
-		Constants.MODULE_REACTOR:
-			return 50
-		Constants.MODULE_COLLECTOR:
-			return 40
-		Constants.MODULE_HULL:
-			return 20
-		Constants.MODULE_CORE:
-			return 10
-		_:
-			return 0
-
-
 func claim_module_target(module: ModuleBase) -> void:
-	if module == null or not is_instance_valid(module):
-		return
-	_target_pressure_by_module[module] = int(_target_pressure_by_module.get(module, 0)) + 1
+	if _pressure_tracker != null:
+		_pressure_tracker.claim_target(module)
 
 
 func release_module_target(module: ModuleBase) -> void:
-	if module == null:
-		return
-	if not _target_pressure_by_module.has(module):
-		return
-	var next_value: int = int(_target_pressure_by_module[module]) - 1
-	if next_value <= 0:
-		_target_pressure_by_module.erase(module)
-	else:
-		_target_pressure_by_module[module] = next_value
+	if _pressure_tracker != null:
+		_pressure_tracker.release_target(module)
 
 
 func get_target_pressure(module: ModuleBase) -> int:
-	if module == null:
-		return 0
-	return int(_target_pressure_by_module.get(module, 0))
+	if _pressure_tracker != null:
+		return _pressure_tracker.get_pressure(module)
+	return 0
 
 
 func _collapse_unattached_modules() -> void:
-	if _is_game_finished:
+	if _game_state != null and _game_state.is_game_finished():
 		return
 	if _core_module == null or not is_instance_valid(_core_module):
 		return

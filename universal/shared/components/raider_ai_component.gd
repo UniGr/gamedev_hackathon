@@ -128,9 +128,8 @@ func _get_parent_position() -> Vector2:
 
 
 func _get_tactical_priority(candidate: ModuleBase) -> int:
-	if _board == null or not _board.has_method("get_module_tactical_priority"):
-		return 0
-	return int(_board.call("get_module_tactical_priority", candidate.module_id))
+	## Использует новый статический класс ModuleTacticalPriority
+	return ModuleTacticalPriority.get_priority(candidate.module_id)
 
 
 func _claim_target(target: ModuleBase) -> void:

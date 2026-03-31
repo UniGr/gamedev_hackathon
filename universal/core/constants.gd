@@ -1,5 +1,6 @@
 extends Node
-## Глобальные константы и ID для проекта
+## Глобальные константы и ID для проекта.
+## ТОЛЬКО константы и enum'ы. Загрузка конфигов — в ConfigLoader.
 
 # ========== Типы модулей ==========
 enum ModuleType {
@@ -30,20 +31,6 @@ const MODULE_IDS = {
 	"turret": MODULE_TURRET,
 }
 
-# ========== Пути к конфигам баланса ==========
-const RESOURCE_BALANCE_PATH: String = "res://data/room_stats/resource_balance.tres"
-const MODULE_PRICING_PATH: String = "res://data/module_pricing.tres"
-const CORE_UPGRADE_PATH: String = "res://data/core_upgrade.tres"
-
-# ========== Кэш загруженных конфигов ==========
-var MODULE_COST_METAL: Dictionary = {}
-var _resource_initial_metal: int = 0
-var _resource_max_metal: int = 0
-var _resource_hull_bonus: int = 0
-var _is_balance_loaded: bool = false
-var _pricing_config: ModulePricingConfig = null
-var _core_upgrade_config: CoreUpgradeConfig = null
-
 # ========== Параметры ядра ==========
 const BASE_METAL_PER_CLICK: int = 10
 const BASE_ENERGY_PER_CLICK: int = 5
@@ -61,104 +48,41 @@ const UI_LAYER_MENU: int = 1
 const UI_LAYER_POPUP: int = 2
 
 
-func _ready() -> void:
-	_load_balance_config()
-
-
-func _ensure_balance_loaded() -> void:
-	if _is_balance_loaded:
-		return
-	_load_balance_config()
-
-
-func _ensure_pricing_loaded() -> void:
-	if _pricing_config != null:
-		return
-	var loaded: Resource = load(MODULE_PRICING_PATH)
-	if loaded is ModulePricingConfig:
-		_pricing_config = loaded as ModulePricingConfig
-
-
-func _ensure_core_upgrade_loaded() -> void:
-	if _core_upgrade_config != null:
-		return
-	var loaded: Resource = load(CORE_UPGRADE_PATH)
-	if loaded is CoreUpgradeConfig:
-		_core_upgrade_config = loaded as CoreUpgradeConfig
-
+# ========== Делегирование в ConfigLoader ==========
+# Эти методы сохранены для обратной совместимости.
+# Фактическая загрузка происходит в ConfigLoader Autoload.
 
 func get_module_cost(module_id: String) -> int:
-	_ensure_balance_loaded()
-	if module_id == MODULE_TURRET:
-		return int(MODULE_COST_METAL.get(MODULE_TURRET, MODULE_TURRET_DEFAULT_COST))
-	return int(MODULE_COST_METAL.get(module_id, 0))
+	return ConfigLoader.get_module_cost(module_id)
 
 
 func get_module_cost_for_iteration(module_id: String, iteration: int) -> int:
-	_ensure_balance_loaded()
-	_ensure_pricing_loaded()
-	
-	if _pricing_config != null and _pricing_config.has_incremental_pricing(module_id):
-		return _pricing_config.get_cost_for_module(module_id, iteration)
-	
-	return get_module_cost(module_id)
+	return ConfigLoader.get_module_cost_for_iteration(module_id, iteration)
 
 
 func is_incremental_price_module(module_id: String) -> bool:
-	_ensure_pricing_loaded()
-	if _pricing_config != null:
-		return _pricing_config.has_incremental_pricing(module_id)
-	return false
+	return ConfigLoader.is_incremental_price_module(module_id)
 
 
 func get_resource_initial_metal() -> int:
-	_ensure_balance_loaded()
-	return _resource_initial_metal
+	return ConfigLoader.get_resource_initial_metal()
 
 
 func get_resource_max_metal() -> int:
-	_ensure_balance_loaded()
-	return _resource_max_metal
+	return ConfigLoader.get_resource_max_metal()
 
 
 func get_hull_metal_bonus() -> int:
-	_ensure_balance_loaded()
-	return _resource_hull_bonus
+	return ConfigLoader.get_hull_metal_bonus()
 
 
 func get_core_upgrade_max_level() -> int:
-	_ensure_core_upgrade_loaded()
-	if _core_upgrade_config != null:
-		return _core_upgrade_config.get_max_level()
-	return 0
+	return ConfigLoader.get_core_upgrade_max_level()
 
 
 func get_core_upgrade_next_cost(current_level: int) -> int:
-	_ensure_core_upgrade_loaded()
-	if _core_upgrade_config != null:
-		return _core_upgrade_config.get_upgrade_cost(current_level)
-	return -1
+	return ConfigLoader.get_core_upgrade_next_cost(current_level)
 
 
 func get_core_upgrade_reward(debris_type: int, level: int) -> int:
-	_ensure_core_upgrade_loaded()
-	if _core_upgrade_config != null:
-		return _core_upgrade_config.get_reward_for_debris(debris_type, level)
-	return 0
-
-
-func _load_balance_config() -> void:
-	var loaded: Resource = load(RESOURCE_BALANCE_PATH)
-	if loaded is ResourceBalanceConfig:
-		var config: ResourceBalanceConfig = loaded as ResourceBalanceConfig
-		MODULE_COST_METAL = {
-			MODULE_COLLECTOR: max(0, config.collector_cost_metal),
-			MODULE_REACTOR: max(0, config.reactor_cost_metal),
-
-			MODULE_HULL: max(0, config.hull_cost_metal),
-			MODULE_TURRET: MODULE_TURRET_DEFAULT_COST,
-		}
-		_resource_initial_metal = max(0, config.initial_metal)
-		_resource_max_metal = max(1, config.max_metal)
-		_resource_hull_bonus = max(0, config.hull_metal_bonus)
-		_is_balance_loaded = true
+	return ConfigLoader.get_core_upgrade_reward(debris_type, level)

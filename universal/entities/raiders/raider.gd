@@ -9,16 +9,17 @@ enum RaiderRole {
 
 const TempCombatVfxScript: Script = preload("res://entities/effects/temp_combat_vfx.gd")
 const TempCombatSfxScript: Script = preload("res://entities/effects/temp_combat_sfx.gd")
-const ClickableComponentScript: Script = preload("res://shared/components/clickable_component.gd")
 const HealthComponentScript: Script = preload("res://shared/components/health_component.gd")
-const TextureNormal: Texture2D = preload("res://assets/sprites/normal.png")
-const TextureSprinter: Texture2D = preload("res://assets/sprites/sprinter.png")
-const TextureTank: Texture2D = preload("res://assets/sprites/tank.png")
 
 const RaiderAIComponentScript: Script = preload("res://shared/components/raider_ai_component.gd")
 const RaiderMovementComponentScript: Script = preload("res://shared/components/raider_movement_component.gd")
 const RaiderCombatComponentScript: Script = preload("res://shared/components/raider_combat_component.gd")
 const ViewportBoundsComponentScript: Script = preload("res://shared/components/viewport_bounds_component.gd")
+
+## Data-Driven: конфиги ролей загружаются из .tres файлов
+const ROLE_CONFIG_NORMAL: RaiderRoleConfig = preload("res://data/raider_role_normal.tres")
+const ROLE_CONFIG_SPRINTER: RaiderRoleConfig = preload("res://data/raider_role_sprinter.tres")
+const ROLE_CONFIG_TANK: RaiderRoleConfig = preload("res://data/raider_role_tank.tres")
 
 @export_group("Raider Movement")
 @export var movement_speed_px_per_sec: float = 285.0
@@ -48,6 +49,7 @@ const ViewportBoundsComponentScript: Script = preload("res://shared/components/v
 
 var _board: Node
 var _role: int = RaiderRole.NORMAL
+var _role_config: RaiderRoleConfig
 var _is_biting: bool = false
 
 var _vfx: TempCombatVfx
@@ -152,13 +154,37 @@ func configure_role_hp(role_hp: int) -> void:
 
 func configure_role(role: int) -> void:
 	_role = clamp(role, RaiderRole.NORMAL, RaiderRole.SPRINTER)
-	_apply_role_modifiers()
-	_update_role_name()
-	_apply_role_sprite()
-	_update_click_shape()
+	_role_config = _get_role_config(_role)
+	_apply_role_from_config()
 	if _ai != null:
 		_ai.set_role(_role)
 	queue_redraw()
+
+
+func _get_role_config(role: int) -> RaiderRoleConfig:
+	match role:
+		RaiderRole.SPRINTER:
+			return ROLE_CONFIG_SPRINTER
+		RaiderRole.TANK:
+			return ROLE_CONFIG_TANK
+		_:
+			return ROLE_CONFIG_NORMAL
+
+
+func _apply_role_from_config() -> void:
+	if _role_config == null:
+		_role_config = ROLE_CONFIG_NORMAL
+	
+	role_name = _role_config.role_name
+	body_size_px = _role_config.body_size_px
+	body_color = _role_config.body_color
+	accent_color = _role_config.accent_color
+	path_wobble_strength = _role_config.path_wobble_strength
+	path_wobble_frequency_hz = _role_config.path_wobble_frequency_hz
+	
+	_apply_role_sprite()
+	_update_click_shape()
+	_configure_components_from_exports()
 
 
 func take_damage(amount: int, source: String = "unknown") -> bool:
@@ -288,59 +314,31 @@ func _ensure_clickable() -> void:
 	if _clickable != null and is_instance_valid(_clickable):
 		return
 
-	_clickable = Area2D.new()
-	_clickable.name = "ClickableComponent"
-	_clickable.script = ClickableComponentScript
-	_clickable.set("one_shot", false)
-	add_child(_clickable)
-
-	_collision_shape = CollisionShape2D.new()
-	_collision_shape.name = "CollisionShape2D"
-	_clickable.add_child(_collision_shape)
-
-	if _clickable.has_signal("clicked"):
-		_clickable.connect("clicked", _on_tapped)
+	var setup: Dictionary = ClickableSetup.create_clickable(self, _on_tapped, false)
+	_clickable = setup.get("clickable") as Area2D
+	_collision_shape = setup.get("collision") as CollisionShape2D
 
 
 func _update_click_shape() -> void:
-	if _collision_shape == null or not is_instance_valid(_collision_shape):
-		return
-
-	var circle: CircleShape2D
-	if _collision_shape.shape is CircleShape2D:
-		circle = _collision_shape.shape as CircleShape2D
-	else:
-		circle = CircleShape2D.new()
-		_collision_shape.shape = circle
-
-	circle.radius = body_size_px * 0.6
-
-
-func _apply_role_modifiers() -> void:
-	pass
-
-
-func _update_role_name() -> void:
-	match _role:
-		RaiderRole.TANK:
-			role_name = "tank"
-		RaiderRole.SPRINTER:
-			role_name = "sprinter"
-		_:
-			role_name = "normal"
+	ClickableSetup.update_circle_shape(_collision_shape, body_size_px * 0.6)
 
 
 func _apply_role_sprite() -> void:
 	if _body_sprite == null or not is_instance_valid(_body_sprite):
 		return
 
+	if _role_config != null and _role_config.texture != null:
+		_body_sprite.texture = _role_config.texture
+		return
+
+	# Fallback: загрузка текстур напрямую если конфиг не установлен
 	match role_name:
 		"sprinter":
-			_body_sprite.texture = TextureSprinter
+			_body_sprite.texture = preload("res://assets/sprites/sprinter.png")
 		"tank":
-			_body_sprite.texture = TextureTank
+			_body_sprite.texture = preload("res://assets/sprites/tank.png")
 		_:
-			_body_sprite.texture = TextureNormal
+			_body_sprite.texture = preload("res://assets/sprites/normal.png")
 
 
 func _clamp_to_viewport() -> void:

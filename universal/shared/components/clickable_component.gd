@@ -1,4 +1,7 @@
 extends Area2D
+class_name ClickableComponent
+## Универсальный компонент для обработки кликов/тапов.
+## Сигналы идут ВВЕРХ по иерархии (Signals Up).
 
 signal clicked
 

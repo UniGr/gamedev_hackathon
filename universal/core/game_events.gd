@@ -87,3 +87,14 @@ signal tutorial_target_rect_changed(target_id: String, target_rect: Rect2)
 
 ## Туториал запрашивает действие, эквивалентное нажатию на UI-элемент
 signal tutorial_action_requested(action_id: String)
+
+# ========== Сигналы сохранения ==========
+
+## Запрос на сохранение игры
+signal save_requested
+
+## Запрос на загрузку игры
+signal load_requested
+
+## Данные загружены и готовы к применению
+signal save_data_loaded(data: Dictionary)

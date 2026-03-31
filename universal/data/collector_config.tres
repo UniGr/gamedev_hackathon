@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="CollectorConfig" load_steps=2 format=3 uid="uid://ccollectorconf01"]
+
+[ext_resource type="Script" path="res://data/collector_config.gd" id="1_script"]
+
+[resource]
+script = ExtResource("1_script")
+collect_cooldown_sec = 5.0
+collect_radius_from_ship_edge_cells = 5.0
+mark_radius_from_ship_edge_cells = 7.0
+laser_color = Color(0.30, 0.95, 1.0, 1.0)
+max_hp = 165
+tap_damage = 28
