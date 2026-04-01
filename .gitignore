@@ -1,11 +1,13 @@
 # Godot 4+ specific ignores
 .godot/
+*.godot
 
 Godot_*
 # Godot-specific ignores
 .import/
 export.cfg
 export_presets.cfg
+export_presets.cfg.*
 
 # Imported translations (if not stored directly as .translation)
 *.translation
@@ -15,11 +17,21 @@ export_presets.cfg
 data_*/
 mono_crash.*.json
 
+# Keys and credentials
+android/
 my_release_key.*
+*.keystore
+debug.keystore
+*.pfx
+*.p12
 
-
+# Logs and temp files
+*.log
 *.tmp
 *.apk
+*.pyc
+__pycache__/
+
 # System/OS specific ignores
 .DS_Store
 .DS_Store?
@@ -55,3 +67,10 @@ builds/
 export/
 exports/
 bin/
+
+# Godot metadata
+*.uid
+.godot/
+
+# Session-specific files
+AGENTS.MD

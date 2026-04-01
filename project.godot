@@ -10,14 +10,19 @@ config_version=5
 
 [application]
 
-config/name="Univers"
-config/features=PackedStringArray("4.6", "Mobile")
-config/icon="res://icon.svg"
+config/name="Universal"
+run/main_scene="res://ui/start_menu.tscn"
+config/features=PackedStringArray("4.6", "GL Compatibility")
+config/icon="res://assets/main_screen_picture.png"
 
 [autoload]
 
-GameManager="*res://scripts/GameManager.gd"
 GameEvents="*res://core/game_events.gd"
+ResourceManager="*res://core/resource_manager.gd"
+Constants="*res://core/constants.gd"
+AudioManager="*res://core/audio_manager.gd"
+UpgradeManager="*res://core/upgrade_manager.gd"
+SaveManager="*res://core/save_manager.gd"
 
 [display]
 
@@ -36,6 +41,6 @@ window/handheld/orientation=1
 [rendering]
 
 rendering_device/driver.windows="d3d12"
-renderer/rendering_method="mobile"
+renderer/rendering_method="gl_compatibility"
 renderer/rendering_method.mobile="gl_compatibility"
 textures/vram_compression/import_etc2_astc=true
