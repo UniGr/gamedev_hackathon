@@ -344,7 +344,6 @@ func _on_max_resources_reached(resource_type: String, _max_amount: int) -> void:
 
 	if _max_resources_shown_times < 2:
 		_max_resources_shown_times += 1
-		print("DEBUG: Max resources reached times: ", _max_resources_shown_times)
 		_queue_dialog(max_resources_steps)
 
 func _on_raider_destroyed(_position: Vector2, _evolution_level: int, _source: String) -> void:

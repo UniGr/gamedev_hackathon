@@ -1,7 +1,11 @@
 extends CanvasLayer
+## Главный UI-контроллер игры.
+## Управляет HUD, магазином, экраном завершения и туториалом.
+## Взаимодействует с игрой через Event Bus (GameEvents).
 
 const ShopStateControllerScript: Script = preload("res://ui/shop_state_controller.gd")
 const TutorialFocusControllerScript: Script = preload("res://ui/tutorial_focus_controller.gd")
+const CoreUpgradeControllerScript: Script = preload("res://ui/core_upgrade_controller.gd")
 
 @onready var metal_label: Label = %MetalLabel
 @onready var metal_counter: Label = %MetalCounter
@@ -29,16 +33,16 @@ const TutorialFocusControllerScript: Script = preload("res://ui/tutorial_focus_c
 @onready var core_plaque: PanelContainer = %CorePlaque
 
 var _is_game_finished: bool = false
-var _level_slot_base_styles: Array[StyleBoxFlat] = []
 var _shop_state: ShopStateController
 var _tutorial_focus: TutorialFocusController
-
-const LEVEL_BAR_FILLED_COLOR: Color = Color(0.941, 0.816, 0.125, 1.0)
+var _core_upgrade: CoreUpgradeController
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_shop_state = ShopStateControllerScript.new() as ShopStateController
 	_tutorial_focus = TutorialFocusControllerScript.new() as TutorialFocusController
+	_core_upgrade = CoreUpgradeControllerScript.new() as CoreUpgradeController
+	_core_upgrade.setup(core_cost_label, core_level_label, level_bars_container, core_plaque)
 
 	GameEvents.resource_changed.connect(_on_resource_changed)
 	GameEvents.module_built.connect(_on_module_built)
@@ -63,7 +67,6 @@ func _ready() -> void:
 	_make_children_mouse_passthrough(core_plaque)
 	core_plaque.gui_input.connect(_on_core_plaque_input)
 
-	_cache_level_slot_styles()
 	_register_tutorial_targets()
 
 	_refresh_ui()
@@ -99,12 +102,14 @@ func _refresh_ui() -> void:
 	_update_module_button(btn_collector, Constants.MODULE_COLLECTOR, metal)
 	_update_module_button(btn_turret, Constants.MODULE_TURRET, metal)
 
-	# Обновление ядра
-	_refresh_core_info(metal)
+	# Обновление ядра через контроллер
+	if _core_upgrade != null:
+		_core_upgrade.refresh(metal, _get_active_upgrade_id())
+
 
 func _update_module_button(btn: Button, type: String, metal: int) -> void:
-	var cost = ResourceManager.get_current_module_cost(type)
-	var price_label = btn.get_node("V/Price")
+	var cost: int = ResourceManager.get_current_module_cost(type)
+	var price_label: Label = btn.get_node("V/Price") as Label
 	price_label.text = "%d +" % cost
 	btn.disabled = metal < cost
 
@@ -113,34 +118,13 @@ func _update_module_button(btn: Button, type: String, metal: int) -> void:
 	else:
 		price_label.add_theme_color_override("font_color", Color(0.941, 0.816, 0.125))
 
-func _refresh_core_info(metal: int) -> void:
-	var upgrade_id = _get_active_upgrade_id()
-	if upgrade_id.is_empty():
-		return
-
-	var level = UpgradeManager.get_upgrade_level(upgrade_id)
-	var max_lvl = UpgradeManager.get_upgrade_max_level(upgrade_id)
-	var cost = UpgradeManager.get_upgrade_next_cost(upgrade_id)
-
-	core_level_label.text = "УРОВЕНЬ %d / %d" % [level, max_lvl]
-
-	if level >= max_lvl:
-		core_cost_label.text = "MAX"
-	else:
-		core_cost_label.text = "%d •" % cost
-		if metal < cost:
-			core_cost_label.add_theme_color_override("font_color", Color(0.8, 0.2, 0.2))
-		else:
-			core_cost_label.add_theme_color_override("font_color", Color(0.941, 0.816, 0.125))
-
-	_update_level_bars(level)
 
 func _on_core_plaque_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
-		var upgrade_id = _get_active_upgrade_id()
+		var upgrade_id: String = _get_active_upgrade_id()
 		if upgrade_id.is_empty():
 			return
-		if UpgradeManager.purchase(upgrade_id):
+		if _core_upgrade != null and _core_upgrade.try_purchase(upgrade_id):
 			_refresh_ui()
 
 func _on_btn_shop_pressed() -> void:
@@ -188,29 +172,6 @@ func _make_children_mouse_passthrough(parent: Control) -> void:
 			child_control.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			_make_children_mouse_passthrough(child_control)
 
-func _cache_level_slot_styles() -> void:
-	_level_slot_base_styles.clear()
-	for child in level_bars_container.get_children():
-		if child is Panel:
-			var slot := child as Panel
-			var style := slot.get_theme_stylebox("panel")
-			if style is StyleBoxFlat:
-				_level_slot_base_styles.append((style as StyleBoxFlat).duplicate())
-
-func _update_level_bars(level: int) -> void:
-	for i in range(level_bars_container.get_child_count()):
-		var child := level_bars_container.get_child(i)
-		if not (child is Panel):
-			continue
-
-		var slot := child as Panel
-		if i >= _level_slot_base_styles.size():
-			continue
-
-		var style := (_level_slot_base_styles[i] as StyleBoxFlat).duplicate()
-		if i < level:
-			style.bg_color = LEVEL_BAR_FILLED_COLOR
-		slot.add_theme_stylebox_override("panel", style)
 
 func _on_btn_hull_pressed() -> void: _request_build(Constants.MODULE_HULL)
 func _on_btn_reactor_pressed() -> void: _request_build(Constants.MODULE_REACTOR)

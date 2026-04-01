@@ -72,20 +72,17 @@ func _on_module_built(module_type: String, _pos: Vector2) -> void:
 		build_iterations_by_module[module_type] = get_module_build_iteration(module_type) + 1
 
 	if module_type == Constants.MODULE_HULL:
-		# Модуль корпуса увеличивает лимит металла (читаем бонус из Constants)
+		# Модуль корпуса увеличивает лимит металла
 		max_metal += Constants.get_hull_metal_bonus()
-		# Сбрасываем флаг, так как лимит вырос
 		_max_metal_reached_notified = false
 		GameEvents.resource_changed.emit("metal", metal)
-		print("Resource Manager: Hull built! New max metal: ", max_metal)
 
 
 func _on_module_destroyed(module_type: String, _pos: Vector2) -> void:
 	if module_type != Constants.MODULE_HULL:
 		return
 
-	# При разрушении корпуса возвращаем лимит металла и подрезаем текущий запас по новому потолку.
+	# При разрушении корпуса возвращаем лимит металла
 	max_metal = max(Constants.get_resource_max_metal(), max_metal - Constants.get_hull_metal_bonus())
 	metal = min(metal, max_metal)
 	GameEvents.resource_changed.emit("metal", metal)
-	print("Resource Manager: Hull destroyed! New max metal: ", max_metal)

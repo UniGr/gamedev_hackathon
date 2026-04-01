@@ -1,15 +1,18 @@
 extends Node2D
 class_name Raider
+## Враг-налётчик, атакующий модули корабля.
+## Использует компонентную архитектуру: AI, Movement, Combat.
 
 enum RaiderRole {
-	NORMAL,
-	TANK,
-	SPRINTER,
+	NORMAL,  ## Стандартный налётчик
+	TANK,    ## Медленный, но прочный
+	SPRINTER ## Быстрый, но хрупкий
 }
 
 const TempCombatVfxScript: Script = preload("res://entities/effects/temp_combat_vfx.gd")
 const TempCombatSfxScript: Script = preload("res://entities/effects/temp_combat_sfx.gd")
 const HealthComponentScript: Script = preload("res://shared/components/health_component.gd")
+const HpBarRendererScript: Script = preload("res://shared/components/hp_bar_renderer.gd")
 
 const RaiderAIComponentScript: Script = preload("res://shared/components/raider_ai_component.gd")
 const RaiderMovementComponentScript: Script = preload("res://shared/components/raider_movement_component.gd")
@@ -55,6 +58,7 @@ var _is_biting: bool = false
 var _vfx: TempCombatVfx
 var _sfx: TempCombatSfx
 var _health: HealthComponent
+var _hp_bar: HpBarRenderer
 var _body_sprite: Sprite2D
 var _clickable: Area2D
 var _collision_shape: CollisionShape2D
@@ -72,6 +76,7 @@ func _ready() -> void:
 	_body_sprite = get_node_or_null("BodySprite") as Sprite2D
 	_apply_role_sprite()
 	_ensure_health_component()
+	_ensure_hp_bar_renderer()
 	_ensure_runtime_components()
 
 	_vfx = TempCombatVfxScript.new() as TempCombatVfx
@@ -185,6 +190,10 @@ func _apply_role_from_config() -> void:
 	_apply_role_sprite()
 	_update_click_shape()
 	_configure_components_from_exports()
+	
+	# Обновляем HP bar под новый размер
+	if _hp_bar != null:
+		_hp_bar.configure_for_raider(body_size_px)
 
 
 func take_damage(amount: int, source: String = "unknown") -> bool:
@@ -226,7 +235,7 @@ func _on_bite_started() -> void:
 		_vfx.play_bite(global_position)
 
 
-func _on_bite_executed(target: Node, success: bool) -> void:
+func _on_bite_executed(target, success: bool) -> void:
 	var target_world: Vector2 = global_position
 	if target != null and is_instance_valid(target) and target is ModuleBase:
 		target_world = (target as ModuleBase).get_world_center()
@@ -359,12 +368,24 @@ func _clamp_to_viewport() -> void:
 
 
 func _draw() -> void:
-	var hp_ratio: float = get_hp_ratio()
-	var hp_width: float = body_size_px * 1.1
-	var hp_height: float = 10.0
-	var hp_pos: Vector2 = Vector2(-hp_width * 0.5, -body_size_px * 0.72)
-	draw_rect(Rect2(hp_pos, Vector2(hp_width, hp_height)), Color(0.08, 0.08, 0.08, 0.88), true)
-	draw_rect(Rect2(hp_pos, Vector2(hp_width * hp_ratio, hp_height)), Color(1.0, 0.18, 0.18, 0.98), true)
+	# HP bar рендерится через компонент
+	if _hp_bar != null:
+		_hp_bar.draw_hp_bar(self, get_hp_ratio())
+
+
+func _ensure_hp_bar_renderer() -> void:
+	if _hp_bar != null and is_instance_valid(_hp_bar):
+		return
+
+	var existing: Node = get_node_or_null("HpBarRenderer")
+	if existing is HpBarRenderer:
+		_hp_bar = existing as HpBarRenderer
+	else:
+		_hp_bar = HpBarRendererScript.new() as HpBarRenderer
+		_hp_bar.name = "HpBarRenderer"
+		add_child(_hp_bar)
+
+	_hp_bar.configure_for_raider(body_size_px)
 
 
 func _ensure_health_component() -> void:

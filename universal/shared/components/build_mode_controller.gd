@@ -118,14 +118,11 @@ func _show_valid_placements(type: String, size: Vector2i) -> void:
 	if grid_manager == null or highlights_root == null:
 		return
 	
-	var count: int = 0
 	for y in range(GridManager.GRID_HEIGHT):
 		for x in range(GridManager.GRID_WIDTH):
 			var pos: Vector2i = Vector2i(x, y)
 			if grid_manager.canBuildAt(pos, type, size):
 				_create_highlight(pos, size)
-				count += 1
-	print("BuildModeController: Found ", count, " valid placements for ", type)
 
 
 func _create_highlight(pos: Vector2i, size: Vector2i) -> void:
