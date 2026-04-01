@@ -1,11 +1,22 @@
 extends Area2D
 class_name ClickableComponent
 ## Универсальный компонент для обработки кликов/тапов.
+## Используется мусором, модулями и врагами для определения взаимодействия.
 ## Сигналы идут ВВЕРХ по иерархии (Signals Up).
+##
+## Пример использования:
+## @code
+## var clickable = ClickableComponent.new()
+## clickable.clicked.connect(_on_clicked)
+## add_child(clickable)
+## @endcode
 
+## Испускается при клике/тапе по области.
 signal clicked
 
+## Включён ли компонент для обработки ввода.
 @export var is_enabled: bool = true
+## Если true, клик обрабатывается только один раз.
 @export var one_shot: bool = true
 
 var _already_clicked: bool = false
@@ -34,10 +45,12 @@ func _input_event(_viewport: Viewport, event: InputEvent, _shape_idx: int) -> vo
 	clicked.emit()
 
 
+## Включает или выключает обработку кликов.
 func set_enabled(value: bool) -> void:
 	is_enabled = value
 	input_pickable = value
 
 
+## Сбрасывает состояние клика для one_shot режима.
 func reset_click_state() -> void:
 	_already_clicked = false

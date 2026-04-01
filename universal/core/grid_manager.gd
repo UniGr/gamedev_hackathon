@@ -1,21 +1,41 @@
 extends Node
 class_name GridManager
+## Менеджер сетки для размещения модулей корабля.
+## Отвечает за валидацию позиций, зоны питания и регистрацию модулей.
+## Используется как локальный экземпляр в GameBoard.
 
+## Ширина сетки в ячейках.
 const GRID_WIDTH: int = 12
+## Высота сетки в ячейках.
 const GRID_HEIGHT: int = 20
+## Размер одной ячейки в пикселях.
 const CELL_SIZE: int = 135
 
+## Словарь занятых ячеек: Vector2i -> Node (модуль).
 var _occupied_cells: Dictionary = {}
+## Словарь ячеек с питанием: Vector2i -> bool.
 var _powered_cells: Dictionary = {}
+## Ячейки реакторов (источники питания).
 var _reactor_cells: Array[Vector2i] = []
+## Ячейки ядра (центральный источник питания).
 var _core_cells: Array[Vector2i] = []
 
+
+## Полностью сбрасывает сетку в начальное состояние.
+## Полностью сбрасывает сетку в начальное состояние.
 func reset_grid() -> void:
 	_occupied_cells.clear()
 	_powered_cells.clear()
 	_reactor_cells.clear()
 	_core_cells.clear()
 
+
+## Проверяет, можно ли построить модуль в указанной позиции.
+## Учитывает: границы сетки, занятость, соседство, питание, ограничения реактора.
+## @param pos: Позиция левого верхнего угла модуля.
+## @param module_type: Тип модуля (см. Constants.MODULE_*).
+## @param size: Размер модуля в ячейках.
+## @return: true если постройка разрешена.
 func canBuildAt(pos: Vector2i, module_type: String, size: Vector2i = Vector2i.ONE) -> bool:
 	if not _is_area_inside_grid(pos, size):
 		return false
@@ -39,11 +59,13 @@ func canBuildAt(pos: Vector2i, module_type: String, size: Vector2i = Vector2i.ON
 	# Его собственная зона питания не должна включать ядро или другие реакторы
 	if module_type == Constants.MODULE_REACTOR:
 		if _is_area_reactor_restricted(pos, size):
-			print("GridManager: Reactor would power core/reactor. Placement denied.")
 			return false
 
 	return true
 
+
+## Регистрирует ядро корабля в сетке.
+## Ядро является центральным источником питания.
 func register_core(pos: Vector2i, size: Vector2i, entity: Node) -> void:
 	var core_cells: Array[Vector2i] = _collect_cells(pos, size)
 	for cell in core_cells:
@@ -51,6 +73,9 @@ func register_core(pos: Vector2i, size: Vector2i, entity: Node) -> void:
 		if not _core_cells.has(cell): _core_cells.append(cell)
 	_rebuild_power_maps()
 
+
+## Регистрирует модуль в сетке.
+## Для реакторов также обновляет зоны питания.
 func register_module(pos: Vector2i, size: Vector2i, module_type: String, entity: Node) -> void:
 	var module_cells: Array[Vector2i] = _collect_cells(pos, size)
 	for cell in module_cells:
@@ -61,6 +86,8 @@ func register_module(pos: Vector2i, size: Vector2i, module_type: String, entity:
 			if not _reactor_cells.has(cell): _reactor_cells.append(cell)
 		_rebuild_power_maps()
 
+
+## Удаляет модуль из сетки.
 func unregister_module(entity: Node) -> void:
 	var keys_to_remove: Array[Vector2i] = []
 	for key in _occupied_cells.keys():
@@ -72,6 +99,8 @@ func unregister_module(entity: Node) -> void:
 		_core_cells.erase(key)
 	_rebuild_power_maps()
 
+
+## Возвращает копию словаря занятых ячеек.
 func get_occupied_cells() -> Dictionary:
 	return _occupied_cells.duplicate(true)
 

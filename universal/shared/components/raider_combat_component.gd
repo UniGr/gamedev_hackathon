@@ -3,7 +3,8 @@ class_name RaiderCombatComponent
 ## Компонент боя рейдера — кусание модулей и получение урона.
 
 signal bite_started()
-signal bite_executed(target: Node, success: bool)
+## Испускается после завершения укуса. target может быть null.
+signal bite_executed(target, success: bool)
 signal damage_taken(current_hp: int, max_hp: int)
 signal died(source: String)
 

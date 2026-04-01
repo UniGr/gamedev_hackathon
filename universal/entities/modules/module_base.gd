@@ -1,41 +1,63 @@
 extends Node2D
 class_name ModuleBase
+## Базовый класс для всех модулей корабля.
+## Предоставляет общую функциональность: HP, кликабельность, визуализация.
+## Используйте наследование для создания конкретных типов модулей.
 
 const HEALTH_COMPONENT_SCRIPT: Script = preload("res://shared/components/health_component.gd")
+const HP_BAR_RENDERER_SCRIPT: Script = preload("res://shared/components/hp_bar_renderer.gd")
 
 signal destroy_requested(module: ModuleBase, source: String)
 signal hp_changed(module: ModuleBase, current_hp: int, max_hp: int, source: String)
 
+## Уникальный идентификатор типа модуля (см. Constants.MODULE_*).
 @export var module_id: String = ""
+## Размер модуля в ячейках сетки.
 @export var grid_size: Vector2i = Vector2i.ONE
+## Стоимость постройки в металле.
 @export var metal_cost: int = 0
+## Бонус к защите корабля при установке.
 @export var defence_bonus: int = 0
+## Радиус распространения энергии (для реакторов).
 @export var energy_radius_cells: int = 0
+## Направление, куда "смотрит" модуль.
 @export var facing_direction: Vector2 = Vector2.UP
+## Цвет заливки при отсутствии текстуры.
 @export var sprite_color: Color = Color(0.55, 0.55, 0.55, 1.0)
+## Текстура модуля.
 @export var module_texture: Texture2D
 
 @export_group("Durability")
+## Максимальное здоровье модуля.
 @export var max_hp: int = 140
+## Урон от одного тапа игрока.
 @export var tap_damage: int = 28
+## Разрешён ли урон от тапов игрока (для отладки).
 @export var allow_player_tap_damage: bool = false
 
+## Позиция модуля в сетке (в ячейках).
 var grid_position: Vector2i = Vector2i.ZERO
+## Размер одной ячейки в пикселях.
 var cell_size_px: float = float(GridManager.CELL_SIZE)
+## Текущее здоровье модуля.
 var current_hp: int = 0
 
 var _clickable: Area2D
 var _collision_shape: CollisionShape2D
 var _is_build_mode_active_cached: bool = false
 var _health: HealthComponent
+var _hp_bar: HpBarRenderer
 
 
 func _ready() -> void:
 	if GameEvents.has_signal("build_mode_changed"):
 		GameEvents.build_mode_changed.connect(_on_build_mode_changed)
 	_ensure_health_component()
+	_ensure_hp_bar_renderer()
 
 
+## Конфигурирует модуль для размещения в сетке.
+## Вызывается после добавления модуля в дерево сцены.
 func configure(cell_pos: Vector2i, cell_size: float) -> void:
 	grid_position = cell_pos
 	cell_size_px = cell_size
@@ -46,9 +68,11 @@ func configure(cell_pos: Vector2i, cell_size: float) -> void:
 			_health.set_max_hp(max_hp, true)
 	_ensure_clickable()
 	_update_click_shape_size()
+	_configure_hp_bar()
 	queue_redraw()
 
 
+## Возвращает список всех ячеек, занятых модулем.
 func get_occupied_cells() -> Array[Vector2i]:
 	var result: Array[Vector2i] = []
 	for x in range(grid_position.x, grid_position.x + grid_size.x):
@@ -57,15 +81,19 @@ func get_occupied_cells() -> Array[Vector2i]:
 	return result
 
 
+## Возвращает центр модуля в мировых координатах.
 func get_world_center() -> Vector2:
 	return global_position + Vector2(grid_size.x, grid_size.y) * cell_size_px * 0.5
 
 
+## Устанавливает направление, куда "смотрит" модуль.
 func set_facing_direction(direction: Vector2) -> void:
 	if direction != Vector2.ZERO:
 		facing_direction = direction.normalized()
 
 
+## Наносит урон модулю.
+## Возвращает true, если модуль был уничтожен.
 func take_damage(amount: int, source: String = "unknown") -> bool:
 	var damage: int = max(0, amount)
 	if damage <= 0:
@@ -77,6 +105,7 @@ func take_damage(amount: int, source: String = "unknown") -> bool:
 	return _health.take_damage(damage, source)
 
 
+## Возвращает отношение текущего HP к максимальному (0.0 - 1.0).
 func get_hp_ratio() -> float:
 	if _health != null:
 		return _health.get_hp_ratio()
@@ -169,8 +198,26 @@ func _draw() -> void:
 		draw_rect(fill_rect, sprite_color, true)
 		draw_rect(fill_rect, Color(0.08, 0.08, 0.08, 1.0), false, 2.0)
 
-	var hp_ratio: float = get_hp_ratio()
-	var hp_back_size: Vector2 = Vector2(max(12.0, size_px.x - 12.0), 7.0)
-	var hp_back_pos: Vector2 = Vector2(6.0, 6.0)
-	draw_rect(Rect2(hp_back_pos, hp_back_size), Color(0.12, 0.12, 0.12, 0.85), true)
-	draw_rect(Rect2(hp_back_pos, Vector2(hp_back_size.x * hp_ratio, hp_back_size.y)), Color(0.2, 0.9, 0.35, 0.95), true)
+	# HP bar рендерится через компонент
+	if _hp_bar != null:
+		_hp_bar.draw_hp_bar(self, get_hp_ratio())
+
+
+func _ensure_hp_bar_renderer() -> void:
+	if _hp_bar != null and is_instance_valid(_hp_bar):
+		return
+
+	var existing: Node = get_node_or_null("HpBarRenderer")
+	if existing is HpBarRenderer:
+		_hp_bar = existing as HpBarRenderer
+	else:
+		_hp_bar = HP_BAR_RENDERER_SCRIPT.new() as HpBarRenderer
+		_hp_bar.name = "HpBarRenderer"
+		add_child(_hp_bar)
+
+
+func _configure_hp_bar() -> void:
+	if _hp_bar == null:
+		return
+	var size_px: Vector2 = Vector2(grid_size.x * cell_size_px, grid_size.y * cell_size_px)
+	_hp_bar.configure_for_module(size_px)

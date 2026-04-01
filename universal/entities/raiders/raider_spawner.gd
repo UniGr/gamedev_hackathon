@@ -1,4 +1,15 @@
 extends Node2D
+## Спавнер врагов (рейдеров).
+##
+## Механика спавна "храповик" (ratchet):
+## 1. Спавн НЕ начинается, пока игрок не построит минимум 2 модуля (min_buildings_for_spawn)
+## 2. После достижения порога спавн разблокируется НАВСЕГДА (_spawn_unlocked = true)
+## 3. Баланс волны определяется МАКСИМАЛЬНЫМ количеством модулей за всё время (_max_buildings_ever)
+##    - Если было 10 модулей, потом осталось 2 → враги идут как для 10 модулей
+##    - Если потом стало 15 → баланс обновляется до 15
+##    - Если потом снова упало до 5 → баланс остаётся 15 (монотонно возрастает)
+##
+## Это создаёт постоянное давление на игрока и не позволяет "откатываться" в балансе.
 
 @export_group("Raider Scene")
 @export var raider_scene: PackedScene = preload("res://entities/raiders/raider.tscn")
@@ -20,7 +31,15 @@ var _is_game_finished: bool = false
 var _spawn_cycle: Array[int] = []
 var _spawn_cycle_index: int = 0
 var _spawn_cycle_key: String = ""
-var _spawn_enabled_by_buildings: bool = false
+
+## Флаг разблокировки спавна: устанавливается в true, когда игрок ВПЕРВЫЕ построил 2+ модуля.
+## После разблокировки спавн идёт всегда, независимо от текущего количества модулей.
+var _spawn_unlocked: bool = false
+
+## Максимальное количество модулей, которое когда-либо было у игрока.
+## Используется для определения сложности волны (монотонно возрастает, никогда не уменьшается).
+var _max_buildings_ever: int = 0
+
 var _game_board: Node
 
 
@@ -58,12 +77,18 @@ func _process(_delta: float) -> void:
 func _on_spawn_timer_timeout() -> void:
 	if _is_game_finished:
 		return
-	var buildings_count: int = _sync_spawn_timer_state()
-	if not _spawn_enabled_by_buildings:
+	
+	# Обновляем состояние спавна (проверяем разблокировку, обновляем максимум)
+	_sync_spawn_timer_state()
+	
+	# Проверяем, разблокирован ли спавн (было ли когда-то 2+ модуля)
+	if not _spawn_unlocked:
 		return
+	
 	_cleanup_invalid_raiders()
 
-	var wave: RaiderWaveRow = _get_wave_row(buildings_count)
+	# Используем МАКСИМАЛЬНОЕ количество модулей для баланса
+	var wave: RaiderWaveRow = _get_wave_row(_max_buildings_ever)
 	if wave == null or wave.max_active <= 0:
 		return
 	if _active_raiders.size() >= wave.max_active:
@@ -77,19 +102,25 @@ func _on_buildings_changed(_module_type: String, _position: Vector2) -> void:
 	_sync_spawn_timer_state()
 
 
-func _sync_spawn_timer_state() -> int:
-	var buildings_count: int = _get_current_buildings_count()
-	_spawn_enabled_by_buildings = buildings_count >= max(1, min_buildings_for_spawn)
-
+func _sync_spawn_timer_state() -> void:
+	var current_buildings: int = _get_current_buildings_count()
+	
+	# Обновляем максимум (монотонно растёт, никогда не падает)
+	if current_buildings > _max_buildings_ever:
+		_max_buildings_ever = current_buildings
+	
+	# Разблокируем спавн НАВСЕГДА, если игрок построил минимальное количество модулей
+	if not _spawn_unlocked and current_buildings >= max(1, min_buildings_for_spawn):
+		_spawn_unlocked = true
+	
+	# Таймер работает всегда после разблокировки
 	if _spawn_timer != null:
-		if _spawn_enabled_by_buildings:
+		if _spawn_unlocked:
 			if _spawn_timer.is_stopped():
 				_spawn_timer.start()
 		else:
 			if not _spawn_timer.is_stopped():
 				_spawn_timer.stop()
-
-	return buildings_count
 
 
 func _spawn_raider_from_wave(wave: RaiderWaveRow) -> void:
@@ -270,7 +301,8 @@ func _on_tutorial_raider_spawn_requested() -> void:
 	if not _active_raiders.is_empty():
 		return
 
-	var wave: RaiderWaveRow = _get_wave_row(_get_current_buildings_count())
+	# Для туториального спавна тоже используем максимальное количество модулей
+	var wave: RaiderWaveRow = _get_wave_row(_max_buildings_ever)
 	if wave == null or wave.max_active <= 0:
 		# Создаём временную волну для туториала
 		_spawn_tutorial_fallback_raider()
