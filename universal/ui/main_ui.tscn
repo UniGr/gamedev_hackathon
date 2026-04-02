@@ -699,6 +699,18 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnShopHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_BtnShopHover")
 text = "ВЫЙТИ ИЗ ЦЕХА"
 
+[node name="BtnMainMenu" type="Button" parent="ShopOverlay/Center/ShopPanel/ShopMargin/ShopVBox" unique_id=307490482]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.585, 0.585, 1)
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 28
+theme_override_styles/normal = SubResource("StyleBoxFlat_BtnShop")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnShopHover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_BtnShopHover")
+text = "В ГЛАВНОЕ МЕНЮ"
+
 [node name="EndOverlay" type="ColorRect" parent="." unique_id=986673759]
 unique_name_in_owner = true
 visible = false
@@ -765,6 +777,88 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
 text = "ПЕРЕЗАПУСК"
+
+[node name="ConfirmExitOverlay" type="ColorRect" parent="." unique_id=986673760]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.82)
+
+[node name="Center" type="CenterContainer" parent="ConfirmExitOverlay" unique_id=350349120]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="ConfirmExitOverlay/Center" unique_id=2005232266]
+custom_minimum_size = Vector2(860, 520)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_EndPanel")
+
+[node name="InnerMargin" type="MarginContainer" parent="ConfirmExitOverlay/Center/Panel" unique_id=1634267613]
+layout_mode = 2
+theme_override_constants/margin_left = 36
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 36
+theme_override_constants/margin_bottom = 30
+
+[node name="VBox" type="VBoxContainer" parent="ConfirmExitOverlay/Center/Panel/InnerMargin" unique_id=1600906779]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Title" type="Label" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox" unique_id=2071506729]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.585, 0.585, 1)
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 44
+text = "В ГЛАВНОЕ МЕНЮ"
+horizontal_alignment = 1
+
+[node name="Description" type="Label" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox" unique_id=133933995]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.815686, 0.627451, 0.941176, 1)
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 24
+text = "Прогресс текущего захода не сохранится.\nПерейти в главное меню?"
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="Buttons" type="HBoxContainer" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox" unique_id=1600906780]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="BtnConfirmExitNo" type="Button" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox/Buttons" unique_id=571745190]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
+text = "ОТМЕНА"
+
+[node name="BtnConfirmExitYes" type="Button" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox/Buttons" unique_id=571745191]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.585, 0.585, 1)
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 30
+theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
+text = "ПЕРЕЙТИ"
 
 [node name="ScreenBorder" type="PanelContainer" parent="." unique_id=1804509101]
 anchors_preset = 15

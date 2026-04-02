@@ -33,11 +33,15 @@ const CoreUpgradeControllerScript: Script = preload("res://ui/core_upgrade_contr
 @onready var btn_turret: Button = %BtnTurret
 @onready var btn_shop: Button = %BtnShop
 @onready var btn_shop_exit: Button = %BtnShopExit
+@onready var btn_main_menu: Button = %BtnMainMenu
 @onready var shop_overlay: ColorRect = %ShopOverlay
 @onready var end_overlay: ColorRect = %EndOverlay
 @onready var end_title_label: Label = %EndTitleLabel
 @onready var end_reason_label: Label = %EndReasonLabel
 @onready var btn_restart: Button = %BtnRestart
+@onready var confirm_exit_overlay: ColorRect = %ConfirmExitOverlay
+@onready var btn_confirm_exit_yes: Button = %BtnConfirmExitYes
+@onready var btn_confirm_exit_no: Button = %BtnConfirmExitNo
 
 # Новые элементы Ядра
 @onready var core_cost_label: Label = %CoreCost
@@ -81,6 +85,9 @@ func _ready() -> void:
 	btn_shop.pressed.connect(_on_btn_shop_pressed)
 	btn_restart.pressed.connect(_on_btn_restart_pressed)
 	btn_shop_exit.pressed.connect(_on_btn_shop_exit_pressed)
+	btn_main_menu.pressed.connect(_on_btn_main_menu_pressed)
+	btn_confirm_exit_yes.pressed.connect(_on_btn_confirm_exit_yes_pressed)
+	btn_confirm_exit_no.pressed.connect(_on_btn_confirm_exit_no_pressed)
 
 	# Клик по плашке ядра для апгрейда: дочерние элементы не перехватывают нажатие.
 	core_plaque.mouse_filter = Control.MOUSE_FILTER_STOP
@@ -92,6 +99,7 @@ func _ready() -> void:
 	_refresh_ui()
 	_set_shop_open(false, false)
 	end_overlay.visible = false
+	_set_confirm_exit_visible(false)
 
 func _exit_tree() -> void:
 	if get_viewport() != null and get_viewport().size_changed.is_connected(_apply_safe_area):
@@ -186,6 +194,8 @@ func _on_btn_shop_pressed() -> void:
 func _set_shop_open(value: bool, sync_pause: bool) -> void:
 	if _shop_state != null:
 		_shop_state.set_shop_open(value, sync_pause, shop_overlay)
+	if not value:
+		_set_confirm_exit_visible(false)
 
 
 func _is_shop_open() -> bool:
@@ -193,6 +203,30 @@ func _is_shop_open() -> bool:
 
 func _on_btn_shop_exit_pressed() -> void:
 	_set_shop_open(false, true)
+
+
+func _on_btn_main_menu_pressed() -> void:
+	if _is_game_finished:
+		return
+	AudioManager.play_ui_open()
+	_set_confirm_exit_visible(true)
+
+
+func _on_btn_confirm_exit_no_pressed() -> void:
+	AudioManager.play_ui_open()
+	_set_confirm_exit_visible(false)
+
+
+func _on_btn_confirm_exit_yes_pressed() -> void:
+	get_tree().paused = false
+	AudioManager.play_ui_open()
+	get_tree().change_scene_to_file("res://ui/start_menu.tscn")
+
+
+func _set_confirm_exit_visible(value: bool) -> void:
+	if confirm_exit_overlay == null:
+		return
+	confirm_exit_overlay.visible = value
 
 func _on_module_built(_type: String, _pos: Vector2) -> void:
 	_set_shop_open(false, true)
