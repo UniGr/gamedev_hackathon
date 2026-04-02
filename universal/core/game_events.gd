@@ -25,6 +25,12 @@ signal garbage_clicked(amount: int)
 ## @param new_total: Новое значение ресурса.
 signal resource_changed(type: String, new_total: int)
 
+## Попытка собрать ресурс уперлась в лимит.
+## @param type: Тип ресурса.
+## @param current_total: Текущее значение ресурса.
+## @param max_total: Максимальное значение ресурса.
+signal resource_cap_reached(type: String, current_total: int, max_total: int)
+
 ## Максимум ресурсов достигнут в первый раз.
 ## @param resource_type: Тип ресурса.
 ## @param max_amount: Максимальное значение.

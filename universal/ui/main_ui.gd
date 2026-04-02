@@ -24,6 +24,7 @@ const CoreUpgradeControllerScript: Script = preload("res://ui/core_upgrade_contr
 @onready var metal_label: Label = %MetalLabel
 @onready var metal_counter: Label = %MetalCounter
 @onready var metal_bar: TextureProgressBar = %MetalBar
+@onready var metal_max_notice_stack: MetalMaxNoticeStack = %MetalMaxNoticeStack
 @onready var shop_metal_label: Label = %ShopMetalLabel
 @onready var shop_metal_counter: Label = %ShopMetalCounter
 @onready var shop_metal_bar: TextureProgressBar = %ShopMetalBar
@@ -62,11 +63,14 @@ func _ready() -> void:
 	_tutorial_focus = TutorialFocusControllerScript.new() as TutorialFocusController
 	_core_upgrade = CoreUpgradeControllerScript.new() as CoreUpgradeController
 	_core_upgrade.setup(core_cost_label, core_level_label, level_bars_container, core_plaque)
+	if metal_max_notice_stack != null:
+		metal_max_notice_stack.set_notice_font(metal_label.get_theme_font("font"))
 	_apply_safe_area()
 	if not get_viewport().size_changed.is_connected(_apply_safe_area):
 		get_viewport().size_changed.connect(_apply_safe_area)
 
 	GameEvents.resource_changed.connect(_on_resource_changed)
+	GameEvents.resource_cap_reached.connect(_on_resource_cap_reached)
 	GameEvents.module_built.connect(_on_module_built)
 	GameEvents.build_mode_cancelled.connect(_on_build_mode_cancelled)
 	if GameEvents.has_signal("game_finished"):
@@ -139,6 +143,13 @@ func _process(_delta: float) -> void:
 func _on_resource_changed(type: String, _new_total: int) -> void:
 	if type == "metal":
 		_refresh_ui()
+
+
+func _on_resource_cap_reached(type: String, _current_total: int, _max_total: int) -> void:
+	if type != "metal":
+		return
+	if metal_max_notice_stack != null:
+		metal_max_notice_stack.show_notice()
 
 func _refresh_ui() -> void:
 	var metal = ResourceManager.metal

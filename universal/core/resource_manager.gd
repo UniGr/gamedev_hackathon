@@ -36,11 +36,14 @@ func reset_run_state() -> void:
 	GameEvents.resource_changed.emit("metal", metal)
 
 func add_metal(amount: int) -> void:
+	var previous_metal: int = metal
 	metal = min(metal + amount, max_metal)
-	# Проверяем, достигли ли максимум в первый раз
-	if metal == max_metal and not _max_metal_reached_notified:
-		_max_metal_reached_notified = true
-		GameEvents.max_resources_reached.emit("metal", metal)
+	if amount > 0 and metal == max_metal:
+		GameEvents.resource_cap_reached.emit("metal", metal, max_metal)
+		# Первый раз добираемся до лимита - для туториала и других систем.
+		if previous_metal < max_metal and not _max_metal_reached_notified:
+			_max_metal_reached_notified = true
+			GameEvents.max_resources_reached.emit("metal", metal)
 	GameEvents.resource_changed.emit("metal", metal)
 
 func spend_metal(amount: int) -> bool:
