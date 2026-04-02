@@ -17,6 +17,7 @@ var _active_build_size: Vector2i = Vector2i.ONE
 var _module_script_by_id: Dictionary = {}
 var _cell_size: float = 90.0
 var _is_enabled: bool = true
+var _highlights_tween: Tween
 
 
 func _ready() -> void:
@@ -110,6 +111,11 @@ func _on_build_requested(module_type: String, requested_position: Vector2) -> vo
 
 
 func _clear_highlights() -> void:
+	if _highlights_tween != null:
+		_highlights_tween.kill()
+		_highlights_tween = null
+	if highlights_root != null and is_instance_valid(highlights_root):
+		highlights_root.modulate = Color.WHITE
 	if highlights_root != null:
 		for child in highlights_root.get_children():
 			child.queue_free()
@@ -133,6 +139,8 @@ func _show_valid_placements(type: String, size: Vector2i) -> void:
 	for cell_pos: Vector2i in occupied_cells.keys():
 		_create_highlight_cell(cell_pos, occupied_cells)
 
+	_start_highlight_pulse()
+
 
 func _add_highlight_area(occupied_cells: Dictionary, pos: Vector2i, size: Vector2i) -> void:
 	for offset_y in range(size.y):
@@ -147,6 +155,25 @@ func _create_highlight_cell(pos: Vector2i, occupied_cells: Dictionary) -> void:
 	panel.size = Vector2(_cell_size, _cell_size)
 	panel.add_theme_stylebox_override("panel", _build_highlight_style(pos, occupied_cells))
 	highlights_root.add_child(panel)
+
+
+func _start_highlight_pulse() -> void:
+	if highlights_root == null or not is_instance_valid(highlights_root):
+		return
+	if _highlights_tween != null:
+		_highlights_tween.kill()
+	_highlights_tween = null
+
+	var base_color: Color = Color(1.0, 1.0, 1.0, 1.0)
+	var pulse_color: Color = Color(1.18, 1.06, 0.52, 1.0)
+	highlights_root.modulate = base_color
+	_highlights_tween = highlights_root.create_tween()
+	_highlights_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+	_highlights_tween.set_loops()
+	_highlights_tween.set_trans(Tween.TRANS_SINE)
+	_highlights_tween.set_ease(Tween.EASE_IN_OUT)
+	_highlights_tween.tween_property(highlights_root, "modulate", pulse_color, 0.6)
+	_highlights_tween.tween_property(highlights_root, "modulate", base_color, 0.6)
 
 
 func _build_highlight_style(pos: Vector2i, occupied_cells: Dictionary) -> StyleBoxFlat:
