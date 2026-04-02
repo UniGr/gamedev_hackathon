@@ -189,7 +189,7 @@ theme_override_styles/pressed = SubResource("StyleBox_StartBtnPressed")
 theme_override_styles/hover = SubResource("StyleBox_StartBtnHover")
 text = "▶ ИГРАТЬ"
 
-[node name="BtnTraining" type="Button" parent="Control" unique_id=1516868992]
+[node name="BtnSettings" type="Button" parent="Control" unique_id=1516868992]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(600, 140)
 layout_mode = 1
@@ -210,7 +210,7 @@ theme_override_font_sizes/font_size = 28
 theme_override_styles/normal = SubResource("StyleBox_StartBtn")
 theme_override_styles/pressed = SubResource("StyleBox_StartBtnPressed")
 theme_override_styles/hover = SubResource("StyleBox_StartBtnHover")
-text = "ОБУЧЕНИЕ С НАДЕЙ"
+text = "НАСТРОЙКИ"
 
 [node name="BtnExit" type="Button" parent="Control" unique_id=1919690250]
 unique_name_in_owner = true

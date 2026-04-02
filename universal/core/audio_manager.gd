@@ -1,24 +1,15 @@
 extends Node
 
-const BGM_PATH: String = "res://assets/audio/music/Glass_Orbiting.mp3"
-const ENGINE_LOOP_PATH: String = "res://assets/audio/dima_sfx/engine.mp3"
+const AudioCatalogScript: Script = preload("res://core/audio_catalog.gd")
 
-const SFX_UI_OPEN: String = "res://assets/audio/game_sfx/ui_open.wav"
-const SFX_BUILD_PLACE: String = "res://assets/audio/dima_sfx/build_place_dima.wav"
-const SFX_COIN: String = "res://assets/audio/game_sfx/pick_up.mp3"
-const SFX_COLLECTOR_GATHER: String = "res://assets/audio/dima_sfx/sbor.mp3"
-const SFX_MODULE_HIT: String = "res://assets/audio/game_sfx/module_hit.wav"
-const SFX_MODULE_DESTROY: String = "res://assets/audio/game_sfx/module_destroy.wav"
-const SFX_RAIDER_BITE: String = "res://assets/audio/dima_sfx/raider_bite_dima.wav"
-const SFX_RAIDER_DAMAGE: String = "res://assets/audio/dima_sfx/testovy_damag.mp3"
-const SFX_RAIDER_DESTROY: String = "res://assets/audio/dima_sfx/enemy_death_dima1.wav"
-const SFX_TURRET_SHOT: String = "res://assets/audio/game_sfx/turret_shot.mp3"
-const SFX_WIN: String = "res://assets/audio/game_sfx/win.wav"
-const SFX_LOSE: String = "res://assets/audio/game_sfx/lose.wav"
+const SETTINGS_PATH: String = "user://audio_settings.cfg"
+const SETTINGS_SECTION: String = "audio"
+const SETTINGS_KEY_MUSIC_VOLUME: String = "music_volume"
+const SETTINGS_KEY_SFX_VOLUME: String = "sfx_volume"
 
-@export var bgm_volume_db: float = -18.0 # тише фоновой музыки
-@export var engine_volume_db: float = -30.0 # очень тихий постоянный фон
-@export var sfx_volume_db: float = -8.0
+const SILENT_DB: float = -80.0
+const DEFAULT_MUSIC_VOLUME: float = 1.0
+const DEFAULT_SFX_VOLUME: float = 1.0
 
 var _bgm_player: AudioStreamPlayer
 var _engine_player: AudioStreamPlayer
@@ -28,10 +19,13 @@ var _last_module_hit_time_ms: int = -10000
 var _last_raider_hit_time_ms: int = -10000
 var _bgm_enabled: bool = true
 var _stream_cache: Dictionary = {}
+var _music_volume_linear: float = DEFAULT_MUSIC_VOLUME
+var _sfx_volume_linear: float = DEFAULT_SFX_VOLUME
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	_load_audio_settings()
 	_setup_players()
 	_warmup_stream_cache()
 	_connect_events()
@@ -42,22 +36,42 @@ func _ready() -> void:
 func _setup_players() -> void:
 	_bgm_player = AudioStreamPlayer.new()
 	_bgm_player.bus = "Master"
-	_bgm_player.volume_db = bgm_volume_db
+	_bgm_player.volume_db = _resolve_volume_db(AudioCatalogScript.TAG_MUSIC_BGM_MAIN)
 	_bgm_player.autoplay = false
 	add_child(_bgm_player)
 
 	_engine_player = AudioStreamPlayer.new()
 	_engine_player.bus = "Master"
-	_engine_player.volume_db = engine_volume_db
+	_engine_player.volume_db = _resolve_volume_db(AudioCatalogScript.TAG_MUSIC_ENGINE_LOOP)
 	_engine_player.autoplay = false
 	add_child(_engine_player)
 
 	for _i in range(12):
 		var p := AudioStreamPlayer.new()
 		p.bus = "Master"
-		p.volume_db = sfx_volume_db
+		p.volume_db = _resolve_volume_db(AudioCatalogScript.TAG_UI_OPEN)
 		add_child(p)
 		_sfx_players.append(p)
+
+
+func get_music_volume() -> float:
+	return _music_volume_linear
+
+
+func get_sfx_volume() -> float:
+	return _sfx_volume_linear
+
+
+func set_music_volume(value: float) -> void:
+	_music_volume_linear = clampf(value, 0.0, 1.0)
+	_apply_music_levels()
+	_save_audio_settings()
+
+
+func set_sfx_volume(value: float) -> void:
+	_sfx_volume_linear = clampf(value, 0.0, 1.0)
+	_apply_active_sfx_levels()
+	_save_audio_settings()
 
 func is_bgm_enabled() -> bool:
 	return _bgm_enabled
@@ -88,10 +102,10 @@ func _connect_events() -> void:
 
 func _warmup_stream_cache() -> void:
 	# Прогрев коротких частых SFX, чтобы первый клик звучал без задержки.
-	_load_audio_stream(SFX_COIN, false)
-	_load_audio_stream(SFX_COLLECTOR_GATHER, false)
-	_load_audio_stream(SFX_RAIDER_DAMAGE, false)
-	_load_audio_stream(SFX_RAIDER_DESTROY, false)
+	_load_audio_stream(AudioCatalogScript.TAG_GAMEPLAY_COIN)
+	_load_audio_stream(AudioCatalogScript.TAG_GAMEPLAY_COLLECTOR_GATHER)
+	_load_audio_stream(AudioCatalogScript.TAG_COMBAT_RAIDER_DAMAGE)
+	_load_audio_stream(AudioCatalogScript.TAG_COMBAT_RAIDER_DESTROY)
 
 
 func _process(_delta: float) -> void:
@@ -108,12 +122,12 @@ func _update_engine_playback() -> void:
 		return
 
 	if _engine_player.stream == null:
-		var engine_stream: AudioStream = _load_audio_stream(ENGINE_LOOP_PATH, true)
+		var engine_stream: AudioStream = _load_audio_stream(AudioCatalogScript.TAG_MUSIC_ENGINE_LOOP)
 		if engine_stream == null:
 			return
 		_engine_player.stream = engine_stream
 
-	_engine_player.volume_db = engine_volume_db
+	_engine_player.volume_db = _resolve_volume_db(AudioCatalogScript.TAG_MUSIC_ENGINE_LOOP)
 	if not _engine_player.playing:
 		_engine_player.play()
 
@@ -125,34 +139,34 @@ func _play_bgm() -> void:
 	if _bgm_player == null:
 		return
 
-	var stream: AudioStream = _load_audio_stream(BGM_PATH, true)
+	var stream: AudioStream = _load_audio_stream(AudioCatalogScript.TAG_MUSIC_BGM_MAIN)
 	if stream == null:
 		return
 
 	_bgm_player.stream = stream
-	_bgm_player.volume_db = bgm_volume_db
+	_bgm_player.volume_db = _resolve_volume_db(AudioCatalogScript.TAG_MUSIC_BGM_MAIN)
 	if not _bgm_player.playing:
 		_bgm_player.play()
 
 
 func play_ui_open() -> void:
-	_play_sfx(SFX_UI_OPEN)
+	_play_sfx(AudioCatalogScript.TAG_UI_OPEN)
 
 
 func play_collector_gather() -> void:
-	_play_sfx(SFX_COLLECTOR_GATHER, -16.0)
+	_play_sfx(AudioCatalogScript.TAG_GAMEPLAY_COLLECTOR_GATHER)
 
 
 func play_turret_shot() -> void:
-	_play_sfx(SFX_TURRET_SHOT, -10.0)
+	_play_sfx(AudioCatalogScript.TAG_GAMEPLAY_TURRET_SHOT)
 
 
 func _on_garbage_clicked(_amount: int) -> void:
-	_play_sfx(SFX_COIN, -1.0)
+	_play_sfx(AudioCatalogScript.TAG_GAMEPLAY_COIN)
 
 
 func _on_module_built(_module_type: String, _position: Vector2) -> void:
-	_play_sfx(SFX_BUILD_PLACE)
+	_play_sfx(AudioCatalogScript.TAG_GAMEPLAY_BUILD_PLACE)
 
 
 func _on_module_damaged(_module_type: String, _current_hp: int, _max_hp: int, _position: Vector2, _source: String) -> void:
@@ -160,15 +174,15 @@ func _on_module_damaged(_module_type: String, _current_hp: int, _max_hp: int, _p
 	if now_ms - _last_module_hit_time_ms < 70:
 		return
 	_last_module_hit_time_ms = now_ms
-	_play_sfx(SFX_MODULE_HIT, -10.0)
+	_play_sfx(AudioCatalogScript.TAG_COMBAT_MODULE_HIT)
 
 
 func _on_module_destroyed(_module_type: String, _position: Vector2) -> void:
-	_play_sfx(SFX_MODULE_DESTROY)
+	_play_sfx(AudioCatalogScript.TAG_COMBAT_MODULE_DESTROY)
 
 
 func _on_raider_bite(_position: Vector2) -> void:
-	_play_sfx(SFX_RAIDER_BITE, -9.0)
+	_play_sfx(AudioCatalogScript.TAG_COMBAT_RAIDER_BITE)
 
 
 func _on_raider_damaged(_current_hp: int, _max_hp: int, _position: Vector2) -> void:
@@ -176,37 +190,55 @@ func _on_raider_damaged(_current_hp: int, _max_hp: int, _position: Vector2) -> v
 	if now_ms - _last_raider_hit_time_ms < 60:
 		return
 	_last_raider_hit_time_ms = now_ms
-	_play_sfx(SFX_RAIDER_DAMAGE, -8.0)
+	_play_sfx(AudioCatalogScript.TAG_COMBAT_RAIDER_DAMAGE)
 
 
 func _on_raider_destroyed(_position: Vector2, _evolution_level: int, _source: String) -> void:
-	_play_sfx(SFX_RAIDER_DESTROY, -2.0)
+	_play_sfx(AudioCatalogScript.TAG_COMBAT_RAIDER_DESTROY)
 
 
 func _on_game_finished(outcome: String, _reason: String) -> void:
 	if outcome == "win":
-		_play_sfx(SFX_WIN)
+		_play_sfx(AudioCatalogScript.TAG_SYSTEM_WIN)
 	else:
-		_play_sfx(SFX_LOSE)
+		_play_sfx(AudioCatalogScript.TAG_SYSTEM_LOSE)
 
 
-func _play_sfx(path: String, volume: float = -8.0) -> void:
+func _play_sfx(tag: String, base_volume_db: float = INF) -> void:
 	if _sfx_players.is_empty():
 		return
 
-	var stream: AudioStream = _load_audio_stream(path, false)
+	if not AudioCatalogScript.has_tag(tag):
+		return
+
+	var stream: AudioStream = _load_audio_stream(tag)
 	if stream == null:
 		return
+
+	var resolved_base_db: float = AudioCatalogScript.get_base_db(tag)
+	if is_finite(base_volume_db):
+		resolved_base_db = base_volume_db
 
 	var player: AudioStreamPlayer = _sfx_players[_next_sfx_player]
 	_next_sfx_player = (_next_sfx_player + 1) % _sfx_players.size()
 	player.stop()
 	player.stream = stream
-	player.volume_db = volume
+	player.set_meta("audio_tag", tag)
+	player.set_meta("base_volume_db", resolved_base_db)
+	player.volume_db = resolved_base_db + _get_gain_db_for_class(AudioCatalogScript.get_audio_class(tag))
 	player.play()
 
 
-func _load_audio_stream(path: String, loop: bool) -> AudioStream:
+func _load_audio_stream(tag: String) -> AudioStream:
+	if not AudioCatalogScript.has_tag(tag):
+		return null
+
+	var path: String = AudioCatalogScript.get_stream_path(tag)
+	var loop: bool = AudioCatalogScript.is_looped(tag)
+	return _load_audio_stream_from_path(path, loop)
+
+
+func _load_audio_stream_from_path(path: String, loop: bool) -> AudioStream:
 	if _stream_cache.has(path):
 		var cached: AudioStream = _stream_cache[path] as AudioStream
 		if cached != null:
@@ -246,3 +278,66 @@ func _load_audio_stream(path: String, loop: bool) -> AudioStream:
 	if not loop:
 		_stream_cache[path] = mp3_stream
 	return mp3_stream
+
+
+func _apply_music_levels() -> void:
+	if _bgm_player != null:
+		_bgm_player.volume_db = _resolve_volume_db(AudioCatalogScript.TAG_MUSIC_BGM_MAIN)
+	if _engine_player != null:
+		_engine_player.volume_db = _resolve_volume_db(AudioCatalogScript.TAG_MUSIC_ENGINE_LOOP)
+
+
+func _apply_active_sfx_levels() -> void:
+	for player_any in _sfx_players:
+		if player_any == null:
+			continue
+		var player: AudioStreamPlayer = player_any as AudioStreamPlayer
+		if player == null:
+			continue
+		if not player.has_meta("audio_tag"):
+			continue
+		var tag: String = str(player.get_meta("audio_tag", ""))
+		if tag.is_empty() or not AudioCatalogScript.has_tag(tag):
+			continue
+		var base_volume_db: float = float(player.get_meta("base_volume_db", AudioCatalogScript.get_base_db(tag)))
+		player.volume_db = base_volume_db + _get_gain_db_for_class(AudioCatalogScript.get_audio_class(tag))
+
+
+func _resolve_volume_db(tag: String) -> float:
+	if not AudioCatalogScript.has_tag(tag):
+		return SILENT_DB
+	var base_db: float = AudioCatalogScript.get_base_db(tag)
+	var audio_class: AudioCatalogScript.AudioClass = AudioCatalogScript.get_audio_class(tag)
+	return base_db + _get_gain_db_for_class(audio_class)
+
+
+func _get_gain_db_for_class(audio_class: AudioCatalogScript.AudioClass) -> float:
+	if audio_class == AudioCatalogScript.AudioClass.MUSIC:
+		return _linear_to_db(_music_volume_linear)
+	return _linear_to_db(_sfx_volume_linear)
+
+
+func _linear_to_db(value: float) -> float:
+	if value <= 0.0001:
+		return SILENT_DB
+	return linear_to_db(value)
+
+
+func _load_audio_settings() -> void:
+	var config: ConfigFile = ConfigFile.new()
+	var err: int = config.load(SETTINGS_PATH)
+	if err != OK:
+		_music_volume_linear = DEFAULT_MUSIC_VOLUME
+		_sfx_volume_linear = DEFAULT_SFX_VOLUME
+		return
+
+	_music_volume_linear = clampf(float(config.get_value(SETTINGS_SECTION, SETTINGS_KEY_MUSIC_VOLUME, DEFAULT_MUSIC_VOLUME)), 0.0, 1.0)
+	_sfx_volume_linear = clampf(float(config.get_value(SETTINGS_SECTION, SETTINGS_KEY_SFX_VOLUME, DEFAULT_SFX_VOLUME)), 0.0, 1.0)
+
+
+func _save_audio_settings() -> void:
+	var config: ConfigFile = ConfigFile.new()
+	var _err: int = config.load(SETTINGS_PATH)
+	config.set_value(SETTINGS_SECTION, SETTINGS_KEY_MUSIC_VOLUME, _music_volume_linear)
+	config.set_value(SETTINGS_SECTION, SETTINGS_KEY_SFX_VOLUME, _sfx_volume_linear)
+	config.save(SETTINGS_PATH)
