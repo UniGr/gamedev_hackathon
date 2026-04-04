@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="RaiderRoleConfig" load_steps=3 format=3 uid="uid://craidersprinter01"]
+[gd_resource type="Resource" script_class="RaiderRoleConfig" format=3 uid="uid://ckowjs62x87h1"]
 
 [ext_resource type="Script" path="res://data/raider_role_config.gd" id="1_script"]
 [ext_resource type="Texture2D" uid="uid://dtviad3djtj6b" path="res://assets/sprites/sprinter.png" id="2_texture"]

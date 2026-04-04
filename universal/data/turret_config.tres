@@ -1,4 +1,4 @@
-[gd_resource type="Resource" script_class="TurretConfig" load_steps=2 format=3 uid="uid://cturretconfig001"]
+[gd_resource type="Resource" script_class="TurretConfig" format=3 uid="uid://mbgvog0d3ai7"]
 
 [ext_resource type="Script" path="res://data/turret_config.gd" id="1_script"]
 
