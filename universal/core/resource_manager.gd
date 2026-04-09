@@ -11,6 +11,12 @@ var build_iterations_by_module: Dictionary = {
 	Constants.MODULE_COLLECTOR: 0,
 	Constants.MODULE_TURRET: 0,
 }
+var active_module_counts: Dictionary = {
+	Constants.MODULE_COLLECTOR: 0,
+	Constants.MODULE_TURRET: 0,
+	Constants.MODULE_HULL: 0,
+	Constants.MODULE_REACTOR: 0,
+}
 
 func _ready() -> void:
 	# Инициализируем начальные значения из Constants
@@ -33,6 +39,8 @@ func reset_run_state() -> void:
 	_max_metal_reached_notified = false
 	for module_id in build_iterations_by_module.keys():
 		build_iterations_by_module[module_id] = 0
+	for module_id in active_module_counts.keys():
+		active_module_counts[module_id] = 0
 	GameEvents.resource_changed.emit("metal", metal)
 
 func add_metal(amount: int) -> void:
@@ -74,6 +82,9 @@ func _on_module_built(module_type: String, _pos: Vector2) -> void:
 	if Constants.is_incremental_price_module(module_type):
 		build_iterations_by_module[module_type] = get_module_build_iteration(module_type) + 1
 
+	if active_module_counts.has(module_type):
+		active_module_counts[module_type] += 1
+
 	if module_type == Constants.MODULE_HULL:
 		# Модуль корпуса увеличивает лимит металла
 		max_metal += Constants.get_hull_metal_bonus()
@@ -82,6 +93,9 @@ func _on_module_built(module_type: String, _pos: Vector2) -> void:
 
 
 func _on_module_destroyed(module_type: String, _pos: Vector2) -> void:
+	if active_module_counts.has(module_type):
+		active_module_counts[module_type] = max(0, active_module_counts[module_type] - 1)
+
 	if module_type != Constants.MODULE_HULL:
 		return
 
