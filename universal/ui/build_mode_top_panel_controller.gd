@@ -13,15 +13,13 @@ const MODULE_STATS: Dictionary = {
 var _build_mode_panel: PanelContainer
 var _build_mode_label: Label
 var _build_mode_value: Label
-var _normal_top_panel: Control
 var _is_active: bool = false
 
 
-func setup(build_panel: PanelContainer, build_label: Label, build_value: Label, normal_panel: Control) -> void:
+func setup(build_panel: PanelContainer, build_label: Label, build_value: Label) -> void:
 	_build_mode_panel = build_panel
 	_build_mode_label = build_label
 	_build_mode_value = build_value
-	_normal_top_panel = normal_panel
 	_build_mode_panel.visible = false
 
 
@@ -36,8 +34,6 @@ func enter_build_mode(module_type: String) -> void:
 		var value_text: String = _get_stat_value(module_type, stats["format"])
 		_build_mode_value.text = value_text
 
-	if _normal_top_panel:
-		_normal_top_panel.visible = false
 	if _build_mode_panel:
 		_build_mode_panel.visible = true
 
@@ -46,8 +42,6 @@ func exit_build_mode() -> void:
 	_is_active = false
 	if _build_mode_panel:
 		_build_mode_panel.visible = false
-	if _normal_top_panel:
-		_normal_top_panel.visible = true
 
 
 func is_active() -> bool:
