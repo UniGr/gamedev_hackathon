@@ -179,6 +179,78 @@ border_width_right = 12
 border_width_bottom = 12
 border_color = Color(0.756863, 0.564706, 0.87451, 0.156)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BottomPanel"]
+bg_color = Color(0.0117647, 0.0117647, 0.0313726, 0.95)
+border_width_bottom = 0
+border_width_left = 4
+border_width_right = 4
+border_width_top = 10
+border_color = Color(0.3137255, 0.2509804, 0.4705882, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_NavBtn"]
+bg_color = Color(0.1, 0.1, 0.2, 0.8)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.439216, 0.25098, 0.690196, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_NavBtnHover"]
+bg_color = Color(0.2, 0.2, 0.3, 1.0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.756863, 0.564706, 0.87451, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_NavBtnPressed"]
+bg_color = Color(0.3, 0.3, 0.4, 1.0)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.815686, 0.627451, 0.941176, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_NavBtnDisabled"]
+bg_color = Color(0.05, 0.05, 0.1, 0.5)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.3, 0.3, 0.3)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BuildPanel"]
+bg_color = Color(0.0117647, 0.0117647, 0.0313726, 0.95)
+border_width_left = 0
+border_width_top = 0
+border_width_right = 0
+border_width_bottom = 4
+border_color = Color(0.4, 0.8, 1.0, 0.8)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Panel"]
+bg_color = Color(0.0117647, 0.0117647, 0.0313726, 0.95)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.4, 0.8, 1.0, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Button"]
+bg_color = Color(0.227451, 0.117647, 0.431373, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.3137255, 0.2509804, 0.4705882, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ButtonHover"]
+bg_color = Color(0.305882, 0.168627, 0.564706, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.3137255, 0.2509804, 0.4705882, 1)
+
 [node name="MainUI" type="CanvasLayer" unique_id=1222599911]
 script = ExtResource("1_a2b3c")
 
@@ -902,14 +974,6 @@ grow_vertical = 0
 mouse_filter = 1
 theme_override_styles/panel = SubResource("StyleBoxFlat_BottomPanel")
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BottomPanel"]
-bg_color = Color(0.0117647, 0.0117647, 0.0313726, 0.95)
-border_width_bottom = 0
-border_width_left = 4
-border_width_right = 4
-border_width_top = 10
-border_color = Color(0.3137255, 0.2509804, 0.4705882, 1)
-
 [node name="Margin" type="MarginContainer" parent="BottomNavigationPanel"]
 layout_mode = 2
 theme_override_constants/margin_left = 20
@@ -981,70 +1045,6 @@ theme_override_styles/hover = SubResource("StyleBoxFlat_NavBtnHover")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_NavBtnPressed")
 theme_override_styles/disabled = SubResource("StyleBoxFlat_NavBtnDisabled")
 text = "🌳"
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_NavBtn"]
-bg_color = Color(0.1, 0.1, 0.2, 0.8)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.439216, 0.25098, 0.690196, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_NavBtnHover"]
-bg_color = Color(0.2, 0.2, 0.3, 1.0)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.756863, 0.564706, 0.87451, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_NavBtnPressed"]
-bg_color = Color(0.3, 0.3, 0.4, 1.0)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.815686, 0.627451, 0.941176, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_NavBtnDisabled"]
-bg_color = Color(0.05, 0.05, 0.1, 0.5)
-border_width_left = 2
-border_width_top = 2
-border_width_right = 2
-border_width_bottom = 2
-border_color = Color(0.3, 0.3, 0.3, 0.3)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BuildPanel"]
-bg_color = Color(0.0117647, 0.0117647, 0.0313726, 0.95)
-border_width_left = 0
-border_width_top = 0
-border_width_right = 0
-border_width_bottom = 4
-border_color = Color(0.4, 0.8, 1.0, 0.8)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Panel"]
-bg_color = Color(0.0117647, 0.0117647, 0.0313726, 0.95)
-border_width_left = 4
-border_width_top = 4
-border_width_right = 4
-border_width_bottom = 4
-border_color = Color(0.4, 0.8, 1.0, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Button"]
-bg_color = Color(0.227451, 0.117647, 0.431373, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.3137255, 0.2509804, 0.4705882, 1)
-
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ButtonHover"]
-bg_color = Color(0.305882, 0.168627, 0.564706, 1)
-border_width_left = 3
-border_width_top = 3
-border_width_right = 3
-border_width_bottom = 3
-border_color = Color(0.3137255, 0.2509804, 0.4705882, 1)
 
 [node name="BuildModeTopPanel" type="PanelContainer" parent="."]
 unique_name_in_owner = true
