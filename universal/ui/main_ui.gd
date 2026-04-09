@@ -147,12 +147,11 @@ func _apply_safe_area() -> void:
 	root_margin_container.add_theme_constant_override("margin_right", ui_base_margin_right + safe_right)
 	root_margin_container.add_theme_constant_override("margin_bottom", content_bottom)
 
-	# Bottom nav panel — stretch to cover safe area at bottom
+	# Bottom nav panel — side insets match MarginContainer (decorative stripes), bottom covers safe area
 	bottom_nav_panel.offset_top = float(-(NAV_BAR_HEIGHT + safe_bottom))
 	bottom_nav_panel.offset_bottom = 0.0
-	var nav_pad: MarginContainer = bottom_nav_panel.get_node_or_null("NavPadding") as MarginContainer
-	if nav_pad:
-		nav_pad.add_theme_constant_override("margin_bottom", 10 + safe_bottom)
+	bottom_nav_panel.offset_left = float(ui_base_margin_left + safe_left)
+	bottom_nav_panel.offset_right = -float(ui_base_margin_right + safe_right)
 
 	if end_center_container:
 		end_center_container.offset_left = float(safe_left)
