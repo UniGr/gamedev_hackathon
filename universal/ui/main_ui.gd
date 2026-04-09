@@ -82,7 +82,7 @@ func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	_tutorial_focus = TutorialFocusControllerScript.new()
 	_build_mode_panel = BuildModeTopPanelControllerScript.new()
-	_build_mode_panel.setup(build_mode_top_panel, build_mode_stat_label, build_mode_stat_value, top_header)
+	_build_mode_panel.setup(build_mode_top_panel, build_mode_stat_label, build_mode_stat_value)
 
 	if metal_max_notice_stack != null:
 		metal_max_notice_stack.set_notice_font(metal_label.get_theme_font("font"))
@@ -192,10 +192,12 @@ func _switch_to_screen(index: int, should_emit: bool = true) -> void:
 	if index == 2:
 		# Экран игры — нет загружаемого контента, только HUD
 		top_header.visible = not _is_in_build_mode
+		build_mode_top_panel.visible = _is_in_build_mode
 		screen_dark_bg.visible = false
-		spacer.visible = true
+		spacer.visible = not _is_in_build_mode
+		bottom_nav_panel.visible = not _is_in_build_mode
 		if metal_max_notice_stack != null:
-			metal_max_notice_stack.visible = true
+			metal_max_notice_stack.visible = not _is_in_build_mode
 		# Снимаем паузу только если НЕ в режиме строительства
 		if not _is_in_build_mode:
 			get_tree().paused = false
@@ -203,8 +205,10 @@ func _switch_to_screen(index: int, should_emit: bool = true) -> void:
 		# Загружаем/показываем экран магазина — ставим игру на паузу
 		_show_screen(index)
 		top_header.visible = false
+		build_mode_top_panel.visible = false
 		screen_dark_bg.visible = true
 		spacer.visible = false
+		bottom_nav_panel.visible = true
 		if metal_max_notice_stack != null:
 			metal_max_notice_stack.visible = false
 		get_tree().paused = true
@@ -347,17 +351,18 @@ func _on_upgrade_purchased(_id: String, _lvl: int) -> void:
 
 func _on_build_requested(module_type: String, _position: Vector2) -> void:
 	_pending_build_type = module_type
+	# BuildModeController уже обработал этот сигнал и вызвал build_mode_changed(true).
+	# _is_in_build_mode = true, мы на screen 2 — устанавливаем контент верхней панели.
+	if _is_in_build_mode:
+		_build_mode_panel.enter_build_mode(module_type)
 
 
 func _on_build_mode_changed(is_active: bool) -> void:
 	_is_in_build_mode = is_active
 	if is_active:
 		_pre_build_screen = _current_screen
-		if _current_screen != 2:
-			_switch_to_screen(2, false)
-		# Показываем контекстную верхнюю панель со статами модуля
-		if not _pending_build_type.is_empty():
-			_build_mode_panel.enter_build_mode(_pending_build_type)
+		_switch_to_screen(2, false)
+		# Контент панели будет установлен в _on_build_requested (вызывается следующим)
 	else:
 		_build_mode_panel.exit_build_mode()
 
