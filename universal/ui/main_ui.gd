@@ -122,6 +122,9 @@ func _ready() -> void:
 	
 	# Инициализируем нижнюю панель навигации
 	_init_bottom_navigation()
+	
+	# Обновляем видимость экранов согласно текущему экрану
+	_update_screen_visibility()
 
 func _exit_tree() -> void:
 	if get_viewport() != null and get_viewport().size_changed.is_connected(_apply_safe_area):
