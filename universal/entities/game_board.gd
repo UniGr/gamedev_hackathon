@@ -184,9 +184,11 @@ func _world_to_grid(world_position: Vector2) -> Vector2i:
 func _get_grid_origin() -> Vector2:
 	var viewport_size: Vector2 = get_viewport_rect().size
 	var grid_pixel_size: Vector2 = Vector2(GridManager.GRID_WIDTH, GridManager.GRID_HEIGHT) * CELL_SIZE
+	# Offset grid up to leave space for bottom nav bar + safe gap
+	var bottom_ui_offset: float = 250.0
 	return Vector2(
 		(viewport_size.x - grid_pixel_size.x) * 0.5,
-		viewport_size.y - grid_pixel_size.y
+		viewport_size.y - grid_pixel_size.y - bottom_ui_offset
 	)
 
 func _update_module_facing(module: ModuleBase) -> void:

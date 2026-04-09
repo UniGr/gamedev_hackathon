@@ -25,7 +25,9 @@ const NAV_DISABLED_COLOR: Color = Color(0.3, 0.3, 0.3, 0.3)
 @export var ui_base_margin_left: int = 24
 @export var ui_base_margin_top: int = 24
 @export var ui_base_margin_right: int = 24
-@export var ui_base_margin_bottom: int = 60
+@export var ui_base_margin_bottom: int = 24
+const NAV_BAR_HEIGHT: int = 180
+const NAV_CONTENT_GAP: int = 20
 
 # --- Верхняя панель (Screen 2 HUD) ---
 @onready var top_header: PanelContainer = %TopHeader
@@ -138,10 +140,19 @@ func _apply_safe_area() -> void:
 	var safe_right: int = max(0, int(window_size.x - safe_area.end.x))
 	var safe_bottom: int = max(0, int(window_size.y - safe_area.end.y))
 
+	# Main content margins — bottom accounts for external nav bar
+	var content_bottom: int = NAV_BAR_HEIGHT + NAV_CONTENT_GAP + safe_bottom
 	root_margin_container.add_theme_constant_override("margin_left", ui_base_margin_left + safe_left)
 	root_margin_container.add_theme_constant_override("margin_top", ui_base_margin_top + safe_top)
 	root_margin_container.add_theme_constant_override("margin_right", ui_base_margin_right + safe_right)
-	root_margin_container.add_theme_constant_override("margin_bottom", ui_base_margin_bottom + safe_bottom)
+	root_margin_container.add_theme_constant_override("margin_bottom", content_bottom)
+
+	# Bottom nav panel — stretch to cover safe area at bottom
+	bottom_nav_panel.offset_top = float(-(NAV_BAR_HEIGHT + safe_bottom))
+	bottom_nav_panel.offset_bottom = 0.0
+	var nav_pad: MarginContainer = bottom_nav_panel.get_node_or_null("NavPadding") as MarginContainer
+	if nav_pad:
+		nav_pad.add_theme_constant_override("margin_bottom", 10 + safe_bottom)
 
 	if end_center_container:
 		end_center_container.offset_left = float(safe_left)
