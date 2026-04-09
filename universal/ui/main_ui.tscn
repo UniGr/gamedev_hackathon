@@ -5,8 +5,8 @@
 [ext_resource type="Texture2D" uid="uid://cx7u584k2a3q4" path="res://assets/ui_icons/metal_bar_under_pixel.svg" id="8_bar_under"]
 [ext_resource type="Texture2D" uid="uid://ds0shjt5ptmgg" path="res://assets/ui_icons/metal_bar_fill_pixel.svg" id="9_bar_fill"]
 [ext_resource type="Texture2D" uid="uid://drcm1po4v7167" path="res://assets/ui_icons/metal_coin_pixel.svg" id="10_coin"]
-[ext_resource type="Script" path="res://ui/metal_max_notice_stack.gd" id="12_metal_notice_stack"]
-[ext_resource type="PackedScene" path="res://ui/settings_overlay.tscn" id="14_settings"]
+[ext_resource type="Script" uid="uid://sx4xvjnc5gti" path="res://ui/metal_max_notice_stack.gd" id="12_metal_notice_stack"]
+[ext_resource type="PackedScene" uid="uid://bflxbhe7oogw5" path="res://ui/settings_overlay.tscn" id="14_settings"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_TopHeader"]
 bg_color = Color(0.0117647, 0.0117647, 0.0313726, 0.901961)
@@ -49,7 +49,7 @@ border_color = Color(0.3137255, 0.2509804, 0.4705882, 1)
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BuildModePanel"]
 bg_color = Color(0.0117647, 0.0117647, 0.0313726, 0.901961)
 border_width_bottom = 10
-border_color = Color(0.4, 0.8, 1.0, 1)
+border_color = Color(0.4, 0.8, 1, 1)
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_BottomNav"]
 bg_color = Color(0.0117647, 0.0117647, 0.0313726, 0.92)
@@ -65,8 +65,8 @@ border_width_bottom = 3
 border_color = Color(0.3137255, 0.2509804, 0.4705882, 0.6)
 corner_radius_top_left = 40
 corner_radius_top_right = 40
-corner_radius_bottom_left = 40
 corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_NavBtnHover"]
 bg_color = Color(0.168627, 0.0901961, 0.337255, 0.8)
@@ -74,11 +74,11 @@ border_width_left = 3
 border_width_top = 3
 border_width_right = 3
 border_width_bottom = 3
-border_color = Color(0.4, 0.8, 1.0, 0.8)
+border_color = Color(0.4, 0.8, 1, 0.8)
 corner_radius_top_left = 40
 corner_radius_top_right = 40
-corner_radius_bottom_left = 40
 corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_EndPanel"]
 bg_color = Color(0.027451, 0.0117647, 0.0901961, 0.98)
@@ -120,21 +120,21 @@ border_width_right = 12
 border_width_bottom = 12
 border_color = Color(0.756863, 0.564706, 0.87451, 0.156)
 
-[node name="MainUI" type="CanvasLayer"]
+[node name="MainUI" type="CanvasLayer" unique_id=520228626]
 script = ExtResource("1_a2b3c")
 
-[node name="ScreenDarkBg" type="ColorRect" parent="."]
+[node name="ScreenDarkBg" type="ColorRect" parent="." unique_id=1178765464]
 unique_name_in_owner = true
+visible = false
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-color = Color(0.011, 0.011, 0.031, 1)
 mouse_filter = 2
-visible = false
+color = Color(0.011, 0.011, 0.031, 1)
 
-[node name="MarginContainer" type="MarginContainer" parent="."]
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=894493934]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -144,64 +144,64 @@ mouse_filter = 2
 theme_override_constants/margin_left = 24
 theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 60
+theme_override_constants/margin_bottom = 24
 
-[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer"]
+[node name="VBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=525437508]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 0
 
-[node name="TopHeader" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+[node name="TopHeader" type="PanelContainer" parent="MarginContainer/VBoxContainer" unique_id=1785672580]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 180)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_TopHeader")
 
-[node name="MetalPatternBg" type="ColorRect" parent="MarginContainer/VBoxContainer/TopHeader"]
+[node name="MetalPatternBg" type="ColorRect" parent="MarginContainer/VBoxContainer/TopHeader" unique_id=192358928]
 material = SubResource("ShaderMaterial_MetalPanelPattern")
 layout_mode = 2
 mouse_filter = 2
 
-[node name="HeaderPadding" type="MarginContainer" parent="MarginContainer/VBoxContainer/TopHeader"]
+[node name="HeaderPadding" type="MarginContainer" parent="MarginContainer/VBoxContainer/TopHeader" unique_id=588363433]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 theme_override_constants/margin_top = 4
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 12
 
-[node name="TopPanel" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding"]
+[node name="TopPanel" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding" unique_id=1650075520]
 layout_mode = 2
 mouse_filter = 2
 theme_override_constants/separation = 12
 
-[node name="MetalGroup" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel"]
+[node name="MetalGroup" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel" unique_id=669727900]
 custom_minimum_size = Vector2(0, 96)
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 14
 alignment = 1
 
-[node name="MetalIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup"]
+[node name="MetalIcon" type="TextureRect" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup" unique_id=522166350]
 custom_minimum_size = Vector2(44, 44)
 layout_mode = 2
 texture = ExtResource("10_coin")
 expand_mode = 1
 stretch_mode = 5
 
-[node name="ResourceVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup"]
+[node name="ResourceVBox" type="VBoxContainer" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup" unique_id=1479147584]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 4
 mouse_filter = 2
 theme_override_constants/separation = 6
 
-[node name="MetalHeader" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup/ResourceVBox"]
+[node name="MetalHeader" type="HBoxContainer" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup/ResourceVBox" unique_id=641418457]
 layout_mode = 2
 size_flags_horizontal = 3
 theme_override_constants/separation = 0
 
-[node name="MetalLabel" type="Label" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup/ResourceVBox/MetalHeader"]
+[node name="MetalLabel" type="Label" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup/ResourceVBox/MetalHeader" unique_id=189088698]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
@@ -210,12 +210,12 @@ theme_override_fonts/font = ExtResource("2_hlo7n")
 theme_override_font_sizes/font_size = 32
 text = "МЕТАЛЛ"
 
-[node name="MetalSpacer" type="Control" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup/ResourceVBox/MetalHeader"]
+[node name="MetalSpacer" type="Control" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup/ResourceVBox/MetalHeader" unique_id=1457417940]
 layout_mode = 2
 size_flags_horizontal = 3
 mouse_filter = 2
 
-[node name="MetalCounter" type="Label" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup/ResourceVBox/MetalHeader"]
+[node name="MetalCounter" type="Label" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup/ResourceVBox/MetalHeader" unique_id=1407446898]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 0
@@ -224,7 +224,7 @@ theme_override_fonts/font = ExtResource("2_hlo7n")
 theme_override_font_sizes/font_size = 32
 text = "0 / 200"
 
-[node name="MetalBar" type="TextureProgressBar" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup/ResourceVBox"]
+[node name="MetalBar" type="TextureProgressBar" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel/MetalGroup/ResourceVBox" unique_id=351252351]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0.845, 40)
 layout_mode = 2
@@ -237,7 +237,7 @@ stretch_margin_bottom = 2
 texture_under = ExtResource("8_bar_under")
 texture_progress = ExtResource("9_bar_fill")
 
-[node name="BtnSettings" type="Button" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel"]
+[node name="BtnSettings" type="Button" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel" unique_id=303917390]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 100)
 layout_mode = 2
@@ -250,7 +250,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnSettingsHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_BtnSettingsHover")
 text = "⚙"
 
-[node name="BuildModeTopPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+[node name="BuildModeTopPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer" unique_id=111562817]
 unique_name_in_owner = true
 visible = false
 custom_minimum_size = Vector2(0, 120)
@@ -258,19 +258,19 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_BuildModePanel")
 
-[node name="BuildPadding" type="MarginContainer" parent="MarginContainer/VBoxContainer/BuildModeTopPanel"]
+[node name="BuildPadding" type="MarginContainer" parent="MarginContainer/VBoxContainer/BuildModeTopPanel" unique_id=1764797324]
 layout_mode = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 10
 
-[node name="BuildHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BuildModeTopPanel/BuildPadding"]
+[node name="BuildHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BuildModeTopPanel/BuildPadding" unique_id=1831852028]
 layout_mode = 2
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="BuildModeStatLabel" type="Label" parent="MarginContainer/VBoxContainer/BuildModeTopPanel/BuildPadding/BuildHBox"]
+[node name="BuildModeStatLabel" type="Label" parent="MarginContainer/VBoxContainer/BuildModeTopPanel/BuildPadding/BuildHBox" unique_id=373147889]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.816, 0.627, 0.941, 1)
@@ -278,7 +278,7 @@ theme_override_fonts/font = ExtResource("2_hlo7n")
 theme_override_font_sizes/font_size = 28
 text = "МОДУЛЬ"
 
-[node name="BuildModeStatValue" type="Label" parent="MarginContainer/VBoxContainer/BuildModeTopPanel/BuildPadding/BuildHBox"]
+[node name="BuildModeStatValue" type="Label" parent="MarginContainer/VBoxContainer/BuildModeTopPanel/BuildPadding/BuildHBox" unique_id=1785356294]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.2, 0.9, 0.2, 1)
@@ -286,7 +286,7 @@ theme_override_fonts/font = ExtResource("2_hlo7n")
 theme_override_font_sizes/font_size = 28
 text = "+X"
 
-[node name="MetalMaxNoticeStack" type="VBoxContainer" parent="MarginContainer/VBoxContainer"]
+[node name="MetalMaxNoticeStack" type="VBoxContainer" parent="MarginContainer/VBoxContainer" unique_id=1334744315]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -294,32 +294,41 @@ mouse_filter = 2
 theme_override_constants/separation = 6
 script = ExtResource("12_metal_notice_stack")
 
-[node name="ScreenContainer" type="Control" parent="MarginContainer/VBoxContainer"]
+[node name="ScreenContainer" type="Control" parent="MarginContainer/VBoxContainer" unique_id=1302451330]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
 
-[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer"]
+[node name="Spacer" type="Control" parent="MarginContainer/VBoxContainer" unique_id=1064089229]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 mouse_filter = 2
 
-[node name="BottomNavPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer"]
+[node name="BottomNavPanel" type="PanelContainer" parent="." unique_id=1136462104]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 120)
-layout_mode = 2
+custom_minimum_size = Vector2(0, 180)
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_top = -180.0
+offset_bottom = 0.0
+offset_left = 0.0
+offset_right = 0.0
+grow_horizontal = 2
+grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_BottomNav")
 
-[node name="NavPadding" type="MarginContainer" parent="MarginContainer/VBoxContainer/BottomNavPanel"]
+[node name="NavPadding" type="MarginContainer" parent="BottomNavPanel" unique_id=1495433680]
 layout_mode = 2
 theme_override_constants/margin_left = 20
 theme_override_constants/margin_top = 10
 theme_override_constants/margin_right = 20
 theme_override_constants/margin_bottom = 10
 
-[node name="NavButtonsContainer" type="HBoxContainer" parent="MarginContainer/VBoxContainer/BottomNavPanel/NavPadding"]
+[node name="NavButtonsContainer" type="HBoxContainer" parent="BottomNavPanel/NavPadding" unique_id=610853377]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
@@ -327,7 +336,7 @@ size_flags_vertical = 3
 theme_override_constants/separation = 16
 alignment = 1
 
-[node name="Nav0" type="Button" parent="MarginContainer/VBoxContainer/BottomNavPanel/NavPadding/NavButtonsContainer"]
+[node name="Nav0" type="Button" parent="BottomNavPanel/NavPadding/NavButtonsContainer" unique_id=1129676433]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -339,7 +348,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_NavBtnHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_NavBtnHover")
 text = "⬆"
 
-[node name="Nav1" type="Button" parent="MarginContainer/VBoxContainer/BottomNavPanel/NavPadding/NavButtonsContainer"]
+[node name="Nav1" type="Button" parent="BottomNavPanel/NavPadding/NavButtonsContainer" unique_id=1826953195]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -351,11 +360,11 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_NavBtnHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_NavBtnHover")
 text = "🛡"
 
-[node name="Nav2" type="Button" parent="MarginContainer/VBoxContainer/BottomNavPanel/NavPadding/NavButtonsContainer"]
+[node name="Nav2" type="Button" parent="BottomNavPanel/NavPadding/NavButtonsContainer" unique_id=628256596]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 size_flags_horizontal = 3
-theme_override_colors/font_color = Color(0.4, 0.8, 1.0, 1)
+theme_override_colors/font_color = Color(0.4, 0.8, 1, 1)
 theme_override_fonts/font = ExtResource("2_hlo7n")
 theme_override_font_sizes/font_size = 34
 theme_override_styles/normal = SubResource("StyleBoxFlat_NavBtn")
@@ -363,7 +372,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_NavBtnHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_NavBtnHover")
 text = "🚀"
 
-[node name="Nav3" type="Button" parent="MarginContainer/VBoxContainer/BottomNavPanel/NavPadding/NavButtonsContainer"]
+[node name="Nav3" type="Button" parent="BottomNavPanel/NavPadding/NavButtonsContainer" unique_id=1333601726]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -375,7 +384,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_NavBtnHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_NavBtnHover")
 text = "⚡"
 
-[node name="Nav4" type="Button" parent="MarginContainer/VBoxContainer/BottomNavPanel/NavPadding/NavButtonsContainer"]
+[node name="Nav4" type="Button" parent="BottomNavPanel/NavPadding/NavButtonsContainer" unique_id=1253334]
 custom_minimum_size = Vector2(80, 80)
 layout_mode = 2
 size_flags_horizontal = 3
@@ -385,13 +394,13 @@ theme_override_font_sizes/font_size = 34
 theme_override_styles/normal = SubResource("StyleBoxFlat_NavBtn")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_NavBtnHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_NavBtnHover")
-text = "🔬"
 disabled = true
+text = "🔬"
 
-[node name="SettingsOverlay" parent="." instance=ExtResource("14_settings")]
+[node name="SettingsOverlay" parent="." unique_id=2064851856 instance=ExtResource("14_settings")]
 unique_name_in_owner = true
 
-[node name="EndOverlay" type="ColorRect" parent="."]
+[node name="EndOverlay" type="ColorRect" parent="." unique_id=124353357]
 unique_name_in_owner = true
 visible = false
 anchors_preset = 15
@@ -401,7 +410,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.82)
 
-[node name="Center" type="CenterContainer" parent="EndOverlay"]
+[node name="Center" type="CenterContainer" parent="EndOverlay" unique_id=1808717277]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -409,23 +418,23 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Panel" type="PanelContainer" parent="EndOverlay/Center"]
+[node name="Panel" type="PanelContainer" parent="EndOverlay/Center" unique_id=597879379]
 custom_minimum_size = Vector2(900, 520)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_EndPanel")
 
-[node name="InnerMargin" type="MarginContainer" parent="EndOverlay/Center/Panel"]
+[node name="InnerMargin" type="MarginContainer" parent="EndOverlay/Center/Panel" unique_id=1164305500]
 layout_mode = 2
 theme_override_constants/margin_left = 36
 theme_override_constants/margin_top = 30
 theme_override_constants/margin_right = 36
 theme_override_constants/margin_bottom = 30
 
-[node name="VBox" type="VBoxContainer" parent="EndOverlay/Center/Panel/InnerMargin"]
+[node name="VBox" type="VBoxContainer" parent="EndOverlay/Center/Panel/InnerMargin" unique_id=204646796]
 layout_mode = 2
 theme_override_constants/separation = 24
 
-[node name="EndTitleLabel" type="Label" parent="EndOverlay/Center/Panel/InnerMargin/VBox"]
+[node name="EndTitleLabel" type="Label" parent="EndOverlay/Center/Panel/InnerMargin/VBox" unique_id=96964196]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.756, 0.565, 0.87451, 1)
@@ -434,7 +443,7 @@ theme_override_font_sizes/font_size = 80
 text = "GAME OVER"
 horizontal_alignment = 1
 
-[node name="EndReasonLabel" type="Label" parent="EndOverlay/Center/Panel/InnerMargin/VBox"]
+[node name="EndReasonLabel" type="Label" parent="EndOverlay/Center/Panel/InnerMargin/VBox" unique_id=716439702]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 6
@@ -445,7 +454,7 @@ text = "Причина завершения"
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="BtnRestart" type="Button" parent="EndOverlay/Center/Panel/InnerMargin/VBox"]
+[node name="BtnRestart" type="Button" parent="EndOverlay/Center/Panel/InnerMargin/VBox" unique_id=714878047]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
@@ -458,7 +467,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
 text = "ПЕРЕЗАПУСК"
 
-[node name="ConfirmExitOverlay" type="ColorRect" parent="."]
+[node name="ConfirmExitOverlay" type="ColorRect" parent="." unique_id=1538741317]
 unique_name_in_owner = true
 visible = false
 anchors_preset = 15
@@ -468,7 +477,7 @@ grow_horizontal = 2
 grow_vertical = 2
 color = Color(0, 0, 0, 0.82)
 
-[node name="Center" type="CenterContainer" parent="ConfirmExitOverlay"]
+[node name="Center" type="CenterContainer" parent="ConfirmExitOverlay" unique_id=333335463]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -476,23 +485,23 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 
-[node name="Panel" type="PanelContainer" parent="ConfirmExitOverlay/Center"]
+[node name="Panel" type="PanelContainer" parent="ConfirmExitOverlay/Center" unique_id=672494415]
 custom_minimum_size = Vector2(860, 520)
 layout_mode = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_EndPanel")
 
-[node name="InnerMargin" type="MarginContainer" parent="ConfirmExitOverlay/Center/Panel"]
+[node name="InnerMargin" type="MarginContainer" parent="ConfirmExitOverlay/Center/Panel" unique_id=348394794]
 layout_mode = 2
 theme_override_constants/margin_left = 36
 theme_override_constants/margin_top = 30
 theme_override_constants/margin_right = 36
 theme_override_constants/margin_bottom = 30
 
-[node name="VBox" type="VBoxContainer" parent="ConfirmExitOverlay/Center/Panel/InnerMargin"]
+[node name="VBox" type="VBoxContainer" parent="ConfirmExitOverlay/Center/Panel/InnerMargin" unique_id=172087577]
 layout_mode = 2
 theme_override_constants/separation = 24
 
-[node name="Title" type="Label" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox"]
+[node name="Title" type="Label" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox" unique_id=2125044281]
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.585, 0.585, 1)
 theme_override_fonts/font = ExtResource("2_hlo7n")
@@ -500,7 +509,7 @@ theme_override_font_sizes/font_size = 44
 text = "В ГЛАВНОЕ МЕНЮ"
 horizontal_alignment = 1
 
-[node name="Description" type="Label" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox"]
+[node name="Description" type="Label" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox" unique_id=1337406500]
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.815686, 0.627451, 0.941176, 1)
@@ -511,11 +520,11 @@ text = "Прогресс текущего захода не сохранится
 horizontal_alignment = 1
 autowrap_mode = 2
 
-[node name="Buttons" type="HBoxContainer" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox"]
+[node name="Buttons" type="HBoxContainer" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox" unique_id=156498225]
 layout_mode = 2
 theme_override_constants/separation = 16
 
-[node name="BtnConfirmExitNo" type="Button" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox/Buttons"]
+[node name="BtnConfirmExitNo" type="Button" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox/Buttons" unique_id=533996427]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
@@ -528,7 +537,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
 text = "ОТМЕНА"
 
-[node name="BtnConfirmExitYes" type="Button" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox/Buttons"]
+[node name="BtnConfirmExitYes" type="Button" parent="ConfirmExitOverlay/Center/Panel/InnerMargin/VBox/Buttons" unique_id=974485374]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(0, 100)
 layout_mode = 2
@@ -541,7 +550,7 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
 text = "ПЕРЕЙТИ"
 
-[node name="ScreenBorder" type="PanelContainer" parent="."]
+[node name="ScreenBorder" type="PanelContainer" parent="." unique_id=113543605]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
@@ -550,7 +559,7 @@ grow_vertical = 2
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_ScreenOuter")
 
-[node name="ScreenBorderInner" type="PanelContainer" parent="."]
+[node name="ScreenBorderInner" type="PanelContainer" parent="." unique_id=210669035]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
