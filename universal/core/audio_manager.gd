@@ -153,6 +153,10 @@ func play_ui_open() -> void:
 	_play_sfx(AudioCatalogScript.TAG_UI_OPEN)
 
 
+func play_ui_close() -> void:
+	_play_sfx(AudioCatalogScript.TAG_UI_OPEN)
+
+
 func play_collector_gather() -> void:
 	_play_sfx(AudioCatalogScript.TAG_GAMEPLAY_COLLECTOR_GATHER)
 
