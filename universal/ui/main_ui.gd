@@ -1,41 +1,54 @@
 extends CanvasLayer
-## Главный UI-контроллер игры.
-## Управляет HUD, магазином, экраном завершения и туториалом.
+## Главный UI-контроллер игры — архитектура 5 экранов со свайп-навигацией.
+## Screen 0: Улучшения | Screen 1: Оборона | Screen 2: Игра | Screen 3: Автоматизация | Screen 4: Дерево (заблокирован).
 ## Взаимодействует с игрой через Event Bus (GameEvents).
 
-const ShopStateControllerScript: Script = preload("res://ui/shop_state_controller.gd")
 const TutorialFocusControllerScript: Script = preload("res://ui/tutorial_focus_controller.gd")
 const CoreUpgradeControllerScript: Script = preload("res://ui/core_upgrade_controller.gd")
+const BuildModeTopPanelControllerScript: Script = preload("res://ui/build_mode_top_panel_controller.gd")
+
+const SCREEN_SCENES: Dictionary = {
+	0: "res://ui/screen_0_upgrades.tscn",
+	1: "res://ui/screen_1_defense.tscn",
+	3: "res://ui/screen_3_automation.tscn",
+}
+
+const SCREEN_COUNT: int = 5
+const DEFAULT_SCREEN: int = 2
+const SWIPE_THRESHOLD: float = 80.0
+
+const NAV_ICONS: Array[String] = ["⬆", "🛡", "🚀", "⚡", "🔬"]
+const NAV_ACTIVE_COLOR: Color = Color(0.4, 0.8, 1.0)
+const NAV_INACTIVE_COLOR: Color = Color(0.5, 0.4, 0.6, 0.6)
+const NAV_DISABLED_COLOR: Color = Color(0.3, 0.3, 0.3, 0.3)
 
 @export var ui_base_margin_left: int = 24
 @export var ui_base_margin_top: int = 24
 @export var ui_base_margin_right: int = 24
 @export var ui_base_margin_bottom: int = 60
 
-@export var shop_base_margin_left: int = 30
-@export var shop_base_margin_top: int = 64
-@export var shop_base_margin_right: int = 30
-@export var shop_base_margin_bottom: int = 80
-
-@onready var root_margin_container: MarginContainer = $MarginContainer
-@onready var shop_center_container: MarginContainer = $ShopOverlay/Center
-@onready var end_center_container: Control = $EndOverlay/Center
-
+# --- Верхняя панель (Screen 2 HUD) ---
+@onready var top_header: PanelContainer = %TopHeader
 @onready var metal_label: Label = %MetalLabel
 @onready var metal_counter: Label = %MetalCounter
 @onready var metal_bar: TextureProgressBar = %MetalBar
 @onready var metal_max_notice_stack: MetalMaxNoticeStack = %MetalMaxNoticeStack
-@onready var shop_metal_label: Label = %ShopMetalLabel
-@onready var shop_metal_counter: Label = %ShopMetalCounter
-@onready var shop_metal_bar: TextureProgressBar = %ShopMetalBar
-@onready var btn_reactor: Button = %BtnReactor
-@onready var btn_collector: Button = %BtnCollector
-@onready var btn_hull: Button = %BtnHull
-@onready var btn_turret: Button = %BtnTurret
-@onready var btn_shop: Button = %BtnShop
-@onready var btn_shop_exit: Button = %BtnShopExit
-@onready var btn_main_menu: Button = %BtnMainMenu
-@onready var shop_overlay: ColorRect = %ShopOverlay
+@onready var btn_settings: Button = %BtnSettings
+
+# --- Build Mode верхняя панель ---
+@onready var build_mode_top_panel: PanelContainer = %BuildModeTopPanel
+@onready var build_mode_stat_label: Label = %BuildModeStatLabel
+@onready var build_mode_stat_value: Label = %BuildModeStatValue
+
+# --- Экранный контейнер ---
+@onready var screen_container: Control = %ScreenContainer
+
+# --- Нижняя панель навигации ---
+@onready var bottom_nav_panel: PanelContainer = %BottomNavPanel
+@onready var nav_buttons_container: HBoxContainer = %NavButtonsContainer
+
+# --- Оверлеи ---
+@onready var settings_overlay: Control = %SettingsOverlay
 @onready var end_overlay: ColorRect = %EndOverlay
 @onready var end_title_label: Label = %EndTitleLabel
 @onready var end_reason_label: Label = %EndReasonLabel
@@ -44,34 +57,48 @@ const CoreUpgradeControllerScript: Script = preload("res://ui/core_upgrade_contr
 @onready var btn_confirm_exit_yes: Button = %BtnConfirmExitYes
 @onready var btn_confirm_exit_no: Button = %BtnConfirmExitNo
 
-# Новые элементы Ядра
-@onready var core_cost_label: Label = %CoreCost
-@onready var core_level_label: Label = %CoreLevelLabel
-@onready var core_upgrade_btn: Button = %CoreUpgradeBtn # Мы можем использовать невидимую кнопку или просто клик по плашке
-@onready var level_bars_container: HBoxContainer = %LevelBars
-@onready var core_plaque: PanelContainer = %CorePlaque
+@onready var root_margin_container: MarginContainer = $MarginContainer
+@onready var end_center_container: Control = $EndOverlay/Center
 
+var _current_screen: int = DEFAULT_SCREEN
+var _previous_screen: int = DEFAULT_SCREEN
+var _loaded_screens: Dictionary = {}
 var _is_game_finished: bool = false
-var _shop_state: ShopStateController
-var _tutorial_focus: TutorialFocusController
-var _core_upgrade: CoreUpgradeController
+var _tutorial_focus: RefCounted
+var _core_upgrade: RefCounted
+var _build_mode_panel: RefCounted
 var _first_raider_focus_target_registered: bool = false
+var _nav_buttons: Array[Button] = []
+
+# Свайп
+var _swipe_start_pos: Vector2 = Vector2.ZERO
+var _is_swiping: bool = false
+
+# Build mode — запоминаем откуда зашли
+var _pre_build_screen: int = DEFAULT_SCREEN
+var _is_in_build_mode: bool = false
+var _pending_build_type: String = ""
+
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
-	_shop_state = ShopStateControllerScript.new() as ShopStateController
-	_tutorial_focus = TutorialFocusControllerScript.new() as TutorialFocusController
-	_core_upgrade = CoreUpgradeControllerScript.new() as CoreUpgradeController
-	_core_upgrade.setup(core_cost_label, core_level_label, level_bars_container, core_plaque)
+	_tutorial_focus = TutorialFocusControllerScript.new()
+	_build_mode_panel = BuildModeTopPanelControllerScript.new()
+	_build_mode_panel.setup(build_mode_top_panel, build_mode_stat_label, build_mode_stat_value, top_header)
+
 	if metal_max_notice_stack != null:
 		metal_max_notice_stack.set_notice_font(metal_label.get_theme_font("font"))
+
 	_apply_safe_area()
 	if not get_viewport().size_changed.is_connected(_apply_safe_area):
 		get_viewport().size_changed.connect(_apply_safe_area)
 
+	# Event Bus подписки
 	GameEvents.resource_changed.connect(_on_resource_changed)
 	GameEvents.resource_cap_reached.connect(_on_resource_cap_reached)
+	GameEvents.build_requested.connect(_on_build_requested)
 	GameEvents.module_built.connect(_on_module_built)
+	GameEvents.build_mode_changed.connect(_on_build_mode_changed)
 	GameEvents.build_mode_cancelled.connect(_on_build_mode_cancelled)
 	if GameEvents.has_signal("game_finished"):
 		GameEvents.game_finished.connect(_on_game_finished)
@@ -82,32 +109,25 @@ func _ready() -> void:
 	GameEvents.raider_spawned.connect(_on_raider_spawned)
 	GameEvents.raider_destroyed.connect(_on_raider_destroyed)
 
-	btn_reactor.pressed.connect(_on_btn_reactor_pressed)
-	btn_collector.pressed.connect(_on_btn_collector_pressed)
-	btn_hull.pressed.connect(_on_btn_hull_pressed)
-	btn_turret.pressed.connect(_on_btn_turret_pressed)
-	btn_shop.pressed.connect(_on_btn_shop_pressed)
+	# Кнопки оверлеев
+	btn_settings.pressed.connect(_on_btn_settings_pressed)
 	btn_restart.pressed.connect(_on_btn_restart_pressed)
-	btn_shop_exit.pressed.connect(_on_btn_shop_exit_pressed)
-	btn_main_menu.pressed.connect(_on_btn_main_menu_pressed)
 	btn_confirm_exit_yes.pressed.connect(_on_btn_confirm_exit_yes_pressed)
 	btn_confirm_exit_no.pressed.connect(_on_btn_confirm_exit_no_pressed)
 
-	# Клик по плашке ядра для апгрейда: дочерние элементы не перехватывают нажатие.
-	core_plaque.mouse_filter = Control.MOUSE_FILTER_STOP
-	_make_children_mouse_passthrough(core_plaque)
-	core_plaque.gui_input.connect(_on_core_plaque_input)
-
+	_setup_nav_buttons()
 	_register_tutorial_targets()
 
-	_refresh_ui()
-	_set_shop_open(false, false)
 	end_overlay.visible = false
 	_set_confirm_exit_visible(false)
+	_switch_to_screen(DEFAULT_SCREEN, false)
+	_refresh_hud()
+
 
 func _exit_tree() -> void:
 	if get_viewport() != null and get_viewport().size_changed.is_connected(_apply_safe_area):
 		get_viewport().size_changed.disconnect(_apply_safe_area)
+
 
 func _apply_safe_area() -> void:
 	var window_size: Vector2i = DisplayServer.window_get_size()
@@ -120,29 +140,237 @@ func _apply_safe_area() -> void:
 	var safe_right: int = max(0, int(window_size.x - safe_area.end.x))
 	var safe_bottom: int = max(0, int(window_size.y - safe_area.end.y))
 
-	# Фон остается full-screen, а интерактивный UI получает safe-area отступы.
 	root_margin_container.add_theme_constant_override("margin_left", ui_base_margin_left + safe_left)
 	root_margin_container.add_theme_constant_override("margin_top", ui_base_margin_top + safe_top)
 	root_margin_container.add_theme_constant_override("margin_right", ui_base_margin_right + safe_right)
 	root_margin_container.add_theme_constant_override("margin_bottom", ui_base_margin_bottom + safe_bottom)
 
-	shop_center_container.add_theme_constant_override("margin_left", shop_base_margin_left + safe_left)
-	shop_center_container.add_theme_constant_override("margin_top", shop_base_margin_top + safe_top)
-	shop_center_container.add_theme_constant_override("margin_right", shop_base_margin_right + safe_right)
-	shop_center_container.add_theme_constant_override("margin_bottom", shop_base_margin_bottom + safe_bottom)
+	if end_center_container:
+		end_center_container.offset_left = float(safe_left)
+		end_center_container.offset_top = float(safe_top)
+		end_center_container.offset_right = -float(safe_right)
+		end_center_container.offset_bottom = -float(safe_bottom)
 
-	end_center_container.offset_left = float(safe_left)
-	end_center_container.offset_top = float(safe_top)
-	end_center_container.offset_right = -float(safe_right)
-	end_center_container.offset_bottom = -float(safe_bottom)
 
 func _process(_delta: float) -> void:
 	if _tutorial_focus != null:
 		_tutorial_focus.process_focus_tracking()
 
+
+# ========== Навигация между экранами ==========
+
+func _setup_nav_buttons() -> void:
+	_nav_buttons.clear()
+	for i in range(SCREEN_COUNT):
+		var btn: Button = nav_buttons_container.get_child(i) as Button
+		if btn == null:
+			continue
+		_nav_buttons.append(btn)
+		var idx: int = i
+		if not btn.pressed.is_connected(_on_nav_button_pressed.bind(idx)):
+			btn.pressed.connect(_on_nav_button_pressed.bind(idx))
+	_update_nav_highlights()
+
+
+func _on_nav_button_pressed(index: int) -> void:
+	if index == 4:
+		return # Дерево улучшений заблокировано
+	if _is_in_build_mode:
+		return
+	_switch_to_screen(index)
+
+
+func _switch_to_screen(index: int, should_emit: bool = true) -> void:
+	if index < 0 or index >= SCREEN_COUNT:
+		return
+	if index == 4:
+		return
+
+	_previous_screen = _current_screen
+	_current_screen = index
+
+	# Скрываем предыдущий загруженный экран
+	_hide_all_loaded_screens()
+
+	if index == 2:
+		# Экран игры — нет загружаемого контента, только HUD
+		top_header.visible = true and not _is_in_build_mode
+	else:
+		# Загружаем/показываем экран магазина
+		_show_screen(index)
+		top_header.visible = false
+
+	_update_nav_highlights()
+	if should_emit:
+		GameEvents.screen_changed.emit(index)
+		# Совместимость с туториалом: переход на экраны 0-3 считается как "открытие магазина"
+		if index != 2:
+			GameEvents.shop_opened.emit()
+
+
+func _show_screen(index: int) -> void:
+	if not SCREEN_SCENES.has(index):
+		return
+
+	if not _loaded_screens.has(index):
+		var scene: PackedScene = load(SCREEN_SCENES[index]) as PackedScene
+		if scene == null:
+			push_warning("Failed to load screen scene: %s" % SCREEN_SCENES[index])
+			return
+		var instance: Control = scene.instantiate() as Control
+		instance.name = "Screen_%d" % index
+		# Заполняем весь контейнер
+		instance.anchors_preset = Control.PRESET_FULL_RECT
+		instance.set_anchors_preset(Control.PRESET_FULL_RECT)
+		screen_container.add_child(instance)
+		_loaded_screens[index] = instance
+		_wire_screen(index, instance)
+
+	var screen: Control = _loaded_screens[index] as Control
+	screen.visible = true
+	# Обновляем металл на экране
+	_refresh_screen_metal(index, screen)
+
+
+func _hide_all_loaded_screens() -> void:
+	for key: int in _loaded_screens.keys():
+		var screen: Control = _loaded_screens[key] as Control
+		if screen != null:
+			screen.visible = false
+
+
+func _wire_screen(index: int, screen: Control) -> void:
+	# Подключаем кнопку настроек на каждом экране
+	var settings_btn: Button = screen.get_node_or_null("%BtnSettings") as Button
+	if settings_btn:
+		settings_btn.pressed.connect(_on_btn_settings_pressed)
+
+	# Для Screen 0 — подключаем CoreUpgrade
+	if index == 0:
+		_wire_screen_0(screen)
+
+
+func _wire_screen_0(screen: Control) -> void:
+	var core_plaque: PanelContainer = screen.get_node_or_null("%CorePlaque") as PanelContainer
+	var core_cost: Label = screen.get_node_or_null("%CoreCost") as Label
+	var core_level: Label = screen.get_node_or_null("%CoreLevelLabel") as Label
+	var _core_btn: Button = screen.get_node_or_null("%CoreUpgradeBtn") as Button
+	var level_bars: HBoxContainer = screen.get_node_or_null("%LevelBars") as HBoxContainer
+
+	if core_plaque and core_cost and core_level and level_bars:
+		_core_upgrade = CoreUpgradeControllerScript.new()
+		_core_upgrade.setup(core_cost, core_level, level_bars, core_plaque)
+
+		core_plaque.mouse_filter = Control.MOUSE_FILTER_STOP
+		_make_children_mouse_passthrough(core_plaque)
+		core_plaque.gui_input.connect(_on_core_plaque_input)
+
+		_core_upgrade.refresh(ResourceManager.metal, _get_active_upgrade_id())
+
+
+func _refresh_screen_metal(_index: int, screen: Control) -> void:
+	var metal: int = ResourceManager.metal
+	var max_metal: int = ResourceManager.max_metal
+
+	var metal_counter_node: Label = screen.get_node_or_null("%MetalCounter") as Label
+	if metal_counter_node:
+		metal_counter_node.text = "%d / %d" % [metal, max_metal]
+
+	var metal_bar_node: TextureProgressBar = screen.get_node_or_null("%MetalBar") as TextureProgressBar
+	if metal_bar_node:
+		metal_bar_node.max_value = max_metal
+		metal_bar_node.value = metal
+
+
+func _update_nav_highlights() -> void:
+	for i in range(_nav_buttons.size()):
+		var btn: Button = _nav_buttons[i]
+		if i == 4:
+			btn.add_theme_color_override("font_color", NAV_DISABLED_COLOR)
+			btn.disabled = true
+		elif i == _current_screen:
+			btn.add_theme_color_override("font_color", NAV_ACTIVE_COLOR)
+			btn.disabled = false
+		else:
+			btn.add_theme_color_override("font_color", NAV_INACTIVE_COLOR)
+			btn.disabled = false
+
+
+# ========== Свайп-навигация ==========
+
+func _input(event: InputEvent) -> void:
+	if _is_game_finished:
+		return
+	if settings_overlay and settings_overlay.visible:
+		return
+
+	if event is InputEventScreenTouch:
+		var touch: InputEventScreenTouch = event as InputEventScreenTouch
+		if touch.pressed:
+			_swipe_start_pos = touch.position
+			_is_swiping = true
+		elif _is_swiping:
+			_is_swiping = false
+			_handle_swipe(touch.position)
+
+	elif event is InputEventMouseButton:
+		var mb: InputEventMouseButton = event as InputEventMouseButton
+		if mb.button_index == MOUSE_BUTTON_LEFT:
+			if mb.pressed:
+				_swipe_start_pos = mb.position
+				_is_swiping = true
+			elif _is_swiping:
+				_is_swiping = false
+				_handle_swipe(mb.position)
+
+
+func _handle_swipe(end_pos: Vector2) -> void:
+	if _is_in_build_mode:
+		return
+
+	var delta: Vector2 = end_pos - _swipe_start_pos
+	if abs(delta.x) < SWIPE_THRESHOLD:
+		return
+	if abs(delta.y) > abs(delta.x) * 1.2:
+		return # Вертикальный жест — не свайп
+
+	if delta.x < 0:
+		# Свайп влево — следующий экран
+		var next: int = _current_screen + 1
+		if next == 4:
+			next = 3 # Пропускаем заблокированный
+		if next < 4:
+			_switch_to_screen(next)
+	else:
+		# Свайп вправо — предыдущий экран
+		var prev: int = _current_screen - 1
+		if prev >= 0:
+			_switch_to_screen(prev)
+
+
+# ========== HUD верхняя панель ==========
+
+func _refresh_hud() -> void:
+	var metal: int = ResourceManager.metal
+	var max_metal: int = ResourceManager.max_metal
+	metal_label.text = "МЕТАЛЛ"
+	metal_counter.text = "%d / %d" % [metal, max_metal]
+
+	if metal_bar:
+		metal_bar.max_value = max_metal
+		metal_bar.value = metal
+
+	if _core_upgrade != null:
+		_core_upgrade.refresh(metal, _get_active_upgrade_id())
+
+	# Обновляем металл на текущем загруженном экране
+	if _loaded_screens.has(_current_screen):
+		_refresh_screen_metal(_current_screen, _loaded_screens[_current_screen] as Control)
+
+
 func _on_resource_changed(type: String, _new_total: int) -> void:
 	if type == "metal":
-		_refresh_ui()
+		_refresh_hud()
 
 
 func _on_resource_cap_reached(type: String, _current_total: int, _max_total: int) -> void:
@@ -151,43 +379,48 @@ func _on_resource_cap_reached(type: String, _current_total: int, _max_total: int
 	if metal_max_notice_stack != null:
 		metal_max_notice_stack.show_notice()
 
-func _refresh_ui() -> void:
-	var metal = ResourceManager.metal
-	var max_metal = ResourceManager.max_metal
-	metal_label.text = "МЕТАЛЛ"
-	metal_counter.text = "%d / %d" % [metal, max_metal]
-	shop_metal_label.text = "МЕТАЛЛ"
-	shop_metal_counter.text = "%d / %d" % [metal, max_metal]
-	
-	if metal_bar:
-		metal_bar.max_value = max_metal
-		metal_bar.value = metal
-	if shop_metal_bar:
-		shop_metal_bar.max_value = max_metal
-		shop_metal_bar.value = metal
 
-	# Обновление цен на кнопках модулей
-	_update_module_button(btn_hull, Constants.MODULE_HULL, metal)
-	_update_module_button(btn_reactor, Constants.MODULE_REACTOR, metal)
-	_update_module_button(btn_collector, Constants.MODULE_COLLECTOR, metal)
-	_update_module_button(btn_turret, Constants.MODULE_TURRET, metal)
-
-	# Обновление ядра через контроллер
-	if _core_upgrade != null:
-		_core_upgrade.refresh(metal, _get_active_upgrade_id())
+func _on_upgrade_purchased(_id: String, _lvl: int) -> void:
+	_refresh_hud()
 
 
-func _update_module_button(btn: Button, type: String, metal: int) -> void:
-	var cost: int = ResourceManager.get_current_module_cost(type)
-	var price_label: Label = btn.get_node("V/Price") as Label
-	price_label.text = "%d +" % cost
-	btn.disabled = metal < cost
+# ========== Build Mode ==========
 
-	if btn.disabled:
-		price_label.add_theme_color_override("font_color", Color(0.8, 0.2, 0.2))
+func _on_build_requested(module_type: String, _position: Vector2) -> void:
+	_pending_build_type = module_type
+
+
+func _on_build_mode_changed(is_active: bool) -> void:
+	_is_in_build_mode = is_active
+	if is_active:
+		_pre_build_screen = _current_screen
+		if _current_screen != 2:
+			_switch_to_screen(2, false)
+		# Показываем контекстную верхнюю панель со статами модуля
+		if not _pending_build_type.is_empty():
+			_build_mode_panel.enter_build_mode(_pending_build_type)
 	else:
-		price_label.add_theme_color_override("font_color", Color(0.941, 0.816, 0.125))
+		_build_mode_panel.exit_build_mode()
 
+
+func _on_module_built(_type: String, _pos: Vector2) -> void:
+	_is_in_build_mode = false
+	_build_mode_panel.exit_build_mode()
+	_refresh_hud()
+	# Возвращаемся на предыдущий экран
+	_switch_to_screen(_pre_build_screen)
+
+
+func _on_build_mode_cancelled(_type: String) -> void:
+	if _is_game_finished:
+		return
+	_is_in_build_mode = false
+	_build_mode_panel.exit_build_mode()
+	_refresh_hud()
+	_switch_to_screen(_pre_build_screen)
+
+
+# ========== Core Upgrade (Экран 0) ==========
 
 func _on_core_plaque_input(event: InputEvent) -> void:
 	if event is InputEventMouseButton and event.pressed and event.button_index == MOUSE_BUTTON_LEFT:
@@ -195,32 +428,49 @@ func _on_core_plaque_input(event: InputEvent) -> void:
 		if upgrade_id.is_empty():
 			return
 		if _core_upgrade != null and _core_upgrade.try_purchase(upgrade_id):
-			_refresh_ui()
-
-func _on_btn_shop_pressed() -> void:
-	if _is_game_finished: return
-	AudioManager.play_ui_open()
-	_set_shop_open(not _is_shop_open(), true)
-
-func _set_shop_open(value: bool, sync_pause: bool) -> void:
-	if _shop_state != null:
-		_shop_state.set_shop_open(value, sync_pause, shop_overlay)
-	if not value:
-		_set_confirm_exit_visible(false)
+			_refresh_hud()
 
 
-func _is_shop_open() -> bool:
-	return _shop_state != null and _shop_state.is_shop_open()
+func _get_active_upgrade_id() -> String:
+	if UpgradeManager.get_upgrade_ids().has(Constants.UPGRADE_CORE_ID):
+		return Constants.UPGRADE_CORE_ID
+	var upgrade_ids: Array[String] = UpgradeManager.get_upgrade_ids()
+	if upgrade_ids.is_empty():
+		return ""
+	return upgrade_ids[0]
 
-func _on_btn_shop_exit_pressed() -> void:
-	_set_shop_open(false, true)
 
+# ========== Настройки ==========
 
-func _on_btn_main_menu_pressed() -> void:
+func _on_btn_settings_pressed() -> void:
 	if _is_game_finished:
 		return
 	AudioManager.play_ui_open()
-	_set_confirm_exit_visible(true)
+	if settings_overlay and settings_overlay.has_method("open"):
+		settings_overlay.open()
+
+
+# ========== Оверлеи (Game Over / Confirm Exit) ==========
+
+func _on_game_finished(outcome: String, _reason: String) -> void:
+	_is_game_finished = true
+	get_tree().paused = true
+	end_overlay.visible = true
+	if outcome == "win":
+		end_title_label.text = "ПОБЕДА"
+		end_reason_label.text = "Миссия выполнена!"
+	else:
+		end_title_label.text = "GAME OVER"
+		end_reason_label.text = "Ядро уничтожено."
+
+
+func _on_btn_restart_pressed() -> void:
+	get_tree().paused = false
+	if ResourceManager.has_method("reset"):
+		ResourceManager.reset()
+	if UpgradeManager.has_method("reset"):
+		UpgradeManager.reset()
+	get_tree().reload_current_scene()
 
 
 func _on_btn_confirm_exit_no_pressed() -> void:
@@ -239,27 +489,8 @@ func _set_confirm_exit_visible(value: bool) -> void:
 		return
 	confirm_exit_overlay.visible = value
 
-func _on_module_built(_type: String, _pos: Vector2) -> void:
-	_set_shop_open(false, true)
-	_refresh_ui()
 
-func _on_build_mode_cancelled(_type: String) -> void:
-	if _is_game_finished:
-		return
-	_set_shop_open(false, true)
-	_refresh_ui()
-
-func _on_upgrade_purchased(_id: String, _lvl: int) -> void:
-	_refresh_ui()
-
-func _get_active_upgrade_id() -> String:
-	if UpgradeManager.get_upgrade_ids().has(Constants.UPGRADE_CORE_ID):
-		return Constants.UPGRADE_CORE_ID
-
-	var upgrade_ids: Array[String] = UpgradeManager.get_upgrade_ids()
-	if upgrade_ids.is_empty():
-		return ""
-	return upgrade_ids[0]
+# ========== Tutorial ==========
 
 func _make_children_mouse_passthrough(parent: Control) -> void:
 	for child in parent.get_children():
@@ -269,44 +500,11 @@ func _make_children_mouse_passthrough(parent: Control) -> void:
 			_make_children_mouse_passthrough(child_control)
 
 
-func _on_btn_hull_pressed() -> void: _request_build(Constants.MODULE_HULL)
-func _on_btn_reactor_pressed() -> void: _request_build(Constants.MODULE_REACTOR)
-func _on_btn_collector_pressed() -> void: _request_build(Constants.MODULE_COLLECTOR)
-func _on_btn_turret_pressed() -> void: _request_build(Constants.MODULE_TURRET)
-
-func _request_build(type: String) -> void:
-	if _is_game_finished: return
-	GameEvents.build_requested.emit(type, Vector2.ZERO)
-	_set_shop_open(false, false) # Закрываем для выбора места
-
-func _on_game_finished(outcome: String, _reason: String) -> void:
-	_is_game_finished = true
-	_set_shop_open(false, false)
-	get_tree().paused = true
-	end_overlay.visible = true
-	if outcome == "win":
-		end_title_label.text = "ПОБЕДА"
-		end_reason_label.text = "Миссия выполнена!"
-	else:
-		end_title_label.text = "GAME OVER"
-		end_reason_label.text = "Ядро уничтожено."
-
-func _on_btn_restart_pressed() -> void:
-	get_tree().paused = false
-	if ResourceManager.has_method("reset"): ResourceManager.reset()
-	if UpgradeManager.has_method("reset"): UpgradeManager.reset()
-	get_tree().reload_current_scene()
-
 func _register_tutorial_targets() -> void:
 	if _tutorial_focus == null:
 		return
 	_tutorial_focus.register_targets({
-		"shop_button": btn_shop,
-		"hull": btn_hull,
-		"reactor": btn_reactor,
-		"collector": btn_collector,
-		"turret": btn_turret,
-		"core": core_plaque,
+		"settings_button": btn_settings,
 	})
 
 
@@ -363,22 +561,24 @@ func _register_first_raider_focus_target() -> void:
 		_first_raider_focus_target_registered = true
 		return
 
+
 func _on_tutorial_focus_changed(target_id: String, accent_color: Color, _allow_interaction: bool) -> void:
 	if _tutorial_focus != null:
 		_tutorial_focus.focus_target(target_id, accent_color)
+
 
 func _on_tutorial_focus_cleared() -> void:
 	if _tutorial_focus != null:
 		_tutorial_focus.clear_focus()
 
+
 func _on_tutorial_action_requested(action_id: String) -> void:
 	match action_id:
 		"open_shop":
-			if not _is_shop_open():
-				_on_btn_shop_pressed()
+			_switch_to_screen(0)
 		"buy_hull":
-			if _is_shop_open() and not btn_hull.disabled:
-				_on_btn_hull_pressed()
+			_switch_to_screen(0)
+
 
 func _get_focused_target_id() -> String:
 	if _tutorial_focus == null:

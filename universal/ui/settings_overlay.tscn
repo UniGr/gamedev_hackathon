@@ -1,0 +1,205 @@
+[gd_scene format=3 uid="uid://bflxbhe7oogw5"]
+
+[ext_resource type="Script" path="res://ui/settings_overlay_controller.gd" id="1_script"]
+[ext_resource type="FontFile" uid="uid://hc2tye8vkoey" path="res://assets/fonts/PressStart2P-Regular.ttf" id="2_font"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Panel"]
+bg_color = Color(0.027, 0.012, 0.090, 0.95)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(0.757, 0.565, 0.875, 1)
+corner_radius_top_left = 10
+corner_radius_top_right = 10
+corner_radius_bottom_left = 10
+corner_radius_bottom_right = 10
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_Btn"]
+bg_color = Color(0.227, 0.118, 0.431, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.757, 0.565, 0.875, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_BtnHover"]
+bg_color = Color(0.306, 0.169, 0.565, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.816, 0.627, 0.941, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_BtnDanger"]
+bg_color = Color(0.35, 0.08, 0.08, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.585, 0.585, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_BtnDangerHover"]
+bg_color = Color(0.5, 0.12, 0.12, 1)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(1, 0.585, 0.585, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
+
+[node name="SettingsOverlay" type="ColorRect"]
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.75)
+script = ExtResource("1_script")
+
+[node name="CenterContainer" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="CenterContainer"]
+custom_minimum_size = Vector2(900, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_Panel")
+
+[node name="Margin" type="MarginContainer" parent="CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 34
+theme_override_constants/margin_top = 30
+theme_override_constants/margin_right = 34
+theme_override_constants/margin_bottom = 30
+
+[node name="VBox" type="VBoxContainer" parent="CenterContainer/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 24
+
+[node name="Title" type="Label" parent="CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.941, 0.875, 1, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 40
+text = "НАСТРОЙКИ"
+horizontal_alignment = 1
+
+[node name="TitleSpacer" type="Control" parent="CenterContainer/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 20)
+layout_mode = 2
+
+[node name="MusicRow" type="VBoxContainer" parent="CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MusicHeader" type="HBoxContainer" parent="CenterContainer/Panel/Margin/VBox/MusicRow"]
+layout_mode = 2
+
+[node name="MusicLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/MusicRow/MusicHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.816, 0.627, 0.941, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 26
+text = "МУЗЫКА"
+
+[node name="MusicValueLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/MusicRow/MusicHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 26
+text = "100%"
+
+[node name="MusicSlider" type="HSlider" parent="CenterContainer/Panel/Margin/VBox/MusicRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+
+[node name="SfxRow" type="VBoxContainer" parent="CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SfxHeader" type="HBoxContainer" parent="CenterContainer/Panel/Margin/VBox/SfxRow"]
+layout_mode = 2
+
+[node name="SfxLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/SfxRow/SfxHeader"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.816, 0.627, 0.941, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 26
+text = "ЗВУКИ"
+
+[node name="SfxValueLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/SfxRow/SfxHeader"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 26
+text = "100%"
+
+[node name="SfxSlider" type="HSlider" parent="CenterContainer/Panel/Margin/VBox/SfxRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 42)
+layout_mode = 2
+
+[node name="Spacer" type="Control" parent="CenterContainer/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="BtnTraining" type="Button" parent="CenterContainer/Panel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBox_Btn")
+theme_override_styles/pressed = SubResource("StyleBox_BtnHover")
+theme_override_styles/hover = SubResource("StyleBox_BtnHover")
+text = "ПРОЙТИ ОБУЧЕНИЕ"
+
+[node name="BtnMainMenu" type="Button" parent="CenterContainer/Panel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.585, 0.585, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBox_BtnDanger")
+theme_override_styles/pressed = SubResource("StyleBox_BtnDangerHover")
+theme_override_styles/hover = SubResource("StyleBox_BtnDangerHover")
+text = "В ГЛАВНОЕ МЕНЮ"
+
+[node name="BtnBack" type="Button" parent="CenterContainer/Panel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 100)
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBox_Btn")
+theme_override_styles/pressed = SubResource("StyleBox_BtnHover")
+theme_override_styles/hover = SubResource("StyleBox_BtnHover")
+text = "НАЗАД"

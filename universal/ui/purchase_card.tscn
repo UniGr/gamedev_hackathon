@@ -1,0 +1,94 @@
+[gd_scene format=3 uid="uid://ciongxeen1wlk"]
+
+[ext_resource type="Script" path="res://ui/purchase_card.gd" id="1_card"]
+[ext_resource type="FontFile" uid="uid://hc2tye8vkoey" path="res://assets/fonts/PressStart2P-Regular.ttf" id="2_font"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_Card"]
+bg_color = Color(0.039, 0.020, 0.125, 1.0)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.439, 0.251, 0.690, 1)
+corner_radius_top_left = 6
+corner_radius_top_right = 6
+corner_radius_bottom_left = 6
+corner_radius_bottom_right = 6
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_Btn"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_BtnHover"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_BtnPressed"]
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_BtnDisabled"]
+
+[node name="PurchaseCard" type="PanelContainer"]
+custom_minimum_size = Vector2(0, 160)
+theme_override_styles/panel = SubResource("StyleBoxFlat_Card")
+script = ExtResource("1_card")
+
+[node name="CardButton" type="Button" parent="."]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 0
+theme_override_styles/normal = SubResource("StyleBoxEmpty_Btn")
+theme_override_styles/hover = SubResource("StyleBoxEmpty_BtnHover")
+theme_override_styles/pressed = SubResource("StyleBoxEmpty_BtnPressed")
+theme_override_styles/disabled = SubResource("StyleBoxEmpty_BtnDisabled")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 12
+
+[node name="HBox" type="HBoxContainer" parent="Margin"]
+layout_mode = 2
+mouse_filter = 2
+theme_override_constants/separation = 16
+
+[node name="IconRect" type="TextureRect" parent="Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(100, 100)
+layout_mode = 2
+size_flags_vertical = 4
+expand_mode = 1
+stretch_mode = 5
+
+[node name="InfoVBox" type="VBoxContainer" parent="Margin/HBox"]
+layout_mode = 2
+size_flags_horizontal = 3
+mouse_filter = 2
+theme_override_constants/separation = 8
+
+[node name="TitleLabel" type="Label" parent="Margin/HBox/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.941, 0.875, 1, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 24
+text = "МОДУЛЬ"
+
+[node name="DescLabel" type="Label" parent="Margin/HBox/InfoVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_colors/font_color = Color(0.616, 0.478, 0.737, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 16
+text = "Описание модуля"
+autowrap_mode = 2
+
+[node name="PriceLabel" type="Label" parent="Margin/HBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(140, 0)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 24
+text = "100 ⬡"
+horizontal_alignment = 2
