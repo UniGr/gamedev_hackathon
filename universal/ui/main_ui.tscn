@@ -321,6 +321,11 @@ grow_horizontal = 2
 grow_vertical = 0
 theme_override_styles/panel = SubResource("StyleBoxFlat_BottomNav")
 
+[node name="MetalPatternBg" type="ColorRect" parent="BottomNavPanel" unique_id=399182731]
+material = SubResource("ShaderMaterial_MetalPanelPattern")
+layout_mode = 2
+mouse_filter = 2
+
 [node name="NavPadding" type="MarginContainer" parent="BottomNavPanel" unique_id=1495433680]
 layout_mode = 2
 theme_override_constants/margin_left = 20
