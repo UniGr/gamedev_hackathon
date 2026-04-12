@@ -34,11 +34,20 @@ jobs:
         with:
           name: android
           path: build/android
-          
-      - name: Publish to GitHub Releases
-        uses: softprops/action-gh-release@v2
-        with:
-          # Указываем точный путь к файлу, который нужно прикрепить
-          files: build/android/universal.apk 
-          # GitHub сам соберет список коммитов и сделает из них описание обновления
-          generate_release_notes: true
+
+  android-release:
+        name: Android Release
+        needs: android-export
+        runs-on: ubuntu-24.04
+        if: startsWith(github.ref, 'refs/tags/v')
+        steps:
+          - name: Download Artifact
+            uses: actions/download-artifact@v4
+            with:
+                name: android-apk
+                path: artifacts
+          - name: Publish to GitHub Releases
+            uses: softprops/action-gh-release@v2
+            with:
+              files: artifacts/universal.apk
+              generate_release_notes: true
