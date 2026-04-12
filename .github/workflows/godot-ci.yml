@@ -6,7 +6,10 @@ on:
     tags: [ 'v*' ]
 
 env:
-  GODOT_VERSION: 4.6.2 
+  GODOT_VERSION: 4.6.2
+  
+permissions:
+  contents: write
 
 jobs:
   android-export:
@@ -33,7 +36,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: android
-          path: build/android
+          path: build/android/universal.apk
 
   android-release:
         name: Android Release
