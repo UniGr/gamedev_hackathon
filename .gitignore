@@ -47,7 +47,6 @@ $RECYCLE.BIN/
 
 # Gemini and GitHub internal
 GEMINI.md
-.github/
 
 # Build folders
 build/
