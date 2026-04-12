@@ -101,7 +101,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.816, 0.627, 0.941, 1)
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 32
 text = "МУЗЫКА"
 
 [node name="MusicValueLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/MusicRow/MusicHeader"]
@@ -109,7 +109,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 32
 text = "100%"
 
 [node name="MusicSlider" type="HSlider" parent="CenterContainer/Panel/Margin/VBox/MusicRow"]
@@ -129,7 +129,7 @@ layout_mode = 2
 size_flags_horizontal = 3
 theme_override_colors/font_color = Color(0.816, 0.627, 0.941, 1)
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 32
 text = "ЗВУКИ"
 
 [node name="SfxValueLabel" type="Label" parent="CenterContainer/Panel/Margin/VBox/SfxRow/SfxHeader"]
@@ -137,7 +137,7 @@ unique_name_in_owner = true
 layout_mode = 2
 theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 26
+theme_override_font_sizes/font_size = 32
 text = "100%"
 
 [node name="SfxSlider" type="HSlider" parent="CenterContainer/Panel/Margin/VBox/SfxRow"]
@@ -149,25 +149,13 @@ layout_mode = 2
 custom_minimum_size = Vector2(0, 10)
 layout_mode = 2
 
-[node name="BtnTraining" type="Button" parent="CenterContainer/Panel/Margin/VBox"]
-unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 100)
-layout_mode = 2
-theme_override_colors/font_color = Color(1, 1, 1, 1)
-theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 22
-theme_override_styles/normal = SubResource("StyleBox_Btn")
-theme_override_styles/pressed = SubResource("StyleBox_BtnHover")
-theme_override_styles/hover = SubResource("StyleBox_BtnHover")
-text = "ПРОЙТИ ОБУЧЕНИЕ"
-
 [node name="BtnMainMenu" type="Button" parent="CenterContainer/Panel/Margin/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 110)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.585, 0.585, 1)
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 30
 theme_override_styles/normal = SubResource("StyleBox_BtnDanger")
 theme_override_styles/pressed = SubResource("StyleBox_BtnDangerHover")
 theme_override_styles/hover = SubResource("StyleBox_BtnDangerHover")
@@ -175,12 +163,102 @@ text = "В ГЛАВНОЕ МЕНЮ"
 
 [node name="BtnBack" type="Button" parent="CenterContainer/Panel/Margin/VBox"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 110)
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 1, 1, 1)
 theme_override_fonts/font = ExtResource("2_font")
-theme_override_font_sizes/font_size = 22
+theme_override_font_sizes/font_size = 30
 theme_override_styles/normal = SubResource("StyleBox_Btn")
 theme_override_styles/pressed = SubResource("StyleBox_BtnHover")
 theme_override_styles/hover = SubResource("StyleBox_BtnHover")
 text = "НАЗАД"
+
+[node name="ConfirmOverlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+process_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0, 0, 0, 0.7)
+
+[node name="CenterContainer" type="CenterContainer" parent="ConfirmOverlay"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="PanelContainer" parent="ConfirmOverlay/CenterContainer"]
+custom_minimum_size = Vector2(900, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_Panel")
+
+[node name="Margin" type="MarginContainer" parent="ConfirmOverlay/CenterContainer/Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 40
+theme_override_constants/margin_top = 40
+theme_override_constants/margin_right = 40
+theme_override_constants/margin_bottom = 40
+
+[node name="VBox" type="VBoxContainer" parent="ConfirmOverlay/CenterContainer/Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 30
+
+[node name="ConfirmTitle" type="Label" parent="ConfirmOverlay/CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.585, 0.585, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 38
+text = "ВЫХОД"
+horizontal_alignment = 1
+
+[node name="ConfirmSpacer" type="Control" parent="ConfirmOverlay/CenterContainer/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="ConfirmMessage" type="Label" parent="ConfirmOverlay/CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.816, 0.627, 0.941, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 24
+text = "Выйти в главное меню?\nПрогресс не сохранится."
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="BtnsSpacer" type="Control" parent="ConfirmOverlay/CenterContainer/Panel/Margin/VBox"]
+custom_minimum_size = Vector2(0, 10)
+layout_mode = 2
+
+[node name="BtnsRow" type="HBoxContainer" parent="ConfirmOverlay/CenterContainer/Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="BtnNo" type="Button" parent="ConfirmOverlay/CenterContainer/Panel/Margin/VBox/BtnsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 1, 1, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBox_Btn")
+theme_override_styles/pressed = SubResource("StyleBox_BtnHover")
+theme_override_styles/hover = SubResource("StyleBox_BtnHover")
+text = "НЕТ"
+
+[node name="BtnYes" type="Button" parent="ConfirmOverlay/CenterContainer/Panel/Margin/VBox/BtnsRow"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 110)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.585, 0.585, 1)
+theme_override_fonts/font = ExtResource("2_font")
+theme_override_font_sizes/font_size = 32
+theme_override_styles/normal = SubResource("StyleBox_BtnDanger")
+theme_override_styles/pressed = SubResource("StyleBox_BtnDangerHover")
+theme_override_styles/hover = SubResource("StyleBox_BtnDangerHover")
+text = "ДА"
+

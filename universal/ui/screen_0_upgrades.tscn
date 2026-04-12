@@ -5,6 +5,7 @@
 [ext_resource type="Texture2D" uid="uid://ds0shjt5ptmgg" path="res://assets/ui_icons/metal_bar_fill_pixel.svg" id="3_bar_fill"]
 [ext_resource type="Texture2D" uid="uid://drcm1po4v7167" path="res://assets/ui_icons/metal_coin_pixel.svg" id="4_coin"]
 [ext_resource type="Script" path="res://ui/purchase_card.gd" id="5_card"]
+[ext_resource type="Script" path="res://ui/description_label.gd" id="9_desc"]
 [ext_resource type="Texture2D" uid="uid://bpiovtldlxo57" path="res://assets/ui_icons/configuration.png" id="8_settings"]
 [ext_resource type="Texture2D" path="res://assets/sprites/hull.png" id="6_hull"]
 [ext_resource type="Texture2D" path="res://assets/sprites/reactor.png" id="7_reactor"]
@@ -210,8 +211,10 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.616, 0.478, 0.737, 1)
 theme_override_fonts/font = ExtResource("1_font")
 theme_override_font_sizes/font_size = 20
-text = "НАДЯ: каждый уровень ядра усиливает сканеры. Металла с обломков становится больше. Апгрейд рекомендован."
 autowrap_mode = 2
+horizontal_alignment = 3
+script = ExtResource("9_desc")
+description_key = "core"
 
 [node name="CoreUpgradeBtn" type="Button" parent="ScrollContainer/ItemList/MarginLeft/CoreSection/CorePlaque/CoreMargin/CoreVBox"]
 unique_name_in_owner = true
@@ -258,7 +261,6 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_Item")
 script = ExtResource("5_card")
 module_type = "hull"
 display_name = "КОРПУС"
-description = "НАДЯ: новые переборки расширяют грузовые трюмы. +100 к максимуму металла. Без корпуса — просто летающий хлам."
 icon_texture = ExtResource("6_hull")
 accent_color = Color(0.439, 0.251, 0.690, 1)
 
@@ -308,8 +310,10 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.616, 0.478, 0.737, 1)
 theme_override_fonts/font = ExtResource("1_font")
 theme_override_font_sizes/font_size = 20
-text = "НАДЯ: новые переборки расширяют грузовые трюмы. +100 к максимуму металла. Без корпуса — просто летающий хлам."
 autowrap_mode = 2
+horizontal_alignment = 3
+script = ExtResource("9_desc")
+description_key = "hull"
 
 [node name="PriceLabel" type="Label" parent="ScrollContainer/ItemList/MarginLeft/CoreSection/Item0/ItemMargin/ItemHBox"]
 custom_minimum_size = Vector2(140, 0)
@@ -335,7 +339,6 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_Item")
 script = ExtResource("5_card")
 module_type = "reactor"
 display_name = "РЕАКТОР"
-description = "НАДЯ: поле питания охватывает соседние ячейки — только там возможна постройка. ЗАПРЕЩЕНО: два реактора или ядро в одной зоне питания."
 icon_texture = ExtResource("7_reactor")
 accent_color = Color(0.439, 0.251, 0.690, 1)
 
@@ -385,8 +388,10 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.616, 0.478, 0.737, 1)
 theme_override_fonts/font = ExtResource("1_font")
 theme_override_font_sizes/font_size = 20
-text = "НАДЯ: поле питания охватывает соседние ячейки — только там возможна постройка. ЗАПРЕЩЕНО: два реактора или ядро в одной зоне питания."
 autowrap_mode = 2
+horizontal_alignment = 3
+script = ExtResource("9_desc")
+description_key = "reactor"
 
 [node name="PriceLabel" type="Label" parent="ScrollContainer/ItemList/MarginLeft/CoreSection/Item1/ItemMargin/ItemHBox"]
 custom_minimum_size = Vector2(140, 0)
