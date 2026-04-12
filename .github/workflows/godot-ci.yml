@@ -53,4 +53,7 @@ jobs:
             uses: softprops/action-gh-release@v2
             with:
               files: artifacts/universal.apk
+              body: |
+                # Релиз версии ${{ github.ref_name }} 
+                Скачайте `.apk` файл ниже и установите на свой Android.
               generate_release_notes: true

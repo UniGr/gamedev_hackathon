@@ -89,7 +89,10 @@ func _on_module_built(module_type: String, _pos: Vector2) -> void:
 		# Модуль корпуса увеличивает лимит металла
 		max_metal += Constants.get_hull_metal_bonus()
 		_max_metal_reached_notified = false
-		GameEvents.resource_changed.emit("metal", metal)
+	
+	# Всегда эмиттим сигнал обновления после постройки, чтобы UI обновилась
+	# (изменилась цена, количество active модулей и т.д.)
+	GameEvents.resource_changed.emit("metal", metal)
 
 
 func _on_module_destroyed(module_type: String, _pos: Vector2) -> void:
