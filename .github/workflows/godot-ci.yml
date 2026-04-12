@@ -44,8 +44,8 @@ jobs:
           - name: Download Artifact
             uses: actions/download-artifact@v4
             with:
-                name: android-apk
-                path: artifacts
+                name: android
+                path: build/android
           - name: Publish to GitHub Releases
             uses: softprops/action-gh-release@v2
             with:
