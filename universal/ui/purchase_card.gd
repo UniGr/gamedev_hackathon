@@ -23,6 +23,9 @@ const COLOR_CANNOT_BUY: Color = Color(0.8, 0.2, 0.2)
 const BG_NORMAL: Color = Color(0.039, 0.020, 0.125, 1.0)
 const BG_DISABLED: Color = Color(0.039, 0.020, 0.125, 0.5)
 
+# Centralized descriptions mapping (data-driven)
+const MODULE_DESCS = preload("res://core/module_descriptions.gd").DESCRIPTIONS
+
 var _base_style: StyleBoxFlat
 var _current_cost: int = 0
 
@@ -51,7 +54,10 @@ func _apply_content() -> void:
 	if title_label:
 		title_label.text = display_name
 	if desc_label:
-		desc_label.text = description
+		var final_desc: String = description
+		if final_desc == "" or final_desc == null:
+			final_desc = MODULE_DESCS.get(module_type, "")
+		desc_label.text = final_desc
 	if icon_rect and icon_texture:
 		icon_rect.texture = icon_texture
 	_update_border_color()

@@ -1,6 +1,7 @@
 extends CanvasLayer
 
 @onready var overlay: ColorRect = $Overlay
+@onready var dialog_margin: MarginContainer = $Overlay/MarginContainer
 @onready var dialog_panel: PanelContainer = $Overlay/MarginContainer/HBoxContainer/DialogPanel
 @onready var dialog_text: RichTextLabel = $Overlay/MarginContainer/HBoxContainer/DialogPanel/MarginContainer/VBoxContainer/DialogText
 @onready var name_label: Label = $Overlay/MarginContainer/HBoxContainer/DialogPanel/MarginContainer/VBoxContainer/NameLabel
@@ -10,6 +11,10 @@ const DIALOG_CONTENT_PADDING: float = 110.0
 const MAX_DIALOG_HEIGHT_RATIO: float = 0.55
 const TYPEWRITER_CHAR_DELAY: float = 0.03
 const TEXT_DESCENDER_PADDING: float = 10.0
+const DIALOG_MARGIN_BOTTOM_DEFAULT: int = 60
+const DIALOG_MARGIN_BOTTOM_NAVBAR: int = 200
+# Цели, которые находятся в нав-баре или на экранах магазина — диалог поднимается над навбаром
+const NAVBAR_CONTEXT_TARGETS: Array[String] = ["shop_button", "hull", "reactor", "core", "collector", "turret"]
 const TUTORIAL_ID_NADYA_ONE_TIME: String = "nadya_first_launch_done"
 const START_MENU_SCENE: String = "res://ui/start_menu.tscn"
 const FIRST_RAIDER_REQUEST_DELAY_SEC: float = 0.25
@@ -66,20 +71,19 @@ var _base_step_lines: Dictionary = {
 	],
 	STEP_RAIDER_DEFENSE: [
 	"Отличная работа, Капитан!",
-	"Напоминаю, для автоматизации защиты от [color=red]ВРАГОВ[/color] постройте ТУРЕЛИ: их можно купить в ЦЕХЕ."
+	"Напоминаю, для автоматизации защиты от [color=red]ВРАГОВ[/color] постройте ТУРЕЛИ: их можно купить в [color=blue]ЦЕХЕ ОБОРОНЫ[/color]."
 	],
 	STEP_SHOP_INVITE: [
-	"Капитан, у вас достаточно [color=orange]МЕТАЛЛА[/color]! Нажмите на подсвеченную кнопку ⬆ внизу экрана, чтобы открыть [color=green]ЦЕХ УЛУЧШЕНИЙ[/color]."
+	"Капитан, у вас достаточно [color=orange]МЕТАЛЛА[/color]! Нажмите на подсвеченную кнопку внизу экрана, чтобы открыть [color=green]ЦЕХ УЛУЧШЕНИЙ[/color]."
 	],
 	STEP_SHOP_GUIDE: [
-	"ЦЕХ открыт! Я расскажу об основных модулях. Они расположены в разных разделах навигации:",
-	"[color=%s]КОРПУС[/color] (⬆ Улучшения) — увеличивает максимальное количество ресурсов." % COLOR_HULL_TEXT,
-	"[color=%s]РЕАКТОР[/color] (⬆ Улучшения) — без них у нас не будет энергии для работы модулей." % COLOR_REACTOR_TEXT,
-	"Реактор запитывает соседние ячейки и позволяет строить модули в них",
+	"ЦЕХ открыт! Я расскажу об основных модулях. Они расположены в разных цехах:",
+	"[color=%s]КОРПУС[/color] — увеличивает максимальное количество хранимого [color=orange]МЕТАЛЛА[/color]." % COLOR_HULL_TEXT,
+	"[color=%s]РЕАКТОР[/color] запитывает соседние ячейки и позволяет строить модули в них" % COLOR_REACTOR_TEXT,
 	"Обратите внимание, что [color=%s]РЕАКТОРЫ[/color] не должны питать [color=%s]ЯДРО[/color] и наоборот" % [COLOR_REACTOR_TEXT, COLOR_CORE_TEXT],
-	"[color=%s]СБОРЩИК[/color] (⚡ Автоматизация) — автоматически добывает ближайший к вашему кораблю мусор" % COLOR_COLLECTOR_TEXT,
-	"[color=%s]ТУРЕЛЬ[/color] (🛡 Оборона) — оборонительный модуль, атакует врагов автоматически." % COLOR_TURRET_TEXT,
-	"[color=%s]ЯДРО[/color] (⬆ Улучшения) — увеличивает количество металла, получаемого с каждого обломка." % COLOR_CORE_TEXT,
+	"[color=%s]СБОРЩИК[/color] — автоматически добывает ближайший к вашему кораблю мусор" % COLOR_COLLECTOR_TEXT,
+	"[color=%s]ТУРЕЛЬ[/color] — оборонительный модуль, атакует врагов автоматически." % COLOR_TURRET_TEXT,
+	"Также можно улучшить [color=%s]ЯДРО[/color]. Тогда оно будет увеличивать количество [color=orange]МЕТАЛЛА[/color], получаемого с каждого обломка." % COLOR_CORE_TEXT,
 	"Сейчас у нас хватает [color=orange]МЕТАЛЛА[/color] на [color=%s]КОРПУС[/color]. Самое время его приобрести" % COLOR_HULL_TEXT,
 	"Не переживайте, я буду указывать на разрешенные места для строительства модулей",
 	],
@@ -312,8 +316,8 @@ func _on_dialog_finished(step_id: String) -> void:
 	if FLOW_REQUIRED_STEP_IDS.has(step_id):
 		_completed_flow_steps[step_id] = true
 
-	if step_id == STEP_GATHERING and _uses_full_flow():
-		_request_first_raider_for_tutorial()
+	# Рейдер в обучении спавнится естественно — когда построено 2 модуля,
+	# spawner разблокируется, и _on_raider_spawned покажет STEP_RAIDER_WARNING.
 
 	if step_id == STEP_RAIDER_WARNING:
 		_clear_focus_target()
@@ -523,7 +527,9 @@ func _input(event: InputEvent) -> void:
 			if _step_allows_target_interaction:
 				if not _can_trigger_step_action(_extract_event_position(event)):
 					return
-				if not _step_action_id.is_empty() and _step_action_id != "buy_hull":
+				if _step_action_id == "buy_hull":
+					GameEvents.build_requested.emit("hull", Vector2.ZERO)
+				elif not _step_action_id.is_empty():
 					GameEvents.tutorial_action_requested.emit(_step_action_id)
 
 			_current_line_index += 1
@@ -551,14 +557,12 @@ func _apply_focus_for_current_step() -> void:
 		3:
 			_set_focus_target("reactor", Color(0.95, 0.74, 0.2, 1.0), false)
 		4:
-			_set_focus_target("core", Color(0.941, 0.816, 0.125, 1.0), false)
-		5:
 			_set_focus_target("collector", Color(1.0, 0.9, 0.2, 1.0), false)
-		6:
+		5:
 			_set_focus_target("turret", Color(0.95, 0.32, 0.18, 1.0), false)
-		7:
+		6:
 			_set_focus_target("core", Color(0.941, 0.816, 0.125, 1.0), false)
-		8:
+		7:
 			_set_focus_target("hull", Color(0.3, 0.8, 0.3, 1.0), true, "buy_hull")
 
 func _set_focus_target(target_id: String, accent_color: Color, allow_interaction: bool, action_id: String = "") -> void:
@@ -566,6 +570,7 @@ func _set_focus_target(target_id: String, accent_color: Color, allow_interaction
 	_step_allows_target_interaction = allow_interaction
 	_step_action_id = action_id
 	_focused_target_rect = Rect2()
+	_update_dialog_bottom_margin()
 	GameEvents.tutorial_focus_changed.emit(target_id, accent_color, allow_interaction)
 
 func _clear_focus_target() -> void:
@@ -573,7 +578,14 @@ func _clear_focus_target() -> void:
 	_focused_target_rect = Rect2()
 	_step_allows_target_interaction = false
 	_step_action_id = ""
+	_update_dialog_bottom_margin()
 	GameEvents.tutorial_focus_cleared.emit()
+
+func _update_dialog_bottom_margin() -> void:
+	if dialog_margin == null:
+		return
+	var margin: int = DIALOG_MARGIN_BOTTOM_NAVBAR if NAVBAR_CONTEXT_TARGETS.has(_focused_target_id) else DIALOG_MARGIN_BOTTOM_DEFAULT
+	dialog_margin.add_theme_constant_override("margin_bottom", margin)
 
 func _on_tutorial_target_rect_changed(target_id: String, target_rect: Rect2) -> void:
 	if target_id != _focused_target_id:

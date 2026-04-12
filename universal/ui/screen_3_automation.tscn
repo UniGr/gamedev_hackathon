@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" uid="uid://drcm1po4v7167" path="res://assets/ui_icons/metal_coin_pixel.svg" id="4_coin"]
 [ext_resource type="Script" path="res://ui/purchase_card.gd" id="5_card"]
 [ext_resource type="Texture2D" uid="uid://bpiovtldlxo57" path="res://assets/ui_icons/configuration.png" id="8_settings"]
+[ext_resource type="Script" path="res://ui/description_label.gd" id="9_desc"]
 [ext_resource type="Texture2D" path="res://assets/sprites/collector.png" id="6_collector"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_TopBar"]
@@ -161,7 +162,6 @@ theme_override_styles/panel = SubResource("StyleBoxFlat_Item_Automation")
 script = ExtResource("5_card")
 module_type = "collector"
 display_name = "СБОРЩИК"
-description = "НАДЯ: непрерывный сбор металла без участия экипажа. Работает автономно. Кликать по мусору всё ещё можно — не осуждаю."
 icon_texture = ExtResource("6_collector")
 accent_color = Color(1, 0.9, 0.2, 1)
 
@@ -211,8 +211,10 @@ layout_mode = 2
 theme_override_colors/font_color = Color(0.616, 0.478, 0.737, 1)
 theme_override_fonts/font = ExtResource("1_font")
 theme_override_font_sizes/font_size = 20
-text = "НАДЯ: непрерывный сбор металла без участия экипажа. Работает автономно. Кликать по мусору всё ещё можно — не осуждаю."
 autowrap_mode = 2
+horizontal_alignment = 3
+script = ExtResource("9_desc")
+description_key = "collector"
 
 [node name="PriceLabel" type="Label" parent="ScrollContainer/ItemList/MarginLeft/Items/Item0/ItemMargin/ItemHBox"]
 custom_minimum_size = Vector2(140, 0)

@@ -662,13 +662,20 @@ func _on_tutorial_action_requested(action_id: String) -> void:
 
 
 func _on_tutorial_session_ended() -> void:
-	# Пересинхронизируем паузу после закрытия tutorial-окна:
-	# экран мог измениться во время обучения.
+	# Пересинхронизируем паузу после закрытия tutorial-окна.
+	if not is_inside_tree():
+		return
+	var tree := get_tree()
+	if tree == null:
+		return
+	# Режим строительства всегда держит игру на паузе (как при нормальном флоу магазин→стройка).
+	if _is_in_build_mode:
+		tree.paused = true
+		return
 	if _current_screen == 2:
-		if not _is_in_build_mode:
-			get_tree().paused = false
+		tree.paused = false
 	else:
-		get_tree().paused = true
+		tree.paused = true
 
 
 func _get_focused_target_id() -> String:

@@ -75,8 +75,9 @@ size_flags_vertical = 3
 theme_override_colors/font_color = Color(0.616, 0.478, 0.737, 1)
 theme_override_fonts/font = ExtResource("2_font")
 theme_override_font_sizes/font_size = 16
-text = "Описание модуля"
 autowrap_mode = 2
+horizontal_alignment = 3
+horizontal_alignment = 3
 
 [node name="PriceLabel" type="Label" parent="Margin/HBox"]
 unique_name_in_owner = true
