@@ -23,6 +23,7 @@ jobs:
           mv /root/.config/godot ~/.config/godot
           mv /root/.local/share/godot/export_templates/${GODOT_VERSION}.stable ~/.local/share/godot/export_templates/${GODOT_VERSION}.stable
       - name: Android Build
+        working-directory: ./universal
         run: | 
              mkdir -v -p build/android
              godot --headless --export-debug "Android" build/android/universal.apk
