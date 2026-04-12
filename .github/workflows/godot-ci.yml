@@ -3,6 +3,7 @@ name: "Godot CI for Mobile"
 on:
   push:
     branches: [ main ]
+    tags: [ 'v*' ]
 
 env:
   GODOT_VERSION: 4.6.2 
@@ -33,4 +34,11 @@ jobs:
         with:
           name: android
           path: build/android
- 
+          
+      - name: Publish to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          # Указываем точный путь к файлу, который нужно прикрепить
+          files: build/android/universal.apk 
+          # GitHub сам соберет список коммитов и сделает из них описание обновления
+          generate_release_notes: true
