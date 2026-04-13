@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://cmbte711aq0fc"
-path="res://.godot/imported/sprinter.png-ed0fb4a5da58b23be03dd907b759ff57.ctex"
+uid="uid://cktg8hk3wa4r4"
+path="res://.godot/imported/normal8.png-b4445443cf8fc67637fbde086e7ee2bc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/sprinter.png"
-dest_files=["res://.godot/imported/sprinter.png-ed0fb4a5da58b23be03dd907b759ff57.ctex"]
+source_file="res://assets/animation/enemies/normal/normal8.png"
+dest_files=["res://.godot/imported/normal8.png-b4445443cf8fc67637fbde086e7ee2bc.ctex"]
 
 [params]
 

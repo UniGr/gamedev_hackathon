@@ -16,7 +16,7 @@ script = ExtResource("2_row")
 buildings_min = 2
 buildings_max = 2
 normal_count = 1
-normal_hp = 153
+normal_hp = 180
 sprinter_hp = 0
 tank_hp = 0
 
@@ -24,8 +24,8 @@ tank_hp = 0
 script = ExtResource("2_row")
 buildings_min = 3
 buildings_max = 3
-normal_count = 1
-normal_hp = 162
+normal_count = 2
+normal_hp = 200
 sprinter_hp = 0
 tank_hp = 0
 
@@ -34,18 +34,20 @@ script = ExtResource("2_row")
 buildings_min = 4
 buildings_max = 4
 normal_count = 2
-normal_hp = 171
-sprinter_hp = 0
+sprinter_count = 1
+normal_hp = 223
+sprinter_hp = 161
 tank_hp = 0
+max_active = 2
 
 [sub_resource type="Resource" id="wave_04"]
 script = ExtResource("2_row")
 buildings_min = 5
 buildings_max = 5
-normal_count = 1
+normal_count = 3
 sprinter_count = 1
-normal_hp = 180
-sprinter_hp = 130
+normal_hp = 250
+sprinter_hp = 181
 tank_hp = 0
 max_active = 2
 
@@ -53,60 +55,84 @@ max_active = 2
 script = ExtResource("2_row")
 buildings_min = 6
 buildings_max = 6
-normal_count = 2
-sprinter_count = 1
-normal_hp = 189
-sprinter_hp = 137
+normal_count = 3
+sprinter_count = 2
+normal_hp = 281
+sprinter_hp = 203
 tank_hp = 0
-max_active = 2
+max_active = 3
 
 [sub_resource type="Resource" id="wave_06"]
 script = ExtResource("2_row")
 buildings_min = 7
 buildings_max = 7
-normal_count = 1
-sprinter_count = 1
+normal_count = 4
+sprinter_count = 2
 tank_count = 1
-normal_hp = 198
-sprinter_hp = 143
-tank_hp = 446
-max_active = 2
+normal_hp = 315
+sprinter_hp = 227
+tank_hp = 709
+max_active = 3
 
 [sub_resource type="Resource" id="wave_07"]
 script = ExtResource("2_row")
 buildings_min = 8
 buildings_max = 8
-normal_count = 2
-sprinter_count = 1
+normal_count = 4
+sprinter_count = 3
 tank_count = 1
-normal_hp = 207
-sprinter_hp = 150
-tank_hp = 466
-max_active = 3
+normal_hp = 353
+sprinter_hp = 255
+tank_hp = 794
+max_active = 4
 
 [sub_resource type="Resource" id="wave_08"]
 script = ExtResource("2_row")
 buildings_min = 9
 buildings_max = 9
-normal_count = 2
-sprinter_count = 2
+normal_count = 5
+sprinter_count = 3
 tank_count = 1
-normal_hp = 216
-sprinter_hp = 156
-tank_hp = 486
-max_active = 3
+normal_hp = 394
+sprinter_hp = 285
+tank_hp = 887
+max_active = 4
 
 [sub_resource type="Resource" id="wave_09"]
 script = ExtResource("2_row")
 buildings_min = 10
-normal_count = 2
-sprinter_count = 2
+buildings_max = 10
+normal_count = 5
+sprinter_count = 4
 tank_count = 2
-normal_hp = 225
-sprinter_hp = 163
-tank_hp = 506
-max_active = 3
+normal_hp = 439
+sprinter_hp = 317
+tank_hp = 988
+max_active = 5
+
+[sub_resource type="Resource" id="wave_10"]
+script = ExtResource("2_row")
+buildings_min = 11
+buildings_max = 14
+normal_count = 6
+sprinter_count = 5
+tank_count = 2
+normal_hp = 540
+sprinter_hp = 390
+tank_hp = 1215
+max_active = 6
+
+[sub_resource type="Resource" id="wave_11"]
+script = ExtResource("2_row")
+buildings_min = 15
+normal_count = 8
+sprinter_count = 6
+tank_count = 3
+normal_hp = 720
+sprinter_hp = 520
+tank_hp = 1620
+max_active = 8
 
 [resource]
 script = ExtResource("1_config")
-waves = Array[ExtResource("2_row")]([SubResource("wave_00"), SubResource("wave_01"), SubResource("wave_02"), SubResource("wave_03"), SubResource("wave_04"), SubResource("wave_05"), SubResource("wave_06"), SubResource("wave_07"), SubResource("wave_08"), SubResource("wave_09")])
+waves = Array[ExtResource("2_row")]([SubResource("wave_00"), SubResource("wave_01"), SubResource("wave_02"), SubResource("wave_03"), SubResource("wave_04"), SubResource("wave_05"), SubResource("wave_06"), SubResource("wave_07"), SubResource("wave_08"), SubResource("wave_09"), SubResource("wave_10"), SubResource("wave_11")])
