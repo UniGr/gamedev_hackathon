@@ -24,6 +24,16 @@ class_name RaiderRoleConfig
 @export var accent_color: Color = Color(1.0, 0.45, 0.45, 1.0)
 @export var texture: Texture2D
 
+@export_group("Animation")
+## Включает покадровую анимацию вместо статичного спрайта.
+@export var use_frame_animation: bool = false
+## Базовый путь к кадрам (без номера и .png), напр. "res://assets/animation/enemies/normal/normal"
+@export var animation_frames_base_path: String = ""
+## Количество кадров анимации (файлы нумеруются от 1).
+@export var animation_frame_count: int = 0
+## Частота кадров анимации.
+@export var animation_fps: float = 10.0
+
 
 func get_speed(base_speed: float) -> float:
 	return base_speed * max(0.1, speed_multiplier)

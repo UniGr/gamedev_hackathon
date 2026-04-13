@@ -47,6 +47,7 @@ $RECYCLE.BIN/
 
 # Gemini and GitHub internal
 GEMINI.md
+copilot-instructions.md
 
 # Build folders
 build/

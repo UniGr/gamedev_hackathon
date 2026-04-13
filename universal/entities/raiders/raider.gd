@@ -18,6 +18,7 @@ const RaiderAIComponentScript: Script = preload("res://shared/components/raider_
 const RaiderMovementComponentScript: Script = preload("res://shared/components/raider_movement_component.gd")
 const RaiderCombatComponentScript: Script = preload("res://shared/components/raider_combat_component.gd")
 const ViewportBoundsComponentScript: Script = preload("res://shared/components/viewport_bounds_component.gd")
+const RaiderAnimationComponentScript: Script = preload("res://shared/components/raider_animation_component.gd")
 
 ## Data-Driven: конфиги ролей загружаются из .tres файлов
 const ROLE_CONFIG_NORMAL: RaiderRoleConfig = preload("res://data/raider_role_normal.tres")
@@ -67,6 +68,8 @@ var _ai: RaiderAIComponent
 var _movement: RaiderMovementComponent
 var _combat: RaiderCombatComponent
 var _viewport_bounds: ViewportBoundsComponent
+var _animation: RaiderAnimationComponent
+var _base_movement_speed: float = 285.0
 
 
 func _ready() -> void:
@@ -95,6 +98,7 @@ func _ready() -> void:
 	_ensure_clickable()
 	_update_click_shape()
 	_configure_components_from_exports()
+	_setup_animation_from_role()
 	_clamp_to_viewport()
 	queue_redraw()
 
@@ -141,6 +145,7 @@ func configure_from_balance(balance: RaiderBalance) -> void:
 		return
 
 	movement_speed_px_per_sec = max(10.0, balance.raider_speed_px_per_sec)
+	_base_movement_speed = movement_speed_px_per_sec
 	attack_distance_px = max(8.0, balance.raider_attack_distance_px)
 	bite_delay_sec = max(0.1, balance.raider_bite_delay_sec)
 	retarget_interval_sec = max(0.1, balance.raider_retarget_interval_sec)
@@ -186,10 +191,12 @@ func _apply_role_from_config() -> void:
 	accent_color = _role_config.accent_color
 	path_wobble_strength = _role_config.path_wobble_strength
 	path_wobble_frequency_hz = _role_config.path_wobble_frequency_hz
+	movement_speed_px_per_sec = _role_config.get_speed(_base_movement_speed)
 	
 	_apply_role_sprite()
 	_update_click_shape()
 	_configure_components_from_exports()
+	_setup_animation_from_role()
 	
 	# Обновляем HP bar под новый размер
 	if _hp_bar != null:
@@ -286,6 +293,12 @@ func _ensure_runtime_components() -> void:
 			_viewport_bounds = ViewportBoundsComponentScript.new() as ViewportBoundsComponent
 			_viewport_bounds.name = "ViewportBoundsComponent"
 			add_child(_viewport_bounds)
+	if _animation == null:
+		_animation = get_node_or_null("RaiderAnimationComponent") as RaiderAnimationComponent
+		if _animation == null:
+			_animation = RaiderAnimationComponentScript.new() as RaiderAnimationComponent
+			_animation.name = "RaiderAnimationComponent"
+			add_child(_animation)
 
 	if not _combat.bite_started.is_connected(_on_bite_started):
 		_combat.bite_started.connect(_on_bite_started)
@@ -348,6 +361,20 @@ func _apply_role_sprite() -> void:
 			_body_sprite.texture = preload("res://assets/sprites/tank.png")
 		_:
 			_body_sprite.texture = preload("res://assets/sprites/normal.png")
+
+
+func _setup_animation_from_role() -> void:
+	if _animation == null or _body_sprite == null:
+		return
+	if _role_config == null or not _role_config.use_frame_animation:
+		_animation.stop()
+		return
+	_animation.configure(
+		_body_sprite,
+		_role_config.animation_frames_base_path,
+		_role_config.animation_frame_count,
+		_role_config.animation_fps
+	)
 
 
 func _clamp_to_viewport() -> void:
