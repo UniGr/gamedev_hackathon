@@ -3,6 +3,7 @@ extends CanvasLayer
 ## Предоставляет кнопки для запуска игры, настроек и выхода.
 
 @onready var btn_start: Button = %BtnStart
+@onready var btn_endless: Button = %BtnEndless
 @onready var btn_settings: Button = %BtnSettings
 @onready var btn_exit: Button = %BtnExit
 
@@ -13,17 +14,22 @@ const SETTINGS_SCENE: String = "res://ui/settings_menu.tscn"
 
 func _ready() -> void:
 	_configure_button_pivot(btn_start)
+	_configure_button_pivot(btn_endless)
 	_configure_button_pivot(btn_settings)
 	_configure_button_pivot(btn_exit)
 	btn_start.resized.connect(_on_button_resized.bind(btn_start))
+	btn_endless.resized.connect(_on_button_resized.bind(btn_endless))
 	btn_settings.resized.connect(_on_button_resized.bind(btn_settings))
 	btn_exit.resized.connect(_on_button_resized.bind(btn_exit))
-	
+
 	btn_start.pressed.connect(_on_btn_start_pressed)
+	btn_endless.pressed.connect(_on_btn_endless_pressed)
 	btn_settings.pressed.connect(_on_btn_settings_pressed)
 	btn_exit.pressed.connect(_on_btn_exit_pressed)
-	
+
 	# Анимации hover
+	btn_endless.mouse_entered.connect(_on_btn_hover.bind(btn_endless, true))
+	btn_endless.mouse_exited.connect(_on_btn_hover.bind(btn_endless, false))
 	btn_start.mouse_entered.connect(_on_btn_hover.bind(btn_start, true))
 	btn_start.mouse_exited.connect(_on_btn_hover.bind(btn_start, false))
 	btn_settings.mouse_entered.connect(_on_btn_hover.bind(btn_settings, true))
@@ -52,6 +58,16 @@ func _start_pulse_animation() -> void:
 
 
 func _on_btn_start_pressed() -> void:
+	GameMode.set_mode(GameMode.Mode.NORMAL)
+	_launch_game()
+
+
+func _on_btn_endless_pressed() -> void:
+	GameMode.set_mode(GameMode.Mode.ENDLESS)
+	_launch_game()
+
+
+func _launch_game() -> void:
 	var target_scene: String = MAIN_SCENE_PRIMARY if ResourceLoader.exists(MAIN_SCENE_PRIMARY) else MAIN_SCENE_FALLBACK
 	AudioManager.play_ui_open()
 	get_tree().change_scene_to_file(target_scene)

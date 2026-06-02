@@ -62,8 +62,26 @@ func spend_metal(amount: int) -> bool:
 	return false
 
 
+## Доля стоимости, возвращаемая при сносе (продаже) модуля.
+const SELL_REFUND_RATIO: float = 0.7
+
+
 func get_current_module_cost(module_id: String) -> int:
 	return Constants.get_module_cost_for_iteration(module_id, get_module_build_iteration(module_id))
+
+
+## Возвращает количество металла, которое игрок получит за снос модуля данного типа.
+## Считается как 70% от стоимости последнего построенного модуля этого типа.
+func get_module_refund(module_id: String) -> int:
+	var last_iteration: int = max(0, get_module_build_iteration(module_id) - 1)
+	var last_cost: int = Constants.get_module_cost_for_iteration(module_id, last_iteration)
+	return int(floor(float(last_cost) * SELL_REFUND_RATIO))
+
+
+## Фиксирует продажу модуля: откатывает итерацию цены, чтобы следующая постройка не дорожала.
+func register_module_sold(module_id: String) -> void:
+	if Constants.is_incremental_price_module(module_id):
+		build_iterations_by_module[module_id] = max(0, get_module_build_iteration(module_id) - 1)
 
 
 func get_module_build_iteration(module_id: String) -> int:

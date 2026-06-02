@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(command -v godot godot4 Godot)",
+      "Read(//c/Program Files/**)"
+    ]
+  }
+}

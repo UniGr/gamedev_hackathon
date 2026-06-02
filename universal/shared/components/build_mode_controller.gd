@@ -54,13 +54,13 @@ func get_active_build_size() -> Vector2i:
 	return _active_build_size
 
 
-func handle_pointer_input(pointer_pos: Vector2, grid_origin: Vector2) -> bool:
+func handle_pointer_input(pointer_pos: Vector2, grid_origin: Vector2, grid_scale: float = 1.0) -> bool:
 	if not _is_enabled:
 		return false
 	if _active_build_type == "":
 		return false
-	
-	var grid_pos: Vector2i = _world_to_grid(pointer_pos, grid_origin)
+
+	var grid_pos: Vector2i = _world_to_grid(pointer_pos, grid_origin, grid_scale)
 	
 	if grid_manager.canBuildAt(grid_pos, _active_build_type, _active_build_size):
 		build_executed.emit(_active_build_type, grid_pos, true)
@@ -198,8 +198,9 @@ func _build_highlight_style(pos: Vector2i, occupied_cells: Dictionary) -> StyleB
 	return style
 
 
-func _world_to_grid(world_position: Vector2, grid_origin: Vector2) -> Vector2i:
-	var local_position: Vector2 = world_position - grid_origin
+func _world_to_grid(world_position: Vector2, grid_origin: Vector2, grid_scale: float = 1.0) -> Vector2i:
+	var safe_scale: float = grid_scale if absf(grid_scale) > 0.0001 else 1.0
+	var local_position: Vector2 = (world_position - grid_origin) / safe_scale
 	return Vector2i(
 		int(floor(local_position.x / _cell_size)),
 		int(floor(local_position.y / _cell_size))

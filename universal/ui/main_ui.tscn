@@ -118,6 +118,30 @@ border_width_right = 24
 border_width_bottom = 24
 border_color = Color(0.815686, 0.627451, 0.941176, 0.235)
 
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_DemolishBorder"]
+bg_color = Color(0.65, 0.12, 0.06, 0.12)
+border_width_left = 10
+border_width_top = 10
+border_width_right = 10
+border_width_bottom = 10
+border_color = Color(1, 0.32, 0.2, 0.92)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_DemolishBanner"]
+bg_color = Color(0.18, 0.03, 0.02, 0.92)
+border_width_left = 4
+border_width_top = 4
+border_width_right = 4
+border_width_bottom = 4
+border_color = Color(1, 0.32, 0.2, 0.95)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 24.0
+content_margin_top = 14.0
+content_margin_right = 24.0
+content_margin_bottom = 14.0
+
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_ScreenInner"]
 bg_color = Color(0, 0, 0, 0)
 border_width_left = 12
@@ -243,6 +267,19 @@ stretch_margin_bottom = 2
 texture_under = ExtResource("8_bar_under")
 texture_progress = ExtResource("9_bar_fill")
 
+[node name="BtnDemolish" type="Button" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel" unique_id=303917391]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(150, 100)
+layout_mode = 2
+size_flags_vertical = 4
+theme_override_colors/font_color = Color(0.95, 0.55, 0.4, 1)
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 22
+theme_override_styles/normal = SubResource("StyleBoxFlat_BtnSettings")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnSettingsHover")
+theme_override_styles/hover = SubResource("StyleBoxFlat_BtnSettingsHover")
+text = "СНОС"
+
 [node name="BtnSettings" type="Button" parent="MarginContainer/VBoxContainer/TopHeader/HeaderPadding/TopPanel" unique_id=303917390]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(120, 100)
@@ -255,6 +292,42 @@ theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnSettingsHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_BtnSettingsHover")
 icon = ExtResource("20_settings")
 icon_alignment = 1
+
+[node name="EndlessBar" type="PanelContainer" parent="MarginContainer/VBoxContainer" unique_id=111562900]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 90)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBoxFlat_BuildModePanel")
+
+[node name="EndlessPadding" type="MarginContainer" parent="MarginContainer/VBoxContainer/EndlessBar" unique_id=111562901]
+layout_mode = 2
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 6
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 6
+
+[node name="EndlessHBox" type="HBoxContainer" parent="MarginContainer/VBoxContainer/EndlessBar/EndlessPadding" unique_id=111562902]
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="EndlessScoreLabel" type="Label" parent="MarginContainer/VBoxContainer/EndlessBar/EndlessPadding/EndlessHBox" unique_id=111562903]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.6, 1, 0.85, 1)
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 28
+text = "РАЗМЕР: 1"
+
+[node name="EndlessRecordLabel" type="Label" parent="MarginContainer/VBoxContainer/EndlessBar/EndlessPadding/EndlessHBox" unique_id=111562904]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.941, 0.816, 0.125, 1)
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 28
+text = "РЕКОРД: 0"
 
 [node name="BuildModeTopPanel" type="PanelContainer" parent="MarginContainer/VBoxContainer" unique_id=111562817]
 unique_name_in_owner = true
@@ -549,6 +622,45 @@ theme_override_styles/normal = SubResource("StyleBoxFlat_Btn")
 theme_override_styles/pressed = SubResource("StyleBoxFlat_BtnHover")
 theme_override_styles/hover = SubResource("StyleBoxFlat_BtnHover")
 text = "ПЕРЕЙТИ"
+
+[node name="DemolishOverlay" type="Control" parent="." unique_id=113543700]
+unique_name_in_owner = true
+visible = false
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="Border" type="PanelContainer" parent="DemolishOverlay" unique_id=113543701]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_DemolishBorder")
+
+[node name="Banner" type="PanelContainer" parent="DemolishOverlay" unique_id=113543702]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_top = 210.0
+offset_bottom = 280.0
+grow_horizontal = 2
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_DemolishBanner")
+
+[node name="BannerLabel" type="Label" parent="DemolishOverlay/Banner" unique_id=113543703]
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(1, 0.55, 0.45, 1)
+theme_override_fonts/font = ExtResource("2_hlo7n")
+theme_override_font_sizes/font_size = 24
+text = "РЕЖИМ СНОСА · коснитесь модуля (+70%)"
+horizontal_alignment = 1
 
 [node name="ScreenBorder" type="PanelContainer" parent="." unique_id=113543605]
 anchors_preset = 15

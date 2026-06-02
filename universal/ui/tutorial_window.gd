@@ -26,6 +26,7 @@ const STEP_RAIDER_DEFENSE: String = "raider_defense"
 const STEP_SHOP_INVITE: String = "shop_invite"
 const STEP_SHOP_GUIDE: String = "shop_guide"
 const STEP_REACTOR_GUIDE: String = "reactor_guide"
+const STEP_DEMOLISH_GUIDE: String = "demolish_guide"
 const STEP_MAX_RESOURCES: String = "max_resources"
 const STEP_COMPLETE: String = "complete"
 const STEP_DEFEAT: String = "defeat"
@@ -72,6 +73,10 @@ var _base_step_lines: Dictionary = {
 	STEP_RAIDER_DEFENSE: [
 	"Отличная работа, Капитан!",
 	"Напоминаю, для автоматизации защиты от [color=red]ВРАГОВ[/color] постройте ТУРЕЛИ: их можно купить в [color=blue]ЦЕХЕ ОБОРОНЫ[/color]."
+	],
+	STEP_DEMOLISH_GUIDE: [
+	"Капитан, если отсек больше не нужен — его можно демонтировать. Нажмите кнопку [color=orange]СНОС[/color] вверху экрана.",
+	"В режиме [color=orange]СНОСА[/color] касание по модулю разбирает его и возвращает [color=orange]70% МЕТАЛЛА[/color] от его стоимости. Так можно перестраивать корабль.",
 	],
 	STEP_SHOP_INVITE: [
 	"Капитан, у вас достаточно [color=orange]МЕТАЛЛА[/color]! Нажмите на подсвеченную кнопку внизу экрана, чтобы открыть [color=green]ЦЕХ УЛУЧШЕНИЙ[/color]."
@@ -322,6 +327,13 @@ func _on_dialog_finished(step_id: String) -> void:
 	if step_id == STEP_RAIDER_WARNING:
 		_clear_focus_target()
 
+	# После обучения обороне рассказываем про снос модулей (кнопка СНОС на экране игры).
+	if step_id == STEP_RAIDER_DEFENSE and _uses_full_flow():
+		_queue_step(STEP_DEMOLISH_GUIDE)
+
+	if step_id == STEP_DEMOLISH_GUIDE:
+		_clear_focus_target()
+
 	if step_id == STEP_COMPLETE:
 		if _is_save_flag_enabled():
 			_mark_tutorial_completed_once()
@@ -540,6 +552,13 @@ func _apply_focus_for_current_step() -> void:
 
 	if _current_step_id == STEP_RAIDER_WARNING:
 		_set_focus_target("first_raider", Color(1.0, 0.18, 0.18, 1.0), false)
+		return
+
+	if _current_step_id == STEP_DEMOLISH_GUIDE:
+		if _current_line_index == 0:
+			_set_focus_target("demolish", Color(0.95, 0.55, 0.4, 1.0), false)
+		else:
+			_clear_focus_target()
 		return
 
 	if _current_step_id == STEP_SHOP_INVITE and _current_line_index == 0:

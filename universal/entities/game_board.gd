@@ -22,6 +22,7 @@ var _pressure_tracker: TargetPressureTracker
 var _game_state: GameStateController
 var _is_collapsing_unattached: bool = false
 var _build_controller: BuildModeController
+var _is_demolish_active: bool = false
 
 func _ready() -> void:
 	# Позволяет ставить модули из магазина во время паузы.
@@ -64,6 +65,8 @@ func _ready() -> void:
 	_build_controller.configure(CELL_SIZE, _module_script_by_id, gridTileManager, _highlights_root)
 	_build_controller.build_executed.connect(_on_build_executed)
 
+	GameEvents.demolish_mode_changed.connect(_on_demolish_mode_changed)
+
 	# Инициализация TargetPressureTracker
 	_pressure_tracker = TARGET_PRESSURE_TRACKER_SCRIPT.new() as TargetPressureTracker
 	_pressure_tracker.name = "TargetPressureTracker"
@@ -81,7 +84,7 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if _game_state != null and _game_state.is_game_finished():
 		return
-	if not _build_controller.is_build_mode_active():
+	if not _is_demolish_active and not _build_controller.is_build_mode_active():
 		return
 
 	var pointer_pos: Vector2
@@ -101,7 +104,12 @@ func _unhandled_input(event: InputEvent) -> void:
 	if not has_pointer_press:
 		return
 
-	_build_controller.handle_pointer_input(pointer_pos, _modules_root.global_position)
+	# Режим сноса имеет приоритет: тап по модулю продаёт его.
+	if _is_demolish_active:
+		_try_sell_at_pointer(pointer_pos)
+		return
+
+	_build_controller.handle_pointer_input(pointer_pos, _modules_root.global_position, _modules_root.scale.x)
 
 
 func _on_build_executed(module_type: String, grid_pos: Vector2i, _success: bool) -> void:
@@ -218,6 +226,28 @@ func _refresh_ship_bounds() -> void:
 func _get_ship_bounds_rect() -> Rect2:
 	return _ship_bounds_rect
 
+
+## Границы корабля в локальных координатах ModulesRoot (в пикселях, без учёта scale).
+## Используется авто-масштабатором, чтобы вычислить нужный зум независимо от текущего масштаба.
+func get_ship_local_bounds() -> Rect2:
+	if gridTileManager == null:
+		return Rect2()
+	var occupied: Dictionary = gridTileManager.get_occupied_cells()
+	if occupied.is_empty():
+		return Rect2()
+
+	var min_cell: Vector2i = Vector2i(2147483647, 2147483647)
+	var max_cell: Vector2i = Vector2i(-2147483648, -2147483648)
+	for cell: Vector2i in occupied.keys():
+		min_cell.x = min(min_cell.x, cell.x)
+		min_cell.y = min(min_cell.y, cell.y)
+		max_cell.x = max(max_cell.x, cell.x)
+		max_cell.y = max(max_cell.y, cell.y)
+
+	var origin: Vector2 = Vector2(min_cell) * CELL_SIZE
+	var size: Vector2 = Vector2((max_cell - min_cell) + Vector2i.ONE) * CELL_SIZE
+	return Rect2(origin, size)
+
 func _on_module_tree_exited(module: ModuleBase) -> void:
 	if _pressure_tracker != null:
 		_pressure_tracker.clear_target(module)
@@ -233,6 +263,43 @@ func _on_module_tree_exited(module: ModuleBase) -> void:
 
 func _on_module_destroy_requested(module: ModuleBase, source: String) -> void:
 	_destroy_module(module, source)
+
+
+func _on_demolish_mode_changed(is_active: bool) -> void:
+	_is_demolish_active = is_active
+
+
+func _try_sell_at_pointer(pointer_pos: Vector2) -> void:
+	var local: Vector2 = (pointer_pos - _modules_root.global_position) / _modules_root.scale.x
+	var cell: Vector2i = Vector2i(
+		int(floor(local.x / CELL_SIZE)),
+		int(floor(local.y / CELL_SIZE))
+	)
+	var occupied: Dictionary = gridTileManager.get_occupied_cells()
+	if not occupied.has(cell):
+		return
+	var entity: Variant = occupied[cell]
+	if entity is ModuleBase:
+		_sell_module(entity as ModuleBase)
+
+
+func _sell_module(module: ModuleBase) -> void:
+	if _game_state != null and _game_state.is_game_finished():
+		return
+	if module == null or not is_instance_valid(module):
+		return
+	if module == _core_module:
+		# Ядро снести нельзя.
+		return
+	if not _placed_modules.has(module):
+		return
+
+	var module_id: String = module.module_id
+	var refund: int = ResourceManager.get_module_refund(module_id)
+	ResourceManager.register_module_sold(module_id)
+	ResourceManager.add_metal(refund)
+	GameEvents.module_sold.emit(module_id, refund)
+	_destroy_module(module, "sell")
 
 
 func _destroy_module(module: ModuleBase, source: String) -> bool:

@@ -1,9 +1,10 @@
-[gd_scene load_steps=5 format=3 uid="uid://cal40ma30npno"]
+[gd_scene load_steps=6 format=3 uid="uid://cal40ma30npno"]
 
 [ext_resource type="Script" uid="uid://by0fngppkfsh4" path="res://entities/game_board.gd" id="1_q2w3e"]
 [ext_resource type="Script" path="res://entities/debris/debris_spawner.gd" id="2_spawner"]
 [ext_resource type="Script" path="res://entities/raiders/raider_spawner.gd" id="3_raider_spawner"]
 [ext_resource type="Script" path="res://entities/ship/ship_sway.gd" id="4_ship_sway"]
+[ext_resource type="Script" path="res://entities/ship/ship_auto_scaler.gd" id="5_ship_auto_scaler"]
 
 [node name="GameBoard" type="Node2D" unique_id=938220171]
 script = ExtResource("1_q2w3e")
@@ -13,6 +14,9 @@ script = ExtResource("2_spawner")
 
 [node name="RaiderSpawner" type="Node2D" parent="."]
 script = ExtResource("3_raider_spawner")
+
+[node name="ShipAutoScaler" type="Node" parent="."]
+script = ExtResource("5_ship_auto_scaler")
 
 [node name="ShipSway" type="Node" parent="."]
 script = ExtResource("4_ship_sway")

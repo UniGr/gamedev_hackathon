@@ -51,6 +51,15 @@ signal build_mode_changed(is_active: bool)
 ## @param module_type: Тип модуля, постройка которого была отменена.
 signal build_mode_cancelled(module_type: String)
 
+## Режим сноса (продажи) модулей включён/выключен.
+## @param is_active: true если режим сноса активен.
+signal demolish_mode_changed(is_active: bool)
+
+## Модуль продан игроком (снесён за возврат части стоимости).
+## @param module_type: Тип проданного модуля.
+## @param refund: Возвращённое количество металла.
+signal module_sold(module_type: String, refund: int)
+
 ## Модуль успешно построен.
 ## @param module_type: Тип построенного модуля.
 ## @param position: Позиция в сетке.

@@ -55,6 +55,15 @@ const TUTORIAL_TARGET_SCREENS: Dictionary = {
 @onready var metal_bar: TextureProgressBar = %MetalBar
 @onready var metal_max_notice_stack: MetalMaxNoticeStack = %MetalMaxNoticeStack
 @onready var btn_settings: Button = %BtnSettings
+@onready var btn_demolish: Button = %BtnDemolish
+
+# --- Endless режим ---
+@onready var endless_bar: PanelContainer = %EndlessBar
+@onready var endless_score_label: Label = %EndlessScoreLabel
+@onready var endless_record_label: Label = %EndlessRecordLabel
+
+# --- Режим сноса ---
+@onready var demolish_overlay: Control = %DemolishOverlay
 
 # --- Build Mode верхняя панель ---
 @onready var build_mode_top_panel: PanelContainer = %BuildModeTopPanel
@@ -92,6 +101,10 @@ var _core_upgrade: RefCounted
 var _build_mode_panel: RefCounted
 var _first_raider_focus_target_registered: bool = false
 var _nav_buttons: Array[Button] = []
+var _is_demolish_active: bool = false
+var _demolish_pulse_tween: Tween
+const DEMOLISH_ACTIVE_COLOR: Color = Color(1.0, 0.35, 0.25, 1.0)
+const DEMOLISH_IDLE_COLOR: Color = Color(0.95, 0.55, 0.4, 1.0)
 
 # Build mode — запоминаем откуда зашли
 var _pre_build_screen: int = DEFAULT_SCREEN
@@ -136,7 +149,12 @@ func _ready() -> void:
 
 	# Кнопки оверлеев
 	btn_settings.pressed.connect(_on_btn_settings_pressed)
+	btn_demolish.pressed.connect(_on_btn_demolish_pressed)
 	btn_restart.pressed.connect(_on_btn_restart_pressed)
+
+	# Endless счёт
+	GameMode.score_changed.connect(_on_score_changed)
+	_refresh_endless_score(GameMode.get_current_score(), GameMode.get_best_score())
 	btn_confirm_exit_yes.pressed.connect(_on_btn_confirm_exit_yes_pressed)
 	btn_confirm_exit_no.pressed.connect(_on_btn_confirm_exit_no_pressed)
 
@@ -235,11 +253,13 @@ func _switch_to_screen(index: int, should_emit: bool = true) -> void:
 		bottom_nav_panel.visible = not _is_in_build_mode
 		if metal_max_notice_stack != null:
 			metal_max_notice_stack.visible = not _is_in_build_mode
+		_update_endless_bar_visibility()
 		# Снимаем паузу только если НЕ в режиме строительства
 		if not _is_in_build_mode:
 			get_tree().paused = false
 	else:
 		# Загружаем/показываем экран магазина — ставим игру на паузу
+		_set_demolish_active(false)
 		_show_screen(index)
 		top_header.visible = false
 		build_mode_top_panel.visible = false
@@ -248,6 +268,8 @@ func _switch_to_screen(index: int, should_emit: bool = true) -> void:
 		bottom_nav_panel.visible = true
 		if metal_max_notice_stack != null:
 			metal_max_notice_stack.visible = false
+		if endless_bar != null:
+			endless_bar.visible = false
 		get_tree().paused = true
 		SaveManager.save_game()
 
@@ -440,6 +462,7 @@ func _on_build_requested(module_type: String, _position: Vector2) -> void:
 func _on_build_mode_changed(is_active: bool) -> void:
 	_is_in_build_mode = is_active
 	if is_active:
+		_set_demolish_active(false)
 		_pre_build_screen = _current_screen
 		_switch_to_screen(2, false)
 		# Контент панели будет установлен в _on_build_requested (вызывается следующим)
@@ -494,13 +517,92 @@ func _on_btn_settings_pressed() -> void:
 		settings_overlay.open()
 
 
+# ========== Режим сноса (продажа модулей) ==========
+
+func _on_btn_demolish_pressed() -> void:
+	if _is_game_finished:
+		return
+	if _is_in_build_mode:
+		return
+	_set_demolish_active(not _is_demolish_active)
+
+
+func _set_demolish_active(active: bool) -> void:
+	if _is_demolish_active == active:
+		# Всё равно синхронизируем визуал кнопки (например при первичной инициализации).
+		_update_demolish_button_visual()
+		return
+	_is_demolish_active = active
+	_update_demolish_button_visual()
+	_update_demolish_overlay()
+	# Снос ставит игру на паузу; выход из сноса (на игровом экране) её снимает.
+	var tree: SceneTree = get_tree()
+	if tree != null:
+		tree.paused = active
+	GameEvents.demolish_mode_changed.emit(_is_demolish_active)
+
+
+func _update_demolish_overlay() -> void:
+	if demolish_overlay == null:
+		return
+	demolish_overlay.visible = _is_demolish_active
+	if _demolish_pulse_tween != null:
+		_demolish_pulse_tween.kill()
+		_demolish_pulse_tween = null
+	if _is_demolish_active:
+		demolish_overlay.modulate = Color(1, 1, 1, 1)
+		_demolish_pulse_tween = demolish_overlay.create_tween()
+		_demolish_pulse_tween.set_pause_mode(Tween.TWEEN_PAUSE_PROCESS)
+		_demolish_pulse_tween.set_loops()
+		_demolish_pulse_tween.set_trans(Tween.TRANS_SINE)
+		_demolish_pulse_tween.set_ease(Tween.EASE_IN_OUT)
+		_demolish_pulse_tween.tween_property(demolish_overlay, "modulate:a", 0.45, 0.6)
+		_demolish_pulse_tween.tween_property(demolish_overlay, "modulate:a", 1.0, 0.6)
+
+
+func _update_demolish_button_visual() -> void:
+	if btn_demolish == null:
+		return
+	if _is_demolish_active:
+		btn_demolish.text = "ОТМЕНА"
+		btn_demolish.add_theme_color_override("font_color", DEMOLISH_ACTIVE_COLOR)
+		btn_demolish.modulate = Color(1.2, 1.0, 1.0, 1.0)
+	else:
+		btn_demolish.text = "СНОС"
+		btn_demolish.add_theme_color_override("font_color", DEMOLISH_IDLE_COLOR)
+		btn_demolish.modulate = Color.WHITE
+
+
+# ========== Endless счёт ==========
+
+func _on_score_changed(current_score: int, best_score: int) -> void:
+	_refresh_endless_score(current_score, best_score)
+
+
+func _refresh_endless_score(current_score: int, best_score: int) -> void:
+	if endless_score_label != null:
+		endless_score_label.text = "РАЗМЕР: %d" % current_score
+	if endless_record_label != null:
+		endless_record_label.text = "РЕКОРД: %d" % best_score
+
+
+func _update_endless_bar_visibility() -> void:
+	if endless_bar == null:
+		return
+	endless_bar.visible = GameMode.is_endless() and not _is_in_build_mode and _current_screen == 2
+
+
 # ========== Оверлеи (Game Over / Confirm Exit) ==========
 
 func _on_game_finished(outcome: String, _reason: String) -> void:
 	_is_game_finished = true
+	_set_demolish_active(false)
 	get_tree().paused = true
 	end_overlay.visible = true
-	if outcome == "win":
+	if GameMode.is_endless():
+		end_title_label.text = "КОНЕЦ ИГРЫ"
+		end_reason_label.text = "Ядро уничтожено.\nРазмер корабля: %d\nРекорд: %d" % [GameMode.get_current_score(), GameMode.get_best_score()]
+	elif outcome == "win":
 		end_title_label.text = "ПОБЕДА"
 		end_reason_label.text = "Миссия выполнена!"
 	else:
@@ -549,6 +651,7 @@ func _register_tutorial_targets() -> void:
 		return
 	_tutorial_focus.register_targets({
 		"settings_button": btn_settings,
+		"demolish": btn_demolish,
 	})
 	# Кнопка навигации «Улучшения» — это вход в ЦЕХ для tutorial
 	if _nav_buttons.size() >= 4:

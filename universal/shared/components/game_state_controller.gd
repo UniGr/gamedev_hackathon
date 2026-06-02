@@ -24,6 +24,10 @@ func check_win_condition() -> void:
 	if _is_game_finished:
 		return
 
+	# В бесконечном режиме победы нет — игрок строит и выживает без предела.
+	if GameMode.is_endless():
+		return
+
 	var result: Dictionary = GameConditionChecker.check_win(_placed_modules, _is_game_finished)
 	if result.get("won", false):
 		_finish_game_win(result.get("reason", ""))

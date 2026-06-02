@@ -153,9 +153,9 @@ theme_override_styles/pressed = SubResource("StyleBox_StartBtnPressed")
 theme_override_styles/hover = SubResource("StyleBox_StartBtnHover")
 text = "▶ ИГРАТЬ"
 
-[node name="BtnSettings" type="Button" parent="Control" unique_id=1516868992]
+[node name="BtnEndless" type="Button" parent="Control" unique_id=1919690251]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(600, 140)
+custom_minimum_size = Vector2(600, 150)
 layout_mode = 1
 anchors_preset = 8
 anchor_left = 0.5
@@ -163,9 +163,32 @@ anchor_top = 0.5
 anchor_right = 0.5
 anchor_bottom = 0.5
 offset_left = -300.0
-offset_top = 370.0
+offset_top = 360.0
 offset_right = 300.0
 offset_bottom = 510.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_colors/font_color = Color(0.6, 1, 0.85, 1)
+theme_override_fonts/font = ExtResource("3_font")
+theme_override_font_sizes/font_size = 34
+theme_override_styles/normal = SubResource("StyleBox_StartBtn")
+theme_override_styles/pressed = SubResource("StyleBox_StartBtnPressed")
+theme_override_styles/hover = SubResource("StyleBox_StartBtnHover")
+text = "∞ БЕСКОНЕЧНЫЙ"
+
+[node name="BtnSettings" type="Button" parent="Control" unique_id=1516868992]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(600, 130)
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = 540.0
+offset_right = 300.0
+offset_bottom = 670.0
 grow_horizontal = 2
 grow_vertical = 2
 theme_override_colors/font_color = Color(0.941, 0.875, 1, 1)

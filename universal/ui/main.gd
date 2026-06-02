@@ -18,6 +18,7 @@ func _reset_game_state_at_scene_start() -> void:
 	# Единая точка сброса рана: при каждом входе в игровую сцену.
 	ResourceManager.reset_run_state()
 	UpgradeManager.reset_run_state()
+	GameMode.reset_run()
 	# Флаги туториалов НЕ очищаются — нужны для предотвращения повторного запуска.
 	
 	var tree := get_tree()
