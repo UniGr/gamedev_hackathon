@@ -8,6 +8,9 @@ extends Node
 
 signal score_changed(current_score: int, best_score: int)
 
+## Бесконечный режим разблокирован (обычный режим пройден впервые).
+signal endless_unlocked
+
 enum Mode {
 	NORMAL = 0,
 	ENDLESS = 1,
@@ -20,6 +23,8 @@ var current_mode: int = Mode.NORMAL
 var _current_score: int = 0
 var _best_score: int = 0
 var _module_count: int = 0
+## Игрок хотя бы раз прошёл обычный режим — открывает доступ к бесконечному.
+var _normal_completed: bool = false
 
 
 func _ready() -> void:
@@ -28,6 +33,7 @@ func _ready() -> void:
 	_load_record()
 	GameEvents.module_built.connect(_on_module_built)
 	GameEvents.module_destroyed.connect(_on_module_destroyed)
+	GameEvents.game_finished.connect(_on_game_finished)
 
 
 # ========== Публичный API ==========
@@ -38,6 +44,11 @@ func set_mode(mode: int) -> void:
 
 func is_endless() -> bool:
 	return current_mode == Mode.ENDLESS
+
+
+## Доступен ли бесконечный режим (обычный режим пройден хотя бы раз).
+func is_endless_unlocked() -> bool:
+	return _normal_completed
 
 
 func get_current_score() -> int:
@@ -66,6 +77,17 @@ func _on_module_destroyed(_module_type: String, _position: Vector2) -> void:
 	_update_score()
 
 
+# ========== Разблокировка бесконечного режима ==========
+
+func _on_game_finished(outcome: String, _reason: String) -> void:
+	# Бесконечный режим открывается после первой победы в обычном режиме.
+	if outcome != "win" or current_mode != Mode.NORMAL or _normal_completed:
+		return
+	_normal_completed = true
+	_save_record()
+	endless_unlocked.emit()
+
+
 func _update_score() -> void:
 	# Размер корабля включает ядро (которое не эмитит module_built).
 	_current_score = _module_count + 1
@@ -85,10 +107,15 @@ func _load_record() -> void:
 		return
 	var parsed: Variant = JSON.parse_string(file.get_as_text())
 	if parsed is Dictionary:
-		_best_score = int((parsed as Dictionary).get("best_score", 0))
+		var data: Dictionary = parsed as Dictionary
+		_best_score = int(data.get("best_score", 0))
+		_normal_completed = bool(data.get("normal_completed", false))
 
 
 func _save_record() -> void:
 	var file: FileAccess = FileAccess.open(RECORD_PATH, FileAccess.WRITE)
 	if file != null:
-		file.store_string(JSON.stringify({ "best_score": _best_score }))
+		file.store_string(JSON.stringify({
+			"best_score": _best_score,
+			"normal_completed": _normal_completed,
+		}))
