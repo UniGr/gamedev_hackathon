@@ -45,7 +45,14 @@ $RECYCLE.BIN/
 .idea/
 .vs/
 
-# Gemini and GitHub internal
+# AI assistant local configs
+.claude/
+.cursor/
+.windsurf/
+.aider*
+CLAUDE.md
+AGENTS.md
+.copilot/
 GEMINI.md
 copilot-instructions.md
 
